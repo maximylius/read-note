@@ -1,0 +1,117 @@
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  margin: 0;
+}
+
+.parent-height {
+  max-height: 100%;
+  min-height: 100%;
+}
+
+.box {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.box .row.static {
+  flex: 0 1 auto;
+}
+
+.box .row.grow {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.box .row.growContent {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+.box .row.growContent:hover {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column;
+  overflow-y: overlay;
+  overflow-x: hidden;
+}
+/* .panel-content:hover {
+  overflow-y: auto;
+} */
+
+.h100 {
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+}
+
+.nav-main {
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+  font-size: 1em;
+}
+
+/* .nav-main:hover {
+  padding-top: 0.6em;
+  padding-bottom: 0.4em;
+  font-size: 1.5em;
+} */
+
+.footer {
+  justify-content: center;
+  width: 100vw;
+  background-color: #add;
+}
+
+/* @media (max-height: 600px) {
+  .box .row.footer {
+    display: none;
+  }
+} */
+
+.panel-full {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+  flex-grow: 1;
+}
+
+.react-icons {
+  vertical-align: middle;
+}
+
+.noSelect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.editor {
+  border: solid 1px gray;
+  /* ... width, heigth, padding, overflow */
+}
+[contenteditable][placeholder]:empty:before {
+  content: attr(placeholder);
+  position: absolute;
+  color: gray;
+  background-color: transparent;
+}
+/* use:
+<div 
+className="editor
+contenteditable
+placeholder="Some placeholdertext..."
+onInput="if(this.innerHTML.trim()==='<br>')this.innerHTML=''"
+></div>
+*/
