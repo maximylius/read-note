@@ -67,7 +67,7 @@ function SecondStage() {
           id='TextUploadPublicationDate'
           type='date'
           prepend='Publication Date'
-          placeholder='Publication Date'
+          placeholder='YYYY-MM-DD'
           value={publicationDate}
           onEvent={{ onChange: e => setPublicationDate(e.target.value) }}
         />

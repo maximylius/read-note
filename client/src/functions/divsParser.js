@@ -35,11 +35,7 @@ const divsParser = (
     textDecoration: '',
     color: ''
   });
-  console.log('ranges');
-  console.log(ranges);
   ranges = [...ranges];
-  console.log(textcontent);
-  console.log(textcontent.length);
   if (textcontent.length > 160) {
     ranges.push({ ...standardSpan(10, 49, 'h2'), color: 'pink' });
     ranges.push({ ...standardSpan(60, 80), color: 'green' });
@@ -56,7 +52,6 @@ const divsParser = (
       textDecoration: 'underline'
     });
   }
-  console.log(ranges);
   if (ranges.length === 0) {
     return [
       {
@@ -285,11 +280,6 @@ const divsParser = (
     }
   });
 
-  console.log('divs');
-  console.log(nestedDivs);
-
-  console.log('reducedSpans');
-  console.log(reducedSpans);
   return nestedDivs;
 };
 

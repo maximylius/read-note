@@ -23,6 +23,7 @@ export const EXPAND_NOTEBOOKS_PANEL = 'EXPAND_NOTEBOOKS_PANEL';
 export const COLLAPSE_NOTEBOOKS_PANEL = 'COLLAPSE_NOTEBOOKS_PANEL';
 export const EXPAND_TEXTS_PANEL = 'EXPAND_TEXTS_PANEL';
 export const COLLAPSE_TEXTS_PANEL = 'COLLAPSE_TEXTS_PANEL';
+export const TOGGLE_KEEP_FINDER_OPEN = 'TOGGLE_KEEP_FINDER_OPEN';
 
 // spareIds
 export const PUSH_SPARE_IDS = 'PUSH_SPARE_IDS';
@@ -43,6 +44,11 @@ export const SET_VALID_SELECTION = 'SET_VALID_SELECTION';
 export const SET_NOSELECT = 'SET_NOSELECT';
 export const SET_HOLDCONTROL = 'SET_HOLDCONTRO';
 export const UPDATE_PROGRESS = 'UPDATE_PROGRESS';
+// speed reader
+export const OPEN_SPEED_READER = 'OPEN_SPEED_READER';
+export const PAUSE_SPEED_READER = 'PAUSE_SPEED_READER';
+export const PLAY_SPEED_READER = 'PLAY_SPEED_READER';
+export const CLOSE_SPEED_READER = 'CLOSE_SPEED_READER';
 
 // uploadpage
 export const UPLOADED_TEXT = 'UPLOADED_TEXT';
@@ -58,13 +64,6 @@ export const GET_NOTEBOOKS = 'GET_NOTEBOOKS'; // GET all notebooks
 export const ADD_NOTEBOOK = 'ADD_NOTEBOOK';
 export const UPDATE_NOTEBOOK = 'UPDATE_NOTEBOOK';
 export const DELETE_NOTEBOOK = 'DELETE_NOTEBOOK';
-
-// note actions
-export const GET_NOTES = 'GET_NOTES'; // GET load notes when opening notebook
-export const ADD_NOTE = 'ADD_NOTE'; // add a single note
-export const UPDATE_NOTE = 'UPDATE_NOTE';
-export const DELETE_NOTE = 'DELETE_NOTE';
-export const DELETE_ALL_NOTES = 'DELETE_ALL_NOTES';
 
 // text actions
 export const OPEN_TEXT = 'OPEN_TEXT'; //new
@@ -88,4 +87,6 @@ export const DELETE_ALL_SECTIONS = 'DELETE_ALL_SECTIONS';
 export const GET_ANNOTATIONS = 'GET_ANNOTATIONS';
 export const ADD_ANNOTATION = 'ADD_ANNOTATION';
 export const UPDATE_ANNOTATION = 'UPDATE_ANNOTATION';
+export const SET_ANNOTATION_EDIT_STATE = 'SET_ANNOTATION_EDIT_STATE';
 export const DELETE_ANNOTATION = 'DELETE_ANNOTATION';
+export const ATTACH_ANNOTATION_TO_NOTEBOOK = 'ATTACH_ANNOTATION_TO_NOTEBOOK';

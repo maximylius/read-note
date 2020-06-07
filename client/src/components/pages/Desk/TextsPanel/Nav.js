@@ -24,7 +24,6 @@ function Nav() {
   return (
     <nav className='row static navbar sticky-top navbar-expand-sm navbar-dark bg-light mx-0 px-0 pb-0'>
       <div className='container px-0'>
-        <BsBook />
         <ul className='nav nav-tabs mr-auto ml-1'>
           {textsToDisplay.map(id => (
             <NavTab

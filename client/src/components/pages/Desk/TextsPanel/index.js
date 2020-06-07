@@ -10,7 +10,7 @@ import {
 } from '../../../../store/actions';
 import SliderButton from '../../../Metapanel/SliderButton';
 
-function TextsPanel() {
+function TextsPanel({ quillNotebookRef }) {
   const dispatch = useDispatch();
   const {
     ui,
@@ -27,9 +27,9 @@ function TextsPanel() {
 
   return (
     <div
-      className={`row grow flex-row dont-pr-${
-        ui.mdNotebooksPanel > 0 ? '3' : '0'
-      } px-4 `}
+      className={`row grow flex-row mx-0 
+      pl-${ui.mdFinderPanel === 0 ? '0' : '4'}
+      pr-${ui.mdNotebooksPanel === 0 ? '0' : '3'}`}
     >
       <SliderButton
         onClickHandler={onClickHandlerBtn1}
@@ -40,7 +40,11 @@ function TextsPanel() {
 
       <div className='col px-0 mx-0 box'>
         <Nav />
-        {activeTextPanel === 'addTextPanel' ? <AddText /> : <Textpage />}
+        {activeTextPanel === 'addTextPanel' ? (
+          <AddText />
+        ) : (
+          <Textpage quillNotebookRef={quillNotebookRef} />
+        )}
       </div>
 
       <SliderButton

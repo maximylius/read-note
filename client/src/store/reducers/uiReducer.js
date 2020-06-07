@@ -60,14 +60,14 @@ const mdResolver = (finderOpen, textsOpen, annotationsOpen, notebooksOpen) => {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 8,
-            mdAnnotationsPanel: 4,
+            mdAnnotationsPanel: 5,
             mdNotebooksPanel: 4
           };
         } else if (!notebooksOpen) {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 12,
-            mdAnnotationsPanel: 4,
+            mdAnnotationsPanel: 5,
             mdNotebooksPanel: 0
           };
         }
@@ -107,12 +107,15 @@ const mdResolver = (finderOpen, textsOpen, annotationsOpen, notebooksOpen) => {
     }
   }
 };
+
 const initialState = {
   mdFinderPanel: 2,
   mdTextsPanel: 6,
   mdAnnotationsPanel: 4,
   mdAnnotationsPanelLast: 4,
   mdNotebooksPanel: 4,
+  mdNotebooksPanelLast: 4,
+  keepFinderOpen: false,
   loading: false,
   alert: null
 };
@@ -131,7 +134,25 @@ export default (state = initialState, action) => {
         ),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
+    // close finder...
+    case types.OPEN_NOTEBOOK:
+    case types.ADD_NOTEBOOK:
+    case types.UPDATE_NOTEBOOK:
+    case types.OPEN_TEXT:
+    case types.ADD_TEXT:
+    case types.ADD_AND_OPEN_TEXT:
+    case types.UPDATE_TEXT:
+    case types.SWITCH_TO_OPEN_TEXTPANEL:
+    case types.OPEN_ADDTEXTPANEL:
+    case types.ADD_SECTION:
+    case types.UPDATE_SECTION:
+    case types.DELETE_SECTION:
+    case types.ADD_ANNOTATION:
+    case types.SET_ANNOTATION_EDIT_STATE:
+    case types.DELETE_ANNOTATION:
     case types.UPLOADED_TEXT:
+      if (state.keepFinderOpen) return state;
+    // else collapse
     case types.COLLAPSE_FINDER_PANEL:
       return {
         ...state,
@@ -226,7 +247,8 @@ export default (state = initialState, action) => {
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanel > 0,
           false
-        )
+        ),
+        mdNotebooksPanelLast: 0
       };
     case types.CLOSE_NOTEBOOK:
       if (!payload.last) {
@@ -239,10 +261,34 @@ export default (state = initialState, action) => {
             state.mdTextsPanel > 0,
             state.mdAnnotationsPanel > 0,
             false
-          )
+          ),
+          mdNotebooksPanelLast: 0
         };
       }
-
+    case types.OPEN_SPEED_READER:
+    case types.PLAY_SPEED_READER:
+      return {
+        ...state,
+        ...mdResolver(false, true, false, false),
+        mdAnnotationsPanelLast: state.mdAnnotationsPanel,
+        mdNotebooksPanelLast: state.mdNotebooksPanel
+      };
+    // case types.PAUSE_SPEED_READER:
+    case types.CLOSE_SPEED_READER:
+      return {
+        ...state,
+        ...mdResolver(
+          false,
+          true,
+          state.mdAnnotationsPanelLast,
+          state.mdNotebooksPanelLast
+        )
+      };
+    case types.TOGGLE_KEEP_FINDER_OPEN:
+      return {
+        ...state,
+        keepFinderOpen: !state.keepFinderOpen
+      };
     case types.SET_ALERT:
       return {
         ...state,

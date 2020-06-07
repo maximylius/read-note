@@ -118,7 +118,7 @@ export default (state = initialState, action) => {
       return {
         ...initialState
       };
-    // case types.AUTH_ERROR: //when does AUTH_ERROR Happen?
+    case types.AUTH_ERROR: //when does AUTH_ERROR Happen?
     case types.LOGIN_FAIL:
     case types.REGISTER_FAIL:
       return state;

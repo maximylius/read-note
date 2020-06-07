@@ -26,6 +26,11 @@ export default (state = initialState, action) => {
       return {
         ...state
       };
+    case types.UPDATE_TEXT:
+      return {
+        ...state,
+        byId: { ...state.byId, [payload.text._id]: payload.text }
+      };
 
     case types.ADD_SECTION:
       return {
@@ -35,7 +40,7 @@ export default (state = initialState, action) => {
           [payload.textId]: {
             ...state.byId[payload.textId],
             sectionIds: payload.textSectionIds,
-            divs: payload.divs
+            formatDeltas: payload.formatDeltas
           }
         }
       };
@@ -48,7 +53,7 @@ export default (state = initialState, action) => {
           [payload.textId]: {
             ...state.byId[payload.textId],
             sectionIds: sortSectionIds(payload.sections.byId),
-            divs: payload.divs
+            formatDeltas: payload.formatDeltas
           }
         }
       };
@@ -62,7 +67,7 @@ export default (state = initialState, action) => {
             sectionIds: [...state.byId[payload.textId].sectionIds].filter(
               id => id !== payload.sectionId
             ),
-            divs: payload.divs
+            formatDeltas: payload.formatDeltas
           }
         }
       };
@@ -74,7 +79,7 @@ export default (state = initialState, action) => {
           [payload.textId]: {
             ...state.byId[payload.textId],
             sectionIds: [],
-            divs: payload.divs
+            formatDeltas: payload.formatDeltas
           }
         }
       };

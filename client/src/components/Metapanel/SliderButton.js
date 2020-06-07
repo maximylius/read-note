@@ -16,8 +16,7 @@ function SliderButton({ onClickHandler, addClasses, direction, display }) {
       onClick={onClickHandler}
       style={{
         width: '2.5rem',
-        display: display,
-        zIndex: 900
+        display: display
       }}
     >
       <IconContext.Provider value={{ size: '2rem' }}>

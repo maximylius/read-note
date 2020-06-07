@@ -11,7 +11,7 @@ function ScrapeLink() {
   const onSubmit = () => {};
 
   return (
-    <div className='container'>
+    <>
       <InputWithPrepend
         id='scrapeLink'
         type='text'
@@ -28,7 +28,7 @@ function ScrapeLink() {
       >
         This feature is not yet available...
       </button>
-    </div>
+    </>
   );
 }
 

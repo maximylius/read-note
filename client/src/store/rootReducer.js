@@ -5,7 +5,6 @@ import uiReducer from './reducers/uiReducer';
 import textsPanelReducer from './reducers/textsPanelReducer';
 import annotationsReducer from './reducers/annotationsReducer';
 import notebooksReducer from './reducers/notebooksReducer';
-import notesReducer from './reducers/notesReducer';
 import notebooksPanelReducer from './reducers/notebooksPanelReducer';
 import spareIdsReducer from './reducers/spareIdsReducer';
 import authReducer from './reducers/authReducer';
@@ -22,7 +21,6 @@ export default combineReducers({
   notebooksPanel: notebooksPanelReducer,
   user: userReducer,
   notebooks: notebooksReducer,
-  notes: notesReducer,
   texts: textsReducer,
   sections: sectionsReducer,
   annotations: annotationsReducer,

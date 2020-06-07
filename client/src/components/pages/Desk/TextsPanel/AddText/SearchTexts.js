@@ -11,7 +11,7 @@ function SearchTexts() {
   const onSubmit = () => {};
 
   return (
-    <div className='container'>
+    <>
       <InputWithPrepend
         id='searchTextInDatabase'
         type='text'
@@ -28,7 +28,7 @@ function SearchTexts() {
       >
         This feature is not yet available...
       </button>
-    </div>
+    </>
   );
 }
 

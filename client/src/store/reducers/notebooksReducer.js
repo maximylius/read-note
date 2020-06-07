@@ -25,47 +25,34 @@ export default (state = initialState, action) => {
         ...state,
         byId: filterObjectByKeys(state.byId, [payload.notebookId], null)
       };
-    case types.ADD_NOTE:
+    case types.ATTACH_ANNOTATION_TO_NOTEBOOK:
       return {
         ...state,
         byId: {
           ...state.byId,
           [payload.notebookId]: {
             ...state.byId[payload.notebookId],
-            contentIds: payload.contentIds
+            annotations: payload.indexInNotebookAnnotations
+              ? state.byId[payload.notebookId].annotations.map(
+                  (annotation, index) =>
+                    index === payload.indexInNotebookAnnotations
+                      ? {
+                          ...annotation,
+                          version: payload.version,
+                          plainText: payload.plainText
+                        }
+                      : annotation
+                )
+              : [
+                  ...state.byId[payload.notebookId].annotations,
+                  {
+                    annotationId: payload.annotationId,
+                    version: payload.version,
+                    plainText: payload.plainText
+                  }
+                ]
           }
         }
-      };
-    case types.UPDATE_NOTE:
-      return {
-        ...state,
-        byId: {
-          ...state.byId,
-          [payload.notebookId]: {
-            ...state.byId[payload.notebookId],
-            contentIds: payload.updateContentIds
-              ? payload.contentIds
-              : state.byId[payload.notebookId].contentIds
-          }
-        }
-      };
-    case types.DELETE_NOTE:
-      return {
-        ...state,
-        byId: {
-          ...state.byId,
-          [payload.notebookId]: {
-            ...state.byId[payload.notebookId],
-            contentIds: state.byId[payload.notebookId].contentIds.filter(
-              id => id !== payload.noteId
-            )
-          }
-        }
-      };
-    case types.DELETE_ALL_NOTES:
-      return {
-        ...state,
-        noteIds: []
       };
     case types.LOGOUT_SUCCESS:
       return initialState;

@@ -9,7 +9,7 @@ import {
 } from '../../../../store/actions';
 import SliderButton from '../../../Metapanel/SliderButton';
 
-const Notebooks = () => {
+const Notebooks = ({ quillNotebookRef }) => {
   const dispatch = useDispatch();
   const {
     notebooksPanel: { openNotebooks },
@@ -34,10 +34,10 @@ const Notebooks = () => {
 
       <div className='col px-0 box pr-4'>
         <Nav />
-        <div className='row growContent card'>
+        <div className='row growContent card mx-0'>
           {openNotebooks.length > 0 ? (
             <>
-              <NotebookPanel />
+              <NotebookPanel quillNotebookRef={quillNotebookRef} />
             </>
           ) : (
             <NotebookPlaceholder />

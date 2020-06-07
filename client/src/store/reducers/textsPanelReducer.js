@@ -9,10 +9,12 @@ const initialState = {
   committedSectionIds: [],
   tentativeSectionIds: [],
   editState: [],
+  editAnnotationId: null,
   validSelection: null,
   noSelectActive: false,
   holdControl: false,
-  progress: 0
+  progress: 0,
+  speedReader: { isOpen: false, contentToRead: [], remainingContent: [] }
 };
 
 export default (state = initialState, action) => {
@@ -155,6 +157,16 @@ export default (state = initialState, action) => {
         ...state,
         editState: [...state.editState.filter(id => id !== payload)]
       };
+    case types.ADD_ANNOTATION:
+      return {
+        ...state,
+        editAnnotationId: payload.annotation._id
+      };
+    case types.SET_ANNOTATION_EDIT_STATE:
+      return {
+        ...state,
+        editAnnotationId: payload.annotationIdOrNull
+      };
 
     case types.SET_VALID_SELECTION:
       return {
@@ -175,6 +187,24 @@ export default (state = initialState, action) => {
               .map(id => (payload.textById[id].categoryNum >= 0 ? 1 : 0))
               .reduce((pv, cv) => pv + cv, 0)) /
           Object.keys(payload.textById).length
+      };
+    case types.OPEN_SPEED_READER:
+      return {
+        ...state,
+        speedReader: {
+          isOpen: true,
+          words: payload.words,
+          begin: payload.begin,
+          end: payload.end
+        }
+      };
+    case types.CLOSE_SPEED_READER:
+      return {
+        ...state,
+        speedReader: {
+          ...state.speedReader,
+          isOpen: false
+        }
       };
     case types.LOGOUT_SUCCESS:
       return initialState;

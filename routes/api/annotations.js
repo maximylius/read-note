@@ -85,6 +85,26 @@ router.put('/:id', (req, res) => {
 });
 
 /**
+ * @route   PUT api/annotations/:id/deletednotebook/:notebookid
+ * @desc    update a annotation
+ * @access  Public
+ */
+router.put('/:id', (req, res) => {
+  Annotation.findById(req.params.id)
+    .then(annotation => {
+      annotation.conectedWith = annotation.conectedWith.filter(
+        id => id !== req.params.notebookid
+      );
+      annotation.save().then(() =>
+        res.json({
+          success: true
+        })
+      );
+    })
+    .catch(err => res.status(404).json({ success: false, err: err }));
+});
+
+/**
  * @route   DELETE api/annotations/:id
  * @desc    delete one annotation or many annotations
  * @access  Public
