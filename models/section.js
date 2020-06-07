@@ -8,6 +8,7 @@ const schema = new Schema({
   begin: { type: Number },
   end: { type: Number },
   fullWords: { type: String },
+  textId: { type: Schema.Types.ObjectId, ref: 'Text' },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 });
 

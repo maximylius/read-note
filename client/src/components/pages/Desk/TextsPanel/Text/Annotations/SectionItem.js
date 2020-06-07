@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Annotations from './Annotation';
 import {
@@ -6,56 +6,93 @@ import {
   uncommitFromSection,
   setTentativeSections,
   setCommittedSections,
-  deleteSection
+  deleteSection,
+  updateSection,
+  addAnnotation
 } from '../../../../../../store/actions';
-import AddAnnotation from './AddAnnotation';
-import { BsPencil, BsCheck, BsDash, BsTrash } from 'react-icons/bs';
+import annotationTypes from '../../../../../Metapanel/annotationTypes';
+import { BsDash, BsTrash, BsBookmark, BsPlus } from 'react-icons/bs';
+const sectionItemClassName =
+  'section-item list-group-item list-group-item-action';
+const sectionItemIdPrepend = 'sec_';
 
-const SectionItem = ({ sectionId }) => {
+const SectionItem = ({
+  sectionId,
+  quillTextRef,
+  quillNotebookRef,
+  addAnnotationsTo
+}) => {
   const dispatch = useDispatch();
   const {
     sections,
     annotations,
     categories,
     textsPanel: {
+      activeTextPanel,
       expandAll,
-      editState,
       committedSectionIds,
       tentativeSectionIds,
       holdControl
     }
   } = useSelector(state => state);
   const section = sections.byId[sectionId];
+  const [selectedCategory, setSelectedCategory] = useState(
+    section.categoryIds[0]
+  );
   const [low, std, high] = [0.3, 0.7, 1];
 
   const sectionItemClickHandler = e => {
-    // 2do: optimize opening and closing behaviour
-    console.log(e.target.className, e.target.parentElement.className);
     if (
-      !['delete-item', 'save-item', 'minimize-item'].some(el =>
-        [
-          e.target.className,
-          e.target.parentElement.className,
-          e.target.parentElement.parentElement.className
-        ].includes(el)
-      )
-    ) {
-      dispatch(setCommittedSections([section._id], holdControl));
-    }
+      committedSectionIds.includes(sectionId) &&
+      committedSectionIds.length === 1
+    )
+      return;
+    dispatch(setCommittedSections([section._id], holdControl));
   };
   const sectionItemOnMouseEnterHandler = () =>
     dispatch(setTentativeSections([sectionId], holdControl));
 
-  const deleteClickHandler = () => dispatch(deleteSection(section._id));
-  const mininmizeClickHandler = () =>
+  const deleteClickHandler = e => {
+    e.stopPropagation();
+    dispatch(deleteSection(section._id));
+    setTimeout(() => {
+      const hoveredSecDiv = [...document.querySelectorAll(':hover')].filter(
+        el => el.className === sectionItemClassName
+      );
+      if (hoveredSecDiv.length > 0) {
+        const hoveredId = hoveredSecDiv[0].id.replace(sectionItemIdPrepend, '');
+        dispatch(setTentativeSections([hoveredId], holdControl));
+      }
+      console.log('deleted && new tentative');
+    }, 20);
+  };
+  const mininmizeClickHandler = e => {
+    e.stopPropagation();
     dispatch(uncommitFromSection([section._id]));
-  const editStateClickHandler = () =>
-    dispatch(
-      changeSectionEditState(sectionEditState ? 'done' : 'edit', section._id)
-    );
+  };
 
+  const onCategoryChangeHandler = e => {
+    console.log(e.target.value);
+    if (e.target.value === selectedCategory) return;
+    setSelectedCategory(e.target.value);
+    dispatch(
+      updateSection({
+        _id: sectionId,
+        categoryIds: [e.target.value]
+      })
+    );
+  };
+  const newNoteClickhandler = e => {
+    e.stopPropagation();
+    console.log('newNoteClick-------------------------');
+    dispatch(
+      addAnnotation({
+        type: annotationTypes.note.type,
+        sectionId: sectionId
+      })
+    );
+  };
   // conditional render
-  const sectionEditState = editState.includes(section._id) ? true : false;
   const committedToSection = committedSectionIds.includes(section._id)
     ? true
     : false;
@@ -74,55 +111,73 @@ const SectionItem = ({ sectionId }) => {
 
   return (
     <li
-      className='list-group-item list-group-item-action'
-      id={`sec_${section._id}`}
+      className={sectionItemClassName}
+      id={`${sectionItemIdPrepend}${section._id}`}
       style={{ backgroundColor: backgroundColor }}
       onClick={sectionItemClickHandler}
       onMouseEnter={sectionItemOnMouseEnterHandler}
     >
       <strong> {section.title} </strong>
-      <p className='text-right'>
-        <a
-          href='#!'
-          className={sectionEditState ? 'save-item' : 'edit-item'}
-          onClick={editStateClickHandler}
-        >
-          {sectionEditState ? <BsCheck /> : <BsPencil />}
-        </a>{' '}
+      <span style={{ float: 'right' }}>
         <a
           href='#!'
           className='minimize-item'
           onClick={mininmizeClickHandler}
-          style={{ display: committedToSection ? 'inline' : 'none' }}
+          style={{ visibility: committedToSection ? 'visible' : 'hidden' }}
         >
+          <span style={{ visibility: 'hidden' }}>--</span>
           <BsDash />
-        </a>{' '}
-        <a href='#!' className='delete-item' onClick={deleteClickHandler}>
+          <span style={{ visibility: 'hidden' }}>--</span>
+        </a>
+
+        <a
+          href='#!'
+          className='delete-item'
+          onClick={deleteClickHandler}
+          style={{ visibility: tentativeToSection ? 'visible' : 'hidden' }}
+        >
+          {'  '}
           <BsTrash />
         </a>
-      </p>
-
+      </span>
       <div
         style={{
           display: committedToSection || expandAll ? 'block' : 'none'
         }}
       >
+        <div className='input-group input-group-sm mb-2'>
+          <div className='input-group-prepend' id={`${sectionId}_secCatSelect`}>
+            <span className='input-group-text'>
+              <BsBookmark />
+            </span>
+          </div>
+          <select
+            className='form-control custom-select white-opacity-50'
+            value={selectedCategory}
+            onChange={onCategoryChangeHandler}
+          >
+            {Object.keys(categories.byId).map(id => (
+              <option key={id} value={id}>
+                {categories.byId[id].title}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {annotationsToDisplay.map(id => (
           <Annotations
-            key={`sec_${section._id}+des_${id}`}
-            sectionId={section._id}
-            annotation={annotations.byId[id]}
-            sectionEditState={sectionEditState}
+            key={id}
+            annotationId={id}
+            addAnnotationsTo={addAnnotationsTo}
+            quillNotebookRef={quillNotebookRef}
           />
         ))}
-        <AddAnnotation
-          sectionId={section._id}
-          displayStyle={
-            section.annotationIds.length === 0 || sectionEditState
-              ? 'block'
-              : 'none'
-          }
-        />
+        <button
+          className='btn btn-light btn-block btn-sm'
+          onClick={newNoteClickhandler}
+        >
+          <BsPlus /> new note
+        </button>
       </div>
     </li>
   );

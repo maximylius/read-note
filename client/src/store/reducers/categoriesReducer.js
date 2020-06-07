@@ -1,6 +1,14 @@
 import * as types from '../types';
 const initialState = {
   byId: {
+    none: {
+      title: 'not categorized',
+      rgbColor: '240,240,250',
+      icon: '',
+      parent: null,
+      children: [],
+      accessFor: []
+    },
     standard_0: {
       title: 'Assumption',
       rgbColor: '170,250,200',

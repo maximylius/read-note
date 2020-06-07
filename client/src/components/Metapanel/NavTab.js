@@ -38,8 +38,16 @@ const NotebookTab = ({
       openAction();
     }
   };
-  const onTitleDoubleClick = () => setEditState(true);
+  const onTitleClick = () => setEditState(true);
+  const titlePasteHandler = e => {
+    e.target.innerText = e.target.innerText
+      .replace(/<[^>]*/g, '')
+      .replace(/[^a-z0-9-_\ ]/gi, '');
+  };
   const onTitleEditBlur = e => {
+    e.target.innerText = e.target.innerText
+      .replace(/<[^>]*/g, '')
+      .replace(/[^a-z0-9-_\ ]/gi, '');
     if (currentTitle !== e.target.innerText) {
       titleEditAction(e.target.innerText);
     }
@@ -53,12 +61,17 @@ const NotebookTab = ({
       onMouseLeave={onMouseLeaveHandler}
       onClick={openClickHandler}
     >
-      <span className={`nav-link ${isActive ? 'active' : ''}`}>
+      <span
+        className={`nav-link noSelect
+      ${isActive ? 'active' : ''} `}
+      >
         <small>
           <span
-            {...(titleEditAction && { onDoubleClick: onTitleDoubleClick })}
+            {...(titleEditAction && { onClick: onTitleClick })}
             {...(editState && {
               contentEditable: true,
+              onPaste: titlePasteHandler,
+              suppressContentEditableWarning: true,
               onBlur: onTitleEditBlur
             })}
           >

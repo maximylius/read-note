@@ -2,7 +2,6 @@ import * as types from '../types';
 
 const initialState = {
   notebooks: [],
-  notes: [],
   texts: [],
   sections: [],
   annotations: []
@@ -14,13 +13,7 @@ export default (state = initialState, action) => {
     case types.ADD_NOTEBOOK:
       return {
         ...state,
-        notebooks: state.notebooks.slice(1),
-        notes: state.notes.slice(1)
-      };
-    case types.ADD_NOTE:
-      return {
-        ...state,
-        notes: state.notes.slice(1)
+        notebooks: state.notebooks.slice(1)
       };
     case types.ADD_SECTION:
       return {

@@ -7,13 +7,16 @@ import {
   addNotebook,
   openNotebook,
   openAddTextPanel,
-  loadText
+  loadText,
+  toggleKeepFinderOpen
 } from '../../../../store/actions';
 
 function MyContents() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const { user, notebooks, texts, annotations } = useSelector(state => state);
+  const { user, notebooks, texts, annotations, ui } = useSelector(
+    state => state
+  );
   const textsToDisplay = user.textIds.filter(id =>
     Object.keys(texts.byId).includes(id)
   );
@@ -22,6 +25,7 @@ function MyContents() {
   );
   const addNotebookClickHandler = () => dispatch(addNotebook({ history }));
   const addTextClickHandler = () => dispatch(openAddTextPanel());
+  const keepFinderOpenClickHandler = () => dispatch(toggleKeepFinderOpen());
 
   return (
     <div className='row growContent'>
@@ -82,6 +86,25 @@ function MyContents() {
               )
           )}
           <hr style={{ backgroundColor: 'white' }} />
+        </div>
+        <div>
+          <div className='input-group mb-3'>
+            <div className='input-group-prepend'>
+              <span className='input-group-text'>
+                <small>Keep Finder open</small>
+              </span>
+            </div>
+            <div className='input-group-prepend'>
+              <span className='input-group-text'>
+                <input
+                  type='checkbox'
+                  aria-label='keep finder open'
+                  checked={ui.keepFinderOpen}
+                  onChange={keepFinderOpenClickHandler}
+                ></input>
+              </span>
+            </div>
+          </div>
         </div>
       </ul>
     </div>

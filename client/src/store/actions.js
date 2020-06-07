@@ -3,11 +3,12 @@ import * as types from './types';
 import {
   defaultText,
   filterObjectByKeys,
+  ObjectRemoveKeys,
+  ObjectKeepKeys,
   sortSectionIds,
   deepCompare,
   regExpHistory
 } from '../functions/main';
-import divsParser from '../functions/divsParser';
 
 /**
  *
@@ -80,19 +81,6 @@ export const loadUser = () => async (dispatch, getState) => {
       dispatch({
         type: types.GET_NOTEBOOKS,
         payload: { notebooksById }
-      });
-
-      const notesToGet = notebooksRes.data
-        .map(notebook => notebook.contentIds)
-        .flat(1);
-
-      const notesRes = await axios.get(`/api/notes/${notesToGet.join('+')}`); // add auth
-      console.log(notesRes);
-      const notesById = {};
-      notesRes.data.forEach(note => (notesById[note._id] = note));
-      dispatch({
-        type: types.GET_NOTES,
-        payload: { notesById }
       });
     }
     const textsToGet = user.textIds.filter(
@@ -172,19 +160,6 @@ export const loginUser = ({ email, password }) => async (
       dispatch({
         type: types.GET_NOTEBOOKS,
         payload: { notebooksById }
-      });
-
-      const notesToGet = notebooksRes.data
-        .map(notebook => notebook.contentIds)
-        .flat(1);
-
-      const notesRes = await axios.get(`/api/notes/${notesToGet.join('+')}`); // add auth
-      console.log(notesRes);
-      const notesById = {};
-      notesRes.data.forEach(note => (notesById[note._id] = note));
-      dispatch({
-        type: types.GET_NOTES,
-        payload: { notesById }
       });
     }
     const textsToGet = user.textIds.filter(id => !openTexts.includes(id));
@@ -303,6 +278,12 @@ export const expandTextsPanel = () => dispatch =>
 export const collapseTextsPanel = () => dispatch =>
   dispatch({ type: types.COLLAPSE_TEXTS_PANEL });
 
+export const toggleKeepFinderOpen = () => dispatch => {
+  dispatch({
+    type: types.TOGGLE_KEEP_FINDER_OPEN
+  });
+};
+
 /**
  *
  *
@@ -346,7 +327,7 @@ export const deleteSpareIds = () => (dispatch, getState) => {
 
 export const deleteAllSpareIds = (minutesToExpire = 2400) => {
   console.log('delAllSpareIds');
-  ['notebooks', 'notes', 'texts', 'sections', 'annotations'].forEach(prefix =>
+  ['notebooks', 'texts', 'sections', 'annotations'].forEach(prefix =>
     axios
       .delete(`/api/${prefix}/spareIds/${minutesToExpire}`)
       .then(() => console.log('response received', prefix))
@@ -442,15 +423,37 @@ export const setHoldControl = controllIsPressed => (dispatch, getState) =>
     payload: controllIsPressed
   });
 
+export const openSpeedReader = (words, begin, end) => dispatch => {
+  dispatch({
+    type: types.OPEN_SPEED_READER,
+    payload: { words, begin, end }
+  });
+};
+
+export const playSpeedReader = () => dispatch =>
+  dispatch({
+    type: types.PLAY_SPEED_READER
+  });
+
+export const pauseSpeedReader = () => dispatch =>
+  dispatch({
+    type: types.PAUSE_SPEED_READER
+  });
+
+export const closeSpeedReader = () => dispatch =>
+  dispatch({
+    type: types.CLOSE_SPEED_READER
+  });
+
 /**
  *
  *
  * @TEXT_UPLOAD_PAGE
  */
-export const uploadTextcontent = (textcontent, publicAccess = true) => (
-  dispatch,
-  getState
-) => {
+export const uploadTextcontent = (
+  { textcontent, deltas },
+  publicAccess = true
+) => (dispatch, getState) => {
   const {
     user,
     texts,
@@ -460,14 +463,14 @@ export const uploadTextcontent = (textcontent, publicAccess = true) => (
   const text = defaultText();
   text._id = spareIds['texts'][0];
   text.textcontent = textcontent;
+  text.deltas = deltas;
+  text.formatDeltas = deltas;
   text.editedBy = user._id ? [user._id] : [];
   text.accessFor = publicAccess
     ? []
     : user._id
     ? [user._id]
     : ['2do:session.id'];
-  text.formatDivs = [];
-  text.divs = divsParser(text.textcontent, text.formatDivs);
   // add a placeholder title
   const allTextTitles = [
     ...Object.keys(texts.byId).map(id => texts.byId[id].title)
@@ -487,12 +490,12 @@ export const uploadTextcontent = (textcontent, publicAccess = true) => (
 
   axios.put(
     `/api/texts/${text._id}`,
-    filterObjectByKeys(text, null, [
+    ObjectKeepKeys(text, [
       '_id',
       'textcontent',
+      'deltas',
       'editedBy',
-      'accessFor',
-      'formatDivs'
+      'accessFor'
     ])
   );
 
@@ -514,12 +517,9 @@ export const uploadTextcontent = (textcontent, publicAccess = true) => (
 };
 
 export const updateText = (textId, textUpdate) => (dispatch, getState) => {
+  console.log(textUpdate);
   const { texts } = getState();
-  const text = texts.byId[textId];
-
-  Object.keys(textUpdate).forEach(updateKey => {
-    text[updateKey] = textUpdate[updateKey];
-  });
+  const text = { ...texts.byId[textId], ...textUpdate };
 
   dispatch({
     type: types.UPDATE_TEXT,
@@ -635,19 +635,6 @@ export const loadNotebooks = ({
     type: types.GET_NOTEBOOKS,
     payload: { notebooksById, open, setToActive }
   });
-
-  const notesToGet = notebooksRes.data
-    .map(notebook => notebook.contentIds)
-    .flat(1);
-
-  const notesRes = await axios.get(`/api/notes/${notesToGet.join('+')}`); // add auth
-  console.log(notesRes);
-  const notesById = {};
-  notesRes.data.forEach(note => (notesById[note._id] = note));
-  dispatch({
-    type: types.GET_NOTES,
-    payload: { notesById }
-  });
 };
 
 export const closeNotebook = ({ notebookId, history }) => (
@@ -688,17 +675,12 @@ export const addNotebook = ({ history }) => (dispatch, getState) => {
     spareIds,
     user
   } = getState();
-  const note = {
-    type: 'placeholder',
-    textcontent: '',
-    _id: spareIds['notes'][0],
-    editedBy: user._id ? [user._id] : []
-  };
 
   const notebook = {
     _id: spareIds['notebooks'][0],
     title: '',
-    contentIds: [note._id],
+    deltas: [],
+    annotations: [],
     keywords: [],
     created: Date.now(),
     lastEdited: Date.now(),
@@ -719,7 +701,7 @@ export const addNotebook = ({ history }) => (dispatch, getState) => {
   console.log(notebook);
   dispatch({
     type: types.ADD_NOTEBOOK,
-    payload: { notebook, note }
+    payload: { notebook }
   });
 
   axios.put(
@@ -783,17 +765,19 @@ export const deleteNotebook = notebookId => (getState, dispatch) => {
     auth: { isAuthenticated }
   } = getState();
   const notebook = notebooks.byId[notebookId];
-  const notesToDelete = notebook.contentIds;
+  const notebookAnnotations = notebook.annotations;
   dispatch({
     type: types.DELETE_NOTEBOOK,
-    payload: { notebookId, notesToDelete }
+    payload: { notebookId }
   });
 
   // update server
   axios.delete(`/api/notebooks/${notebookId}`);
-  if (notesToDelete.length > 0) {
-    axios.delete(`/api/notes/${notesToDelete.join('+')}`);
-  }
+  notebookAnnotations.forEach(annotation => {
+    axios.put(
+      `/api/annotations/${annotation.annotationId}/deletednotebook/${notebookId}`
+    );
+  });
   if (isAuthenticated) {
     axios.put(
       `/api/users/update`,
@@ -808,123 +792,6 @@ export const deleteNotebook = notebookId => (getState, dispatch) => {
 /**
  *
  *
- * @NOTE
- */
-export const addNote = (notebookId, index) => (dispatch, getState) => {
-  console.log('create new note');
-  const { user, spareIds, notebooks } = getState();
-
-  const note = {
-    type: 'SPARE',
-    textcontent: '',
-    _id: spareIds['notes'][0],
-    editedBy: user._id ? [user._id] : []
-  };
-  console.log(note);
-
-  const contentIds = [...notebooks.byId[notebookId].contentIds];
-  contentIds.splice(index, 0, note._id);
-
-  dispatch({
-    type: types.ADD_NOTE,
-    payload: { note, notebookId, contentIds }
-  });
-
-  const prefix = 'notes';
-  axios.post(`/api/${prefix}/spareIds/1`).then(res => {
-    dispatch({
-      type: types.PUSH_SPARE_IDS,
-      payload: { prefix, spareIds: res.data.spareIds }
-    });
-  });
-};
-
-export const updateNote = (
-  noteId,
-  noteTextcontent,
-  noteEditedBy,
-  notebookId,
-  index
-) => (dispatch, getState) => {
-  const { user } = getState();
-  let contentIds = [...getState().notebooks.byId[notebookId].contentIds];
-  const previous = getState().notes.byId[noteId];
-  const note = {
-    _id: noteId,
-    type: 'note',
-    textcontent: noteTextcontent,
-    editedBy: noteEditedBy
-  };
-  if (deepCompare(note, filterObjectByKeys(previous, null, Object.keys(note))))
-    return; //update with index compare.
-
-  note.lastEdited = Date.now();
-  console.log(note.editedBy);
-  note.editedBy = !user._id
-    ? previous.editedBy
-    : previous.editedBy[previous.editedBy.length - 1] === user._id
-    ? previous.editedBy
-    : [...note.editedBy, user._id];
-
-  let updateContentIds = contentIds[index] !== note._id ? true : false;
-
-  if ((previous.type = 'placeholder' || contentIds[index] !== note._id)) {
-    if (contentIds[index] !== note.id) {
-      contentIds = contentIds.filter(id => id !== note._id); // remove from old index
-      contentIds.splice(index, 0, note._id);
-    }
-
-    axios
-      .put(`/api/notebooks/${notebookId}`, { contentIds })
-      .catch(err =>
-        console.error(err, 'err.response.data, err.response.status')
-      );
-  }
-
-  dispatch({
-    type: types.UPDATE_NOTE,
-    payload: {
-      note,
-      notebookId,
-      contentIds,
-      updateContentIds
-    }
-  });
-
-  axios.put(`/api/notes/${note._id}`, filterObjectByKeys(note, ['_id'], null));
-};
-
-export const deleteNote = ({ noteId, index }, notebookId) => (
-  dispatch,
-  getState
-) => {
-  const { notebooks, notes } = getState();
-  const notebook = notebooks.byId[notebookId];
-  if (index && !noteId) {
-    noteId = notebook.contentIds[index];
-  }
-  const note = notes.byId[noteId];
-  if (note.type === 'placeholder') {
-    dispatch({
-      type: types.RESTORE_SPARE_ID,
-      payload: { id: noteId, prefix: 'notes' }
-    });
-  } else {
-    axios.delete(`/api/notes/${noteId}`);
-  }
-  axios.put(`/api/notebooks/${notebookId}`, {
-    contentIds: notebook.contentIds.filter(id => id !== noteId)
-  });
-
-  dispatch({
-    type: types.DELETE_NOTE,
-    payload: { noteId, notebookId }
-  });
-};
-
-/**
- *
- *
  * @TEXT
  */
 export const loadText = ({ textId, openText, setToActive, history }) => async (
@@ -933,7 +800,6 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
 ) => {
   const {
     texts,
-    sections,
     textsPanel: { activeTextPanel }
   } = getState();
   const loaded = texts.byId[textId]
@@ -956,7 +822,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
     );
   let text;
   if (!loaded) {
-    console.log('start loading text...');
+    console.log('start loading text...', textId);
     const textres = await axios.get(`/api/texts/id/${textId}`);
     const text = textres.data;
     if (!text) {
@@ -1000,12 +866,6 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
         }
       });
     } else if (openText) {
-      text.divs = divsParser(text.textcontent, [
-        ...text.formatDivs,
-        ...text.sectionIds.map(id => sectionsById[id])
-      ]);
-      // 2do: define how long words shall be visible...
-      // get index of the word to highlight corresponding word in text.
       text.words = text.textcontent.split(/\s+/);
       dispatch({
         type: types.ADD_AND_OPEN_TEXT,
@@ -1028,11 +888,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
       dispatch({
         type: types.OPEN_TEXT,
         payload: {
-          text,
-          divs: divsParser(text.textcontent, [
-            ...text.formatDivs,
-            ...text.sectionIds.map(id => sections.byId[id])
-          ])
+          text
         }
       });
     }
@@ -1078,8 +934,10 @@ export const closeTextPanel = ({ textPanelId, history }) => (
  *
  * @SECTIONS
  */
-export const addSection = categoryId => (dispatch, getState) => {
-  window.getSelection().removeAllRanges();
+export const addSection = ({ categoryId, begin, end }) => (
+  dispatch,
+  getState
+) => {
   const {
     auth: { isAuthenticated },
     texts,
@@ -1094,14 +952,12 @@ export const addSection = categoryId => (dispatch, getState) => {
   const section = {
     _id: spareIds['sections'][0],
     title: null,
-    begin: validSelection.begin,
-    end: validSelection.end,
+    begin: begin,
+    end: end,
     categoryIds: [categoryId],
     annotationIds: [],
-    fullWords: text.textcontent.slice(
-      validSelection.begin,
-      validSelection.end + 1
-    ),
+    fullWords: text.textcontent.slice(begin, end + 1),
+    textId: activeTextPanel,
     editedBy: user._id ? [user._id] : []
   };
   console.log(text.sectionIds);
@@ -1130,19 +986,19 @@ export const addSection = categoryId => (dispatch, getState) => {
   console.log(textSections);
   const textSectionIds = sortSectionIds(textSections);
   console.log(textSectionIds);
-  const ranges = [
-    ...text.formatDivs,
-    ...text.sectionIds.map(id => sections.byId[id]),
-    { ...section }
-  ];
-  console.log(ranges);
+  // const ranges = [
+  //   ...text.formatDivs,
+  //   ...text.sectionIds.map(id => sections.byId[id]),
+  //   { ...section }
+  // ];
+  // console.log(ranges);
   dispatch({
     type: types.ADD_SECTION,
     payload: {
       section,
       textSectionIds: textSectionIds,
-      textId: activeTextPanel,
-      divs: divsParser(text.textcontent, ranges)
+      textId: activeTextPanel
+      // divs: divsParser(text.textcontent, ranges)
     }
   });
 
@@ -1176,22 +1032,53 @@ export const addSection = categoryId => (dispatch, getState) => {
 };
 
 export const updateSection = update => (dispatch, getState) => {
-  const { sections } = getState();
-  const sectionToUpdate = sections.byId[update._id];
+  const {
+    sections,
+    categories,
+    texts,
+    textsPanel: { activeTextPanel }
+  } = getState();
+  const section = { ...sections.byId[update._id] };
+  const text = texts.byId[activeTextPanel];
   const request = {};
+
+  if (
+    update.categoryIds &&
+    !update.title &&
+    Object.keys(categories.byId)
+      .map(id => categories.byId[id].title)
+      .some(title => {
+        const titleRegExp = new RegExp(`${title} \\d+$`);
+        if (titleRegExp.test(section.title)) return true;
+      })
+  ) {
+    const allSectionTitles = [
+      ...text.sectionIds.map(id => sections.byId[id].title)
+    ];
+    let i = 0;
+    do {
+      i++;
+      section.title = `${categories.byId[update.categoryIds[0]].title} ${i}`;
+    } while (
+      allSectionTitles.includes(
+        `${categories.byId[update.categoryIds[0]].title} ${i}`
+      )
+    );
+    request.title = section.title;
+  }
   // only send changed parts to server // 2do include Array & Obj compare
   Object.keys(update).forEach(updateKey => {
-    if (Object.keys(sectionToUpdate).includes(updateKey)) {
-      if (update[updateKey] !== sectionToUpdate[updateKey]) {
+    if (Object.keys(section).includes(updateKey)) {
+      if (update[updateKey] !== section[updateKey]) {
         request[updateKey] = update[updateKey];
-        sectionToUpdate[updateKey] = update[updateKey];
+        section[updateKey] = update[updateKey];
       }
     }
   });
 
   dispatch({
     type: types.UPDATE_SECTION,
-    payload: sectionToUpdate
+    payload: { section, textId: text._id, sections }
   });
 
   axios.put(`/api/sections/${update._id}`, request);
@@ -1225,19 +1112,18 @@ export const deleteSection = sectionId => (dispatch, getState) => {
     id => id !== sectionId
   );
 
-  const ranges = [
-    ...texts.byId[activeTextPanel].formatDivs,
-    ...sectionIds.map(id => sections.byId[id])
-  ];
-  console.log(ranges);
+  // const ranges = [
+  //   ...texts.byId[activeTextPanel].formatDivs,
+  //   ...sectionIds.map(id => sections.byId[id])
+  // ];
 
   dispatch({
     type: types.DELETE_SECTION,
     payload: {
       sectionId,
       sections,
-      textId: activeTextPanel,
-      divs: divsParser(texts.byId[activeTextPanel].textcontent, ranges)
+      textId: activeTextPanel
+      // divs: divsParser(texts.byId[activeTextPanel].textcontent, ranges)
     }
   });
 };
@@ -1285,12 +1171,10 @@ export const deleteAllSections = () => (dispatch, getState) => {
  *
  * @Annotations
  */
-export const addAnnotation = (type, textcontent, sectionId) => (
-  dispatch,
-  getState
-) => {
+export const addAnnotation = ({ type, sectionId }) => (dispatch, getState) => {
   const {
     auth: { isAuthenticated },
+    textsPanel: { activeTextPanel },
     sections,
     spareIds,
     user
@@ -1298,8 +1182,12 @@ export const addAnnotation = (type, textcontent, sectionId) => (
   const annotation = {
     _id: spareIds['annotations'][0],
     type,
-    textcontent,
+    html: '',
+    plainText: '',
+    sectionId,
+    textId: activeTextPanel,
     connectedWith: [],
+    version: 'v0',
     created: Date.now(),
     lastEdited: Date.now(),
     editedBy: user._id ? [user._id] : [],
@@ -1312,7 +1200,7 @@ export const addAnnotation = (type, textcontent, sectionId) => (
 
   axios.put(
     `/api/annotations/${annotation._id}`,
-    filterObjectByKeys(annotation, ['_id'], null)
+    ObjectRemoveKeys(annotation, ['_id'])
   );
 
   axios.put(`/api/sections/${sectionId}`, {
@@ -1337,20 +1225,81 @@ export const addAnnotation = (type, textcontent, sectionId) => (
   });
 };
 
-export const deleteAnnotation = (annotationId, sectionId) => (
-  dispatch,
-  getState
-) => {
+export const setAnnotationEditState = annotationIdOrNull => dispatch => {
+  dispatch({
+    type: types.SET_ANNOTATION_EDIT_STATE,
+    payload: { annotationIdOrNull }
+  });
+};
+
+export const updateAnnotation = ({
+  annotationId,
+  type,
+  html,
+  plainText,
+  version,
+  notebookId,
+  indexInNotebookAnnotations
+}) => (dispatch, getState) => {
+  if ([annotationId, type, html, plainText, version].includes(undefined))
+    throw `undefined props in updateAnnotation: ${[
+      annotationId,
+      type,
+      html,
+      plainText,
+      version
+    ]}`;
+  const { annotations } = getState();
+  const annotation = {
+    ...annotations.byId[annotationId],
+    type,
+    html,
+    plainText,
+    version,
+    ...(notebookId && {
+      connectedWith: [
+        ...new Set([
+          ...annotations.byId[annotationId].connectedWith,
+          notebookId
+        ])
+      ]
+    })
+  };
+  dispatch({
+    type: types.UPDATE_ANNOTATION,
+    payload: { annotation }
+  });
+  axios.put(
+    `/api/annotations/${annotation._id}`,
+    ObjectRemoveKeys(annotation, ['_id'])
+  );
+  if (!notebookId) return;
+  dispatch({
+    type: types.ATTACH_ANNOTATION_TO_NOTEBOOK,
+    payload: {
+      annotationId,
+      plainText,
+      version,
+      notebookId,
+      indexInNotebookAnnotations
+    }
+  });
+};
+
+export const deleteAnnotation = annotationId => (dispatch, getState) => {
   const {
     auth: { isAuthenticated },
     annotations,
     user
   } = getState();
   console.log(annotationId);
-  console.log(sectionId);
+  const sectionId = annotations.byId[annotationId].sectionId;
   dispatch({
     type: types.DELETE_ANNOTATION,
-    payload: { annotationId, sectionId }
+    payload: {
+      annotationId,
+      sectionId
+    }
   });
 
   axios.delete(`/api/annotations/${annotationId}`);

@@ -1,5 +1,5 @@
 import * as types from '../types';
-import { filterObjectByKeys } from '../../functions/main';
+import { ObjectRemoveKeys, extractNumber } from '../../functions/main';
 
 const initialState = { byId: {} };
 
@@ -21,14 +21,34 @@ export default (state = initialState, action) => {
           [payload.annotation._id]: payload.annotation
         }
       };
+    // case types.ATTACH_ANNOTATION_TO_NOTEBOOK:
+    //   return {
+    //     ...state,
+    //     byId: {
+    //       ...state.byId,
+    //       [payload.annotationId]: {
+    //         ...state.byId[payload.annotationId],
+    //         annotationVersion: `v${
+    //           extractNumber(
+    //             state.byId[payload.annotationId].annotationVersion,
+    //             0
+    //           ) + 1
+    //         }`
+    //       }
+    //     }
+    //   };
     case types.UPDATE_ANNOTATION:
       return {
-        ...state
+        ...state,
+        byId: {
+          ...state.byId,
+          [payload.annotation._id]: payload.annotation
+        }
       };
     case types.DELETE_ANNOTATION:
       return {
         ...state,
-        byId: filterObjectByKeys(state.byId, [payload.annotationId], null)
+        byId: ObjectRemoveKeys(state.byId, [payload.annotationId])
       };
     case types.LOGOUT_SUCCESS:
       return initialState;

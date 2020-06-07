@@ -8,7 +8,7 @@ import ScrapeLink from './ScrapeLink';
 function FirstStage() {
   const { user } = useSelector(state => state);
   return (
-    <>
+    <div className='container'>
       <h1 className='display-4'>Open a text:</h1>
       {user.textIds.length > 0 && (
         <>
@@ -23,7 +23,7 @@ function FirstStage() {
       <SearchTexts />
       <p className='lead'>or</p>
       <PasteUpload />
-    </>
+    </div>
   );
 }
 

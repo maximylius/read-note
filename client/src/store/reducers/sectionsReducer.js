@@ -1,5 +1,5 @@
 import * as types from '../types';
-import { filterObjectByKeys } from '../../functions/main';
+import { ObjectRemoveKeys } from '../../functions/main';
 
 let initialState = {
   byId: {}
@@ -22,10 +22,18 @@ export default (state = initialState, action) => {
           [payload.section._id]: payload.section
         }
       };
+    case types.UPDATE_SECTION:
+      return {
+        ...state,
+        byId: {
+          ...state.byId,
+          [payload.section._id]: payload.section
+        }
+      };
     case types.DELETE_SECTION:
       return {
         ...state,
-        byId: filterObjectByKeys(state.byId, [payload.sectionId], null)
+        byId: ObjectRemoveKeys(state.byId, [payload.sectionId])
       };
     case types.DELETE_ALL_SECTIONS:
       return {

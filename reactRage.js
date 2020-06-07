@@ -1,16 +1,20 @@
-// GENERAL
-// remove categoryNum from text? No.
+// IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 
-// ADD FUNCTIONALITIES (0: last, 9: first)
-//4 create routes:
-//4    /users
-//4    /notebooks
-//4    /notes
-//4    /annotations
-//6    save only to server if authenticated? no! delete all after a while.
+// CLEANER CODE ---------------
 //6     reduce code repetition in actions
+//6     make login session more stable
+
+// MORE EFFICIENT CODE -------------------------
+//6     make mouse/click Handlers non-blocking
+//6     check whether multiple layers of mouse move / click
+//6     check amount of rerenders
 //
-//4 create Pages:
+
+// REMOVE BUGS ----------------------------------
+//4 fix url regexp
+//
+
+//4 pages  --------------------------------------
 //4    landing page:
 //4         sign in only in navbar (those who once have looged in already know where to go).
 //4         welcome text diashow: speed read text, comfortable reading enviroment, manage texts notebooks & co.
@@ -25,34 +29,36 @@
 //4          text tabs & notebook tabs, can also have different colors
 //4          the link may change between each change of tabs.
 //4
-//4    user profile
-//4         tell others something about yourself, but remember to keep your private data private.
-//4         will show your statistics, reputation, profile pic, bio
-//4         connect with people: privacy status, allow access for contacts
-//4
-//4    About & Feedback page
-//4         pay with donations, not your data!
-//4         request new features. poll, collect donations.
-//4
+//1    user profile
+//1         tell others something about yourself, but remember to keep your private data private.
+//1         will show your statistics, reputation, profile pic, bio
+//1         connect with people: privacy status, allow access for contacts
+//1
+//1    About & Feedback page
+//1         pay with donations, not your data!
+//5         request new features. poll, collect donations.
+//1
 //4    Login / Register Page
 //4         implement as MODAL.
 //4         Show Display Name , "Already registered? Sign in!" / "Not yet registered? Sign up!" depending on url.
 //4
-//6 improve functionalities
+
+//6 SERVER improvements ----------------------------------
+//6    implement server clean up routines.
+//4    get anonymousSession token for not logged in users...
 //6    make get request not url only -> what if to many notes get requested? string to long...
 //6    request error handling
 //6    add  try & catch + async + await?
 //6    request error handling
 //6    set loading while requesting server data for individual components
-//6    check amount of rerenders
 //4    include password and email validation
 //4
-//4 New Functionalities
+
+//4 New Functionalities ----------------------------
+//6    create @mention and #keywords as Blots.
 //4    bush current focus element to react history
 //4    drag panel size with mouse. set min and max values.
-//4    add open source rich text editor
 //4    add notes from texts to notebooks// future: drag & drop. // make it feel good...
-//4    get anonymousSession token for not logged in users...
 //4    speed reader
 //4    return to passage in text where you left off. add hgiglight / visual glow to help find the passage.
 //4    undo / redo buttons // flashing / highlighting changed parts possible?
@@ -69,12 +75,13 @@
 //4    scrape PDF & html, perserve formatting
 //4    Enable user to ask questions with text. Questions can be answered and or connected to other questions.
 //4    Formatting of annotations also? SO works because of nice formats. BUT keep it simple...
-//4    Ability to make general annotations to the text without refering to any passage?
-//4    encrypt private texts?
+//4    Ability to make general annotations to the text without refering to any passage? No.
+//0    encrypt private texts?
 //4    resize displayed text, button to hide left empty pane & give more space to text.
-//4    make text and notebook ids short for nice urls.
+//4    make text and notebook ids short for nice urls. OR make them include title.
 //4
-//2 Design
+
+//2 Design -------------
 //2    what is ReachUI?
 //    get toasts & modals & tooltips
 //  npm install react-icons react-datepicker
@@ -91,9 +98,7 @@
 //2    original style format keep orignial font type
 //2    create CSS
 //2
-//4 IMPROVE SELECTION
-//4    once a selection is made, that is not unvalid, addEventListener('selectionchange', ) to capture any change of the selection. evaluate change in processSelection function. Could be deactivate while mousedown to reduce excessive cpu.
-//2
+
 //2 GIVE NAME
 //1     text note
 //1     note text
@@ -107,11 +112,16 @@
 //1     texts and tags
 //1     text comfort
 //1     read station studio
-//1     zen reader
+//1     zen reader //taken by competitor
 //1     zen texts
 //1     text stream
 //1     text zone
-//1
+//1     Lesepult
+//1     one desk
+//1     top desk
+//1     slow reader
+//1     flow reader
+//1     faultier als logo
 //1
 //1
 
@@ -181,7 +191,31 @@
 // ads & donations
 // pay for extra cloud memory / offline mode / encryption of content / no ads / adding extras that companies want - link to outlook / office?
 
-// GENERAL MERN SETUP
+// WEB SCRAPING LIBRARIES -----------------------------
+//      ...
+
+// RICH TEXT EDITORS (ranked by github stars)
+// Quill
+//    free to use BSD
+//    allows
+//      weird highliting
+//     ? pasting in formatted text and pictures highliting
+
+// trix
+//    free to use MIT
+//    allows
+//      weird highliting
+//      pasting in formatted text and pictures highliting
+
+// tinyMCE
+//    free to use GNU
+//
+
+// SOFTWARE TO IMPLEMENT -------------------------------
+// express-sanitizer or express-mongo-sanitize
+// express-validator
+
+// GENERAL MERN SETUP -------------------------------------
 // express // webframework: handles routing
 // express-validator // validate body data (email, pw)
 // mongose // adds abstraction layer to read / edit data / allows creation of models
@@ -190,8 +224,8 @@
 // config // for global variables
 // Moment: formats dates
 // postman
-// nodemon: (DevDependency) keep watching server, without manually restarting it.
-// concurrently: (DevDependency) allows to run backend and frontend with one command
+// nodemon: (DevDep) watches server script updates
+// concurrently: (DevDep) run backend + frontend with one command
 // redux: state management library
 // react-redux: allow redux & react to work together
 // redux-thunk: middleware for redux. allows for async function inside actions (wait for response & dispatch)
@@ -214,11 +248,3 @@
 // npx create-react-app .
 // npm i -D json-server concurrently
 // npm i redux react-redux redux-thunk redux-devtools-extension
-
-// DESTRUCTURING
-// const { pulledOut } = nestedObject
-// const { pulledOut: andRenamed } = nestedObject
-// const { pulledOut: { extractOnlyTheMoreDeeplyNested } } = nestedObject
-// const [First, Second] = arrayToDestrcture
-// const [First,, Third] = arrayToDestrcture
-// const [First, Second, ...rest] = arrayToDestrcture

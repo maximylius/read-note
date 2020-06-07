@@ -10,6 +10,7 @@ import { loadText, loadNotebooks } from '../../../store/actions';
 const Desk = () => {
   const dispatch = useDispatch();
   const params = useParams();
+  const quillNotebookRef = React.useRef(null);
   const { ui } = useSelector(state => state);
   useEffect(() => {
     if (params.textIds) {
@@ -62,7 +63,7 @@ const Desk = () => {
           display: ui.mdTextsPanel > 0 ? 'flex' : 'none'
         }}
       >
-        <TextsPanel />
+        <TextsPanel quillNotebookRef={quillNotebookRef} />
       </div>
       <div
         className={`col-md-${ui.mdNotebooksPanel} px-0 mx-0 box `}
@@ -70,7 +71,7 @@ const Desk = () => {
           display: ui.mdNotebooksPanel > 0 ? 'flex' : 'none'
         }}
       >
-        <Notebooks />
+        <Notebooks quillNotebookRef={quillNotebookRef} />
       </div>
       <div
         className={`col-md-${12 - ui.mdFinderPanel} px-0 mx-0 box `}

@@ -3,18 +3,13 @@ const Schema = mongoose.Schema;
 
 const schema = new Schema({
   type: { type: String, default: '' },
-  textcontent: { type: String, default: '' },
-  divs: [
-    {
-      begin: { type: Number, required: true },
-      end: { type: Number, required: true },
-      div: { type: String, default: '' },
-      fontWeight: { type: String, default: '' },
-      textDecoration: { type: String, default: '' },
-      color: { type: String, default: '' }
-    }
-  ],
+  plainText: { type: String, default: '' }, // no markup, no linebreaks
+  html: { type: String, default: '' }, // also represented in delta.
+  deltas: [{ type: Object }], // do i need them at all?
+  sectionId: { type: Schema.Types.ObjectId, ref: 'Section' },
+  textId: { type: Schema.Types.ObjectId, ref: 'Text' },
   connectedWith: [{ type: Schema.Types.ObjectId }], // ref: 'Note' / 'Annotation' / 'tree' / 'notebook' / 'text' / ...
+  version: { type: String, default: 'v0' },
   created: { type: Date, default: Date.now },
   lastEdited: { type: Date, default: Date.now },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],

@@ -93,12 +93,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   Text.findById(req.params.id)
     .then(text => {
-      console.log(1000);
-      console.log(req.body);
       Object.keys(req.body).forEach(updateKey => {
-        console.log(updateKey);
-        console.log(text[updateKey]);
-        console.log(req.body[updateKey]);
         text[updateKey] = req.body[updateKey];
       });
       console.log(2000);
@@ -108,7 +103,10 @@ router.put('/:id', (req, res) => {
         })
       );
     })
-    .catch(err => res.status(404).json({ success: false, err: err }));
+    .catch(err => {
+      console.log('Error in update text:', err);
+      res.status(404).json({ success: false, err: err });
+    });
 });
 
 /**

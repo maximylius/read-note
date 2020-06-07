@@ -48,6 +48,24 @@ export const filterObjectByKeys = (
     throw console.error('ERROR in filterObjectByKeys: both supplied...');
   }
 };
+export const ObjectRemoveKeys = (object, arrayOfKeysToRemove = []) => {
+  return Object.keys(object).reduce(
+    (result, key) =>
+      arrayOfKeysToRemove.includes(key)
+        ? result
+        : { ...result, [key]: object[key] },
+    {}
+  );
+};
+export const ObjectKeepKeys = (object, arrayOfKeysToKeep = []) => {
+  return Object.keys(object).reduce(
+    (result, key) =>
+      arrayOfKeysToKeep.includes(key)
+        ? { ...result, [key]: object[key] }
+        : result,
+    {}
+  );
+};
 
 export const deepCompare = (x, y) => {
   if (x === y) return true;
