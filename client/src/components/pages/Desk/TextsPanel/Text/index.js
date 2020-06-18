@@ -10,7 +10,7 @@ import { IconContext } from 'react-icons';
 import { BsBoxArrowInLeft, BsX } from 'react-icons/bs';
 import SpeedReader from './SpeedReader/';
 
-function Textpage({ quillNotebookRef }) {
+function Textpage({ quillNotebookRefs }) {
   const dispatch = useDispatch();
   const quillTextRef = React.useRef(null);
   const [boundingRect, setBoundingRect] = useState({
@@ -22,7 +22,7 @@ function Textpage({ quillNotebookRef }) {
   const [displayOverlayButtons, setDisplayOverlayButtons] = useState(false);
   const {
     ui,
-    textsPanel: { speedReader, speedReaderIsOpen }
+    textsPanel: { speedReader, activeTextPanel }
   } = useSelector(state => state);
   const mouseMoveHandler = React.useCallback(
     e => {
@@ -49,7 +49,8 @@ function Textpage({ quillNotebookRef }) {
 
   const onMouseLeaveHandler = () => setDisplayOverlayButtons(false);
   const toggleAnnotationsPanel = () => dispatch(expandAnnotationsPanel());
-  const closeSpeedReaderClickHandler = () => dispatch(closeSpeedReader());
+  const closeSpeedReaderClickHandler = () =>
+    dispatch(closeSpeedReader(activeTextPanel));
   React.useEffect(() => {
     const parentBounds = document
       .getElementById('textContentFlexGrow')
@@ -80,41 +81,54 @@ function Textpage({ quillNotebookRef }) {
             style={{
               zIndex: 10,
               right: '1rem',
-              position: 'absolute',
-              display: displayOverlayButtons ? 'block' : 'none'
+              position: 'absolute'
             }}
           >
             <button
               className='btn btn-lg btn-light mt-2'
               onClick={closeSpeedReaderClickHandler}
               style={{
-                display: speedReader.isOpen ? 'block' : 'none'
+                display: speedReader.isOpenFor.includes(activeTextPanel)
+                  ? 'block'
+                  : 'none'
               }}
             >
               <IconContext.Provider value={{ size: '1.5rem' }}>
                 <BsX />
               </IconContext.Provider>
             </button>
-
-            <button
-              className='btn btn-lg btn-light mt-2'
-              onClick={toggleAnnotationsPanel}
+            <div
               style={{
-                display: ui.mdAnnotationsPanel > 0 ? 'none' : 'block'
+                display: displayOverlayButtons ? 'block' : 'none'
               }}
             >
-              <IconContext.Provider value={{ size: '1.5rem' }}>
-                <BsBoxArrowInLeft />
-              </IconContext.Provider>
-            </button>
+              <button
+                className='btn btn-lg btn-light mt-2'
+                onClick={toggleAnnotationsPanel}
+                style={{
+                  display: ui.mdAnnotationsPanel > 0 ? 'none' : 'block'
+                }}
+              >
+                <IconContext.Provider value={{ size: '1.5rem' }}>
+                  <BsBoxArrowInLeft />
+                </IconContext.Provider>
+              </button>
+            </div>
           </div>
+          {speedReader.isOpenFor.includes(activeTextPanel) && (
+            <SpeedReader key={activeTextPanel} />
+          )}
 
-          {speedReader.isOpen && <SpeedReader />}
-
-          <div style={{ display: speedReader.isOpen ? 'none' : 'block' }}>
+          <div
+            style={{
+              display: speedReader.isOpenFor.includes(activeTextPanel)
+                ? 'none'
+                : 'block'
+            }}
+          >
             <TextMain
               quillTextRef={quillTextRef}
-              quillNotebookRef={quillNotebookRef}
+              quillNotebookRefs={quillNotebookRefs}
             />
           </div>
         </div>
@@ -126,7 +140,7 @@ function Textpage({ quillNotebookRef }) {
       >
         <Sidepanel
           quillTextRef={quillTextRef}
-          quillNotebookRef={quillNotebookRef}
+          quillNotebookRefs={quillNotebookRefs}
         />
       </div>
     </div>

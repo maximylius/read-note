@@ -10,7 +10,7 @@ import {
 } from '../../../../store/actions';
 import SliderButton from '../../../Metapanel/SliderButton';
 
-function TextsPanel({ quillNotebookRef }) {
+function TextsPanel({ quillNotebookRefs }) {
   const dispatch = useDispatch();
   const {
     ui,
@@ -40,10 +40,13 @@ function TextsPanel({ quillNotebookRef }) {
 
       <div className='col px-0 mx-0 box'>
         <Nav />
-        {activeTextPanel === 'addTextPanel' ? (
-          <AddText />
+        {!activeTextPanel || activeTextPanel === 'addTextPanel' ? (
+          <AddText key={activeTextPanel} />
         ) : (
-          <Textpage quillNotebookRef={quillNotebookRef} />
+          <Textpage
+            key={activeTextPanel}
+            quillNotebookRefs={quillNotebookRefs}
+          />
         )}
       </div>
 

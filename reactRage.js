@@ -1,9 +1,5 @@
 // IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 
-// CLEANER CODE ---------------
-//6     reduce code repetition in actions
-//6     make login session more stable
-
 // MORE EFFICIENT CODE -------------------------
 //6     make mouse/click Handlers non-blocking
 //6     check whether multiple layers of mouse move / click
@@ -11,10 +7,17 @@
 //
 
 // REMOVE BUGS ----------------------------------
+//6     make login session more stable
+//4 unexpected beahivour when updating multiple instance of an annotation in same notebook: everything in the middle gets deleted. Possible reason: same annotation versions through coopy paste. New update which check whether there already is instance of this annotation.
+//4 enable scrolling of sections.
 //4 fix url regexp
-//
+//6 handle error: if text does not exist: do not open, remove from url, log message.
+
+// CLEANER CODE ---------------
+//6     reduce code repetition in actions
 
 //4 pages  --------------------------------------
+//4    REMOVE second stage upload page.
 //4    landing page:
 //4         sign in only in navbar (those who once have looged in already know where to go).
 //4         welcome text diashow: speed read text, comfortable reading enviroment, manage texts notebooks & co.
@@ -122,6 +125,9 @@
 //1     slow reader
 //1     flow reader
 //1     faultier als logo
+//1     lazy spider
+//1     spider reader
+//1     Weberknecht
 //1
 //1
 
@@ -193,6 +199,18 @@
 
 // WEB SCRAPING LIBRARIES -----------------------------
 //      ...
+
+// mind map libraries
+// GOJS is not free.
+// react-flow
+//      MIT license
+//      looks okay.
+//      new: created_at 07-2019
+
+// react-flow-chart
+//       MIT license
+//       looks okay - but more like a tool for creating instead of using mind maps
+//      created_at 11-2018
 
 // RICH TEXT EDITORS (ranked by github stars)
 // Quill

@@ -7,7 +7,7 @@ import {
   // updateText
 } from '../../../../store/actions';
 import NavTab from '../../../Metapanel/NavTab';
-import { BsBook, BsPlus } from 'react-icons/bs';
+import { BsPlus } from 'react-icons/bs';
 
 function Nav() {
   const dispatch = useDispatch();
@@ -31,14 +31,12 @@ function Nav() {
               id={id}
               isActive={id === activeTextPanel}
               currentTitle={
-                id === 'addTextPanel' ? (
-                  <>
-                    <BsPlus /> add text
-                  </>
-                ) : (
-                  texts.byId[id].title
-                )
+                id === 'addTextPanel' ? '+ add text' : texts.byId[id].title
               }
+              maxTitleLength={Math.min(
+                50,
+                Math.round(120 / openTextPanels.length)
+              )}
               openAction={() =>
                 dispatch(
                   switchToOpenTextPanel({ textPanelId: id, history: history })

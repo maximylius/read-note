@@ -138,18 +138,8 @@ export default (state = initialState, action) => {
     case types.OPEN_NOTEBOOK:
     case types.ADD_NOTEBOOK:
     case types.UPDATE_NOTEBOOK:
-    case types.OPEN_TEXT:
-    case types.ADD_TEXT:
-    case types.ADD_AND_OPEN_TEXT:
     case types.UPDATE_TEXT:
-    case types.SWITCH_TO_OPEN_TEXTPANEL:
     case types.OPEN_ADDTEXTPANEL:
-    case types.ADD_SECTION:
-    case types.UPDATE_SECTION:
-    case types.DELETE_SECTION:
-    case types.ADD_ANNOTATION:
-    case types.SET_ANNOTATION_EDIT_STATE:
-    case types.DELETE_ANNOTATION:
     case types.UPLOADED_TEXT:
       if (state.keepFinderOpen) return state;
     // else collapse
@@ -164,14 +154,26 @@ export default (state = initialState, action) => {
         )
       };
     case types.EXPAND_TEXTS_PANEL:
-    case types.OPEN_TEXT:
-    case types.ADD_AND_OPEN_TEXT:
     case types.OPEN_ADDTEXTPANEL:
     case types.SWITCH_TO_OPEN_TEXTPANEL:
       return {
         ...state,
         ...mdResolver(
           state.mdFinderPanel > 0,
+          true,
+          state.mdAnnotationsPanel > 0,
+          state.mdNotebooksPanel > 0
+        )
+      };
+    // OPEN TEXT AND COLLAPSE FINDER
+    case types.OPEN_TEXT:
+    case types.ADD_AND_OPEN_TEXT:
+    case types.ADD_TEXT:
+    case types.SWITCH_TO_OPEN_TEXTPANEL:
+      return {
+        ...state,
+        ...mdResolver(
+          state.keepFinderOpen,
           true,
           state.mdAnnotationsPanel > 0,
           state.mdNotebooksPanel > 0
@@ -204,12 +206,27 @@ export default (state = initialState, action) => {
         };
       }
     case types.EXPAND_ANNOTATIONS_PANEL:
-    case types.ADD_SECTION:
     case types.SET_COMMITTED_SECTIONS:
       return {
         ...state,
         ...mdResolver(
           state.mdFinderPanel > 0,
+          state.mdTextsPanel > 0,
+          true,
+          state.mdNotebooksPanel > 0
+        ),
+        mdAnnotationsPanelLast: 1
+      };
+    // EXPAND ANNOTATIONS PANEL AND COLLAPSE FINDER
+    case types.ADD_SECTION:
+    case types.UPDATE_SECTION:
+    case types.DELETE_SECTION:
+    case types.ADD_ANNOTATION:
+    case types.DELETE_ANNOTATION:
+      return {
+        ...state,
+        ...mdResolver(
+          state.keepFinderOpen,
           state.mdTextsPanel > 0,
           true,
           state.mdNotebooksPanel > 0
@@ -265,7 +282,13 @@ export default (state = initialState, action) => {
           mdNotebooksPanelLast: 0
         };
       }
-    case types.OPEN_SPEED_READER:
+    // case types.OPEN_SPEED_READER:
+    //   return {
+    //     ...state,
+    //     ...mdResolver(false, true, false, false),
+    //     mdAnnotationsPanelLast: state.mdAnnotationsPanel,
+    //     mdNotebooksPanelLast: state.mdNotebooksPanel
+    //   };
     case types.PLAY_SPEED_READER:
       return {
         ...state,
@@ -273,7 +296,16 @@ export default (state = initialState, action) => {
         mdAnnotationsPanelLast: state.mdAnnotationsPanel,
         mdNotebooksPanelLast: state.mdNotebooksPanel
       };
-    // case types.PAUSE_SPEED_READER:
+    case types.PAUSE_SPEED_READER:
+      return {
+        ...state,
+        ...mdResolver(
+          false,
+          true,
+          state.mdAnnotationsPanelLast,
+          state.mdNotebooksPanelLast
+        )
+      };
     case types.CLOSE_SPEED_READER:
       return {
         ...state,

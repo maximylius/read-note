@@ -158,8 +158,9 @@ export const regExpHistory = (
       console.log(currentPath);
       nextPath = currentPath
         .replace(new RegExp(`${id}-[01]`), '')
-        .replace(/=\+/, '=') //clean seperators
-        .replace(/\+\+/, '+') //clean seperators
+        .replace(/=\+/g, '=') //clean seperators
+        .replace(/\+\+/g, '+') //clean seperators
+        .replace(/\+$/g, '') //clean seperators
         .replace(/&texts=$/, '') // replace if nothing left
         .replace(/&texts=&notebooks=/, '&notebooks='); // replace if no texts left
       console.log(nextPath);
@@ -184,12 +185,483 @@ export const regExpHistory = (
       console.log(currentPath);
       nextPath = currentPath
         .replace(new RegExp(`${id}-[01]`), '')
-        .replace(/=\+/, '=') //clean seperators
-        .replace(/\+\+/, '+') //clean seperators
+        .replace(/=\+/g, '=') //clean seperators
+        .replace(/\+\+/g, '+') //clean seperators
+        .replace(/\+$/g, '') //clean seperators
         .replace(/&notebooks=$/, ''); // remove if nothing is left
     }
     console.log(nextPath);
   }
   if (['open', 'close'].includes(action) && ['text', 'notebook'].includes(type))
     return nextPath;
+};
+
+export const committChangesToAnnotation = (
+  annotation,
+  quillAnnotationRef,
+  quillNotebookRefs,
+  notebooks,
+  syncWith,
+  dispatch,
+  updateAnnotation,
+  deleteAnnotation,
+  forceUpdate
+) => {
+  console.log(quillAnnotationRef);
+  const annotationId = annotation._id;
+  const annotationInnerHTML = quillAnnotationRef.current.editor.root.innerHTML;
+  const annotationDeltas = quillAnnotationRef.current.editor.getContents();
+  console.log('annotationDeltas', annotationDeltas);
+  const annotationPlainText = quillAnnotationRef.current.editor.getText();
+
+  if (
+    !annotationInnerHTML ||
+    annotationInnerHTML === '<p><br></p>' ||
+    annotationDeltas.length === 0
+  ) {
+    // dispatch(deleteAnnotation(annotationId)); // 2do? // shall also delete from notebook?
+    return;
+  }
+
+  console.log(forceUpdate);
+  if (!forceUpdate && annotationInnerHTML === annotation.html) {
+    console.log('no change in annotation');
+    return;
+  }
+
+  const notebookUpdates = [];
+
+  syncWith.forEach(notebookId => {
+    let indexInNotebookAnnotations = null;
+    console.log(quillNotebookRefs);
+    const currentNotebookDeltas = quillNotebookRefs.current[
+      notebookId
+    ].editor.getContents();
+
+    const notebook = notebooks.byId[notebookId];
+
+    console.log('adding note to', notebook.title);
+
+    let notebookAnnotations = [],
+      retainIndex = 0,
+      annotationVersions = {
+        [annotationId]: {
+          ['v'.concat(
+            extractNumber(annotation.version, 0) + 1
+          )]: annotationPlainText
+        }
+      };
+
+    let deltaIndexOverview = [],
+      lastWasAnnotationDelta = false;
+    // 2do:  problemm within that loop: if there are multiple instance of an annotation with same annotation version-x (due to copy paste or something else) they will be understand as one large instance (swallowing everything in between).
+    // how to check whether they do belong to same instance or whether they are seperate?
+    // if dividing ops only insert whitespaces than its okay
+    // if anything else is inserted then split.
+    // 2do severe problems when multiple instances are in place. solution needed.
+    // updating a ref makes it disappear -why?
+    // when no text follow then it seem to start bugging
+    currentNotebookDeltas.ops.forEach((op, deltaIndex) => {
+      if (
+        lastWasAnnotationDelta &&
+        typeof op.insert === 'string' &&
+        op.insert.replace(/\s+/g, '').length === 0
+      ) {
+        let currentGroup = notebookAnnotations.pop();
+        currentGroup.end = deltaIndex;
+        let deltaLength = op.insert.length || 1;
+        currentGroup.length += deltaLength;
+        deltaIndexOverview.push(retainIndex);
+        notebookAnnotations.push(currentGroup);
+        retainIndex += deltaLength;
+        lastWasAnnotationDelta = false;
+        return;
+      }
+      if (
+        !op.attributes ||
+        !op.attributes.annotation ||
+        op.attributes.annotation.annotationId !== annotationId ||
+        !op.attributes.annotation.version
+      ) {
+        let deltaLength = op.insert.length || 1;
+        deltaIndexOverview.push(retainIndex);
+        retainIndex += deltaLength;
+        lastWasAnnotationDelta = false;
+        if (
+          op.attributes &&
+          op.attributes.annotation &&
+          op.attributes.annotation.annotationId &&
+          op.attributes.annotation.version &&
+          notebook.annotationVersions[op.attributes.annotation.annotationId] &&
+          notebook.annotationVersions[op.attributes.annotation.annotationId][
+            op.attributes.annotation.version.split('-')[0]
+          ]
+        ) {
+          annotationVersions[op.attributes.annotation.annotationId] = {
+            ...annotationVersions[op.attributes.annotation.annotationId],
+            [op.attributes.annotation.version.split('-')[0]]:
+              notebook.annotationVersions[
+                op.attributes.annotation.annotationId
+              ][op.attributes.annotation.version.split('-')[0]]
+          };
+        }
+        return;
+      }
+      let currentGroup =
+        notebookAnnotations.length > 0 &&
+        notebookAnnotations[notebookAnnotations.length - 1].version ===
+          op.attributes.annotation.version
+          ? notebookAnnotations.pop()
+          : {
+              begin: deltaIndex,
+              version: op.attributes.annotation.version,
+              retainIndex: retainIndex,
+              length: 0,
+              startOffsetIndex: 0,
+              endOffsetIndex: 0
+            };
+
+      currentGroup.end = deltaIndex;
+      let deltaLength = op.insert.length || 1;
+      currentGroup.length += deltaLength;
+      deltaIndexOverview.push(retainIndex);
+      notebookAnnotations.push(currentGroup);
+      retainIndex += deltaLength;
+      lastWasAnnotationDelta = true;
+    });
+    console.log('notebookAnnotations', notebookAnnotations);
+
+    notebookAnnotations.forEach((notebookAnnotation, index) => {
+      notebookAnnotations[index].plainText = currentNotebookDeltas.ops
+        .slice(notebookAnnotation.begin, notebookAnnotation.end + 1)
+        .map(op => op.insert)
+        .join('');
+      let version = notebookAnnotation.version.split('-')[0],
+        currentContainsSaved,
+        savedContainsCurrent,
+        savedString = notebook.annotationVersions[annotationId][version],
+        escapedSavedString;
+      if (!savedString) {
+        notebookAnnotations[index].update = false;
+      } else {
+        escapedSavedString = savedString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+        console.log('savedString', savedString);
+        savedContainsCurrent = !!savedString
+          .replace(/\s+/g, '')
+          .match(
+            notebookAnnotation.plainText
+              .replace(/\s+/g, '')
+              .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+          );
+
+        currentContainsSaved = !!notebookAnnotation.plainText
+          .replace(/\s+/g, '')
+          .match(escapedSavedString.replace(/\s+/g, ''));
+
+        notebookAnnotations[index].update =
+          currentContainsSaved || savedContainsCurrent;
+        console.log(
+          'notebookAnnotations[index].update',
+          currentContainsSaved,
+          savedContainsCurrent
+        );
+      }
+      if (notebookAnnotations[index].update) {
+        if (currentContainsSaved) {
+          // Handle start offsset
+          console.log(
+            'notebookAnnotation.plainText',
+            notebookAnnotation.plainText
+          );
+          console.log('escapedSavedString', escapedSavedString);
+          let whiteSpaceSearchString = savedString.trimEnd(),
+            startOffsetMatch,
+            endOffsetMatch;
+          while (!startOffsetMatch) {
+            startOffsetMatch = notebookAnnotation.plainText.match(
+              whiteSpaceSearchString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+            );
+            // improve (' ') to /\s+/
+            if (whiteSpaceSearchString.lastIndexOf(' ') === -1) break;
+            whiteSpaceSearchString = whiteSpaceSearchString.slice(
+              0,
+              whiteSpaceSearchString.lastIndexOf(' ')
+            );
+          }
+          // endOffset
+          whiteSpaceSearchString = savedString.trimEnd();
+          let endTrimCount = savedString.length - whiteSpaceSearchString.length;
+          console.log('whiteSpaceSearchString', whiteSpaceSearchString);
+          console.log(
+            'notebookAnnotation.plainText',
+            notebookAnnotation.plainText
+          );
+
+          while (!endOffsetMatch) {
+            endOffsetMatch = notebookAnnotation.plainText.match(
+              whiteSpaceSearchString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+            );
+            if (endOffsetMatch) break;
+            if (whiteSpaceSearchString.indexOf(' ') === -1) break;
+            whiteSpaceSearchString = whiteSpaceSearchString.slice(
+              whiteSpaceSearchString.indexOf(' ') + 1
+            );
+          }
+
+          console.log('startOffsetMatch', startOffsetMatch);
+          console.log('endOffsetMatch', endOffsetMatch);
+          let startOffsetIndex = startOffsetMatch.index;
+          let endOffsetIndex = //check this //trim end ?
+            notebookAnnotation.plainText.trimEnd().length -
+            whiteSpaceSearchString.length -
+            endOffsetMatch.index -
+            endTrimCount +
+            1;
+          // + endTrimCount;
+
+          console.log(startOffsetIndex, '- + -', endOffsetIndex);
+          notebookAnnotations[index].startOffsetIndex = startOffsetIndex;
+          notebookAnnotations[index].endOffsetIndex = endOffsetIndex;
+        }
+        notebookAnnotations[index].deleteNumber =
+          notebookAnnotations[index].plainText.length; //what if string is longer? //will be appended.
+      } else {
+        if (
+          notebook.annotationVersions[annotationId][
+            notebookAnnotation.version.split('-')[0]
+          ]
+        ) {
+          annotationVersions[annotationId] = {
+            ...annotationVersions[annotationId],
+            [notebookAnnotation.version.split('-')[0]]:
+              notebook.annotationVersions[annotationId][
+                notebookAnnotation.version.split('-')[0]
+              ]
+          };
+        }
+      }
+    });
+
+    let notebookAnnotationsToUpdate = notebookAnnotations.filter(
+      el => el.update
+    );
+
+    const length = quillNotebookRefs.current[notebookId].editor.getLength();
+    console.log('length', length);
+    let contentUpdate = { ops: null };
+    if (notebookAnnotationsToUpdate.length > 0) {
+      notebookAnnotationsToUpdate.sort((a, b) => a.retainIndex - b.retainIndex);
+      // if first: retainNumber: retainIndex
+      // if xth retainNumber: retainIndex-lastRetainIndex-lastDeleteNumber
+      let notebookAnnotationOps = notebookAnnotationsToUpdate.map(
+        (notebookAnnotation, index) => ({
+          ...notebookAnnotation,
+          retainNumber:
+            index === 0
+              ? notebookAnnotation.retainIndex
+              : notebookAnnotation.retainIndex -
+                notebookAnnotationsToUpdate[index - 1].retainIndex -
+                notebookAnnotationsToUpdate[index - 1].deleteNumber
+        })
+      );
+      console.log('notebookAnnotationOps', notebookAnnotationOps);
+
+      contentUpdate.ops = notebookAnnotationOps.flatMap(
+        (notebookAnnotation, index) => {
+          console.log('notebookAnnotation', notebookAnnotation);
+          let preOps = [],
+            postOps = [];
+          if (notebookAnnotation.startOffsetIndex > 0) {
+            let firstDeltaIndex = deltaIndexOverview.findIndex(
+              deltaIndex => deltaIndex === notebookAnnotation.retainIndex
+            );
+            let lastDeltaIndex =
+              deltaIndexOverview.findIndex(
+                deltaIndex =>
+                  deltaIndex >
+                  notebookAnnotation.retainIndex +
+                    notebookAnnotation.startOffsetIndex
+              ) - 1;
+            lastDeltaIndex =
+              lastDeltaIndex === -1
+                ? currentNotebookDeltas.ops.length - 1
+                : lastDeltaIndex;
+            console.log(firstDeltaIndex, lastDeltaIndex + 1);
+            console.log(
+              currentNotebookDeltas.ops.slice(
+                firstDeltaIndex,
+                lastDeltaIndex + 1
+              )
+            );
+
+            let preIndex = 0;
+            preOps = currentNotebookDeltas.ops
+              .slice(firstDeltaIndex, lastDeltaIndex + 1)
+              .map((op, index) => {
+                preIndex =
+                  index === lastDeltaIndex - firstDeltaIndex
+                    ? preIndex
+                    : preIndex + (op.insert.length || 1);
+                return index === lastDeltaIndex - firstDeltaIndex
+                  ? {
+                      ...op,
+                      insert:
+                        typeof op.insert === 'string'
+                          ? op.insert.slice(
+                              0,
+                              notebookAnnotation.startOffsetIndex - preIndex
+                              // - the length of the previous deltas
+                            )
+                          : op.insert
+                    }
+                  : op;
+              });
+          }
+          if (notebookAnnotation.endOffsetIndex > 0) {
+            let firstDeltaIndex =
+              deltaIndexOverview.findIndex(
+                deltaIndex =>
+                  deltaIndex >
+                  notebookAnnotation.retainIndex +
+                    notebookAnnotation.length -
+                    notebookAnnotation.endOffsetIndex
+              ) - 1;
+            let lastDeltaIndex = deltaIndexOverview.findIndex(
+              deltaIndex =>
+                deltaIndex >
+                notebookAnnotation.retainIndex + notebookAnnotation.length
+            );
+            lastDeltaIndex =
+              lastDeltaIndex === -1
+                ? currentNotebookDeltas.ops.length - 1
+                : lastDeltaIndex;
+            console.log(firstDeltaIndex, lastDeltaIndex + 1);
+            console.log(
+              currentNotebookDeltas.ops
+                .slice(firstDeltaIndex, lastDeltaIndex + 1)
+                .filter(
+                  op =>
+                    op.attributes &&
+                    op.attributes.annotation &&
+                    op.attributes.annotation.annotationId === annotationId &&
+                    op.attributes.annotation.version ===
+                      notebookAnnotation.version
+                )
+            );
+
+            postOps = currentNotebookDeltas.ops
+              .slice(firstDeltaIndex, lastDeltaIndex + 1)
+              .filter(
+                op =>
+                  op.attributes &&
+                  op.attributes.annotation &&
+                  op.attributes.annotation.annotationId === annotationId &&
+                  op.attributes.annotation.version ===
+                    notebookAnnotation.version
+              )
+              .map((op, index) =>
+                index === 0
+                  ? {
+                      ...op,
+                      insert:
+                        typeof op.insert === 'string'
+                          ? op.insert
+                              .slice(
+                                op.insert.length -
+                                  notebookAnnotation.endOffsetIndex
+                              )
+                              .trimStart()
+                          : op.insert
+                    }
+                  : index === lastDeltaIndex - firstDeltaIndex
+                  ? {
+                      ...op,
+                      insert:
+                        typeof op.insert === 'string'
+                          ? op.insert
+                              .slice(
+                                op.insert.length -
+                                  notebookAnnotation.endOffsetIndex
+                              )
+                              .trimEnd() + '\n'
+                          : op.insert
+                    }
+                  : op
+              );
+          }
+          console.log('preOps', preOps);
+          console.log('postOps', postOps);
+          return [
+            ...(notebookAnnotation.retainNumber > 0
+              ? [{ retain: notebookAnnotation.retainNumber }]
+              : []),
+            ...(notebookAnnotation.deleteNumber > 0
+              ? [{ delete: notebookAnnotation.deleteNumber }]
+              : []),
+            ...[
+              ...preOps,
+              ...annotationDeltas.ops.map((op, index) =>
+                index === annotationDeltas.ops.length - 1
+                  ? { ...op, insert: op.insert.trimEnd() }
+                  : op
+              ),
+              ...postOps
+            ].map(op => {
+              if (!op.attributes) op.attributes = {};
+              op.attributes.annotation = {
+                annotationId: annotationId,
+                sectionId: annotation.sectionId,
+                textId: annotation.textId,
+                version: `v${
+                  extractNumber(annotation.version, 0) + 1
+                }-${index}`,
+                backgroundColor: `rgba(200,250,242,0.3)`,
+                borderColor: `rgb(200,250,242)`
+              };
+              return op;
+            })
+          ];
+        }
+      );
+    } else {
+      contentUpdate.ops = [
+        ...(length > 0 ? [{ retain: length }] : []),
+        { insert: '\n' },
+        ...annotationDeltas.ops.map(op => {
+          if (!op.attributes) op.attributes = {};
+          op.attributes.annotation = {
+            annotationId: annotationId,
+            sectionId: annotation.sectionId,
+            textId: annotation.textId,
+            version: `v${extractNumber(annotation.version, 0) + 1}-0`,
+            backgroundColor: `rgba(200,250,242,0.3)`,
+            borderColor: `rgb(200,250,242)`
+          };
+          return op;
+        }),
+        { insert: '\n' }
+      ];
+    }
+    console.log(contentUpdate);
+    // 2do: improve by merging contents instead of forcing update on top.
+    quillNotebookRefs.current[notebookId].editor.updateContents(contentUpdate);
+    console.log(quillNotebookRefs.current[notebookId].editor.getContents());
+    notebookUpdates.push({
+      notebookId: notebookId,
+      // add new notebook.annotationVersions state
+      annotationVersions: annotationVersions
+    }); //2do
+  });
+
+  dispatch(
+    updateAnnotation({
+      annotationId: annotationId,
+      type: 'note',
+      plainText: annotationPlainText,
+      html: annotationInnerHTML,
+      version: `v${extractNumber(annotation.version, 0) + 1}`,
+      syncWith: syncWith,
+      notebookUpdates: notebookUpdates
+    })
+  );
 };

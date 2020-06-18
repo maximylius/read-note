@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import TextareaWithPrepend from '../../../../Metapanel/TextareaWithPrepend';
 import { BsCardText } from 'react-icons/bs';
-import { uploadTextcontent } from '../../../../../store/actions';
+import { uploadTextcontent, loadText } from '../../../../../store/actions';
 import ReactQuill from 'react-quill';
 
 function PasteUpload() {
   const dispatch = useDispatch();
+  const history = useHistory();
+  const { spareIds } = useSelector(state => state);
   const quillUploadRef = React.useRef(null);
   const [textcontent, setTextcontent] = useState('');
   const [deltas, setDeltas] = useState([]);
@@ -26,6 +29,11 @@ function PasteUpload() {
         true
       )
     );
+    setTimeout(() => {
+      dispatch(
+        loadText({ textId: spareIds.texts[0], openText: true, history })
+      );
+    }, 100);
   };
   return (
     <div>

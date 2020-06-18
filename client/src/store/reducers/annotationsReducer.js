@@ -21,22 +21,19 @@ export default (state = initialState, action) => {
           [payload.annotation._id]: payload.annotation
         }
       };
-    // case types.ATTACH_ANNOTATION_TO_NOTEBOOK:
-    //   return {
-    //     ...state,
-    //     byId: {
-    //       ...state.byId,
-    //       [payload.annotationId]: {
-    //         ...state.byId[payload.annotationId],
-    //         annotationVersion: `v${
-    //           extractNumber(
-    //             state.byId[payload.annotationId].annotationVersion,
-    //             0
-    //           ) + 1
-    //         }`
-    //       }
-    //     }
-    //   };
+
+    case types.SYNC_ANNOTATION_WITH:
+      return {
+        ...state,
+        byId: {
+          ...state.byId,
+          [payload.annotationId]: {
+            ...state.byId[payload.annotationId],
+            syncWith: payload.notebookIds
+          }
+        }
+      };
+
     case types.UPDATE_ANNOTATION:
       return {
         ...state,

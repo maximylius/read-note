@@ -73,7 +73,7 @@ function MyContents() {
         <div>
           <p className='lead'>My Annotations</p>
 
-          {user.annotationIds.map(
+          {/* {user.annotationIds.map(
             id =>
               annotations.byId[id] &&
               annotations.byId[id].textcontent && (
@@ -84,7 +84,7 @@ function MyContents() {
                   contentType='annotation'
                 />
               )
-          )}
+          )} */}
           <hr style={{ backgroundColor: 'white' }} />
         </div>
         <div>

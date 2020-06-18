@@ -4,17 +4,14 @@ const initialState = {
   activeTextPanel: 'addTextPanel',
   openTextPanels: ['addTextPanel'],
   addTextState: null,
-  addedId: null,
+  addedId: null, //remove
   expandAll: false,
   committedSectionIds: [],
   tentativeSectionIds: [],
-  editState: [],
-  editAnnotationId: null,
-  validSelection: null,
-  noSelectActive: false,
   holdControl: false,
   progress: 0,
-  speedReader: { isOpen: false, contentToRead: [], remainingContent: [] }
+  displayTextMeta: false,
+  speedReader: { isOpenFor: [], words: [], byId: {} }
 };
 
 export default (state = initialState, action) => {
@@ -68,7 +65,8 @@ export default (state = initialState, action) => {
     case types.UPLOADED_TEXT:
       return {
         ...state,
-        addedId: payload.text._id
+        addedId: payload.text._id,
+        displayTextMeta: true
       };
     case types.CLEAR_ADDTEXTPANEL:
       return {
@@ -93,13 +91,10 @@ export default (state = initialState, action) => {
     case types.ADD_SECTION:
       return {
         ...state,
-        committedSectionIds:
-          payload.add === true
-            ? state.committedSectionIds.includes(payload.id)
-              ? state.committedSectionIds
-              : [...state.committedSectionIds, payload.id]
-            : [payload.id],
-        validSelection: null
+        committedSectionIds: [
+          ...(payload.add === true ? state.committedSectionIds : []),
+          payload.section._id
+        ]
       };
 
     case types.SET_EXPAND_ALL:
@@ -188,14 +183,70 @@ export default (state = initialState, action) => {
               .reduce((pv, cv) => pv + cv, 0)) /
           Object.keys(payload.textById).length
       };
+
+    case types.SET_SPEED_READER:
+      return {
+        ...state,
+        speedReader: {
+          ...state.speedReader,
+          words: payload.words,
+          ...(!state.speedReader.byId[payload.textId] && {
+            byId: {
+              ...state.speedReader.byId,
+              [payload.textId]: {
+                begin: 0,
+                end: payload.words.length - 1,
+                index: 0
+              }
+            }
+          })
+        }
+      };
     case types.OPEN_SPEED_READER:
       return {
         ...state,
         speedReader: {
-          isOpen: true,
-          words: payload.words,
-          begin: payload.begin,
-          end: payload.end
+          ...state.speedReader,
+          isOpenFor: [...state.speedReader.isOpenFor, payload.textId],
+          byId: {
+            ...state.speedReader.byId,
+            [payload.textId]: {
+              begin: payload.begin,
+              end: payload.end,
+              index: payload.index
+            }
+          }
+        }
+      };
+    case types.PLAY_SPEED_READER:
+      return {
+        ...state,
+        speedReader: {
+          ...state.speedReader,
+          byId: {
+            ...state.speedReader.byId,
+            [payload.textId]: {
+              ...state.speedReader.byId[payload.textId],
+              play: true
+            }
+          }
+        }
+      };
+    case types.PAUSE_SPEED_READER:
+      return {
+        ...state,
+        speedReader: {
+          ...state.speedReader,
+          byId: {
+            ...state.speedReader.byId,
+            [payload.textId]: {
+              play: false,
+              begin: payload.begin,
+              end: payload.end,
+              index: payload.index,
+              lastIndex: state.speedReader.byId[payload.textId].index
+            }
+          }
         }
       };
     case types.CLOSE_SPEED_READER:
@@ -203,9 +254,18 @@ export default (state = initialState, action) => {
         ...state,
         speedReader: {
           ...state.speedReader,
-          isOpen: false
+          isOpenFor: state.speedReader.isOpenFor.filter(
+            id => id !== payload.textId
+          )
         }
       };
+
+    case types.SET_DISPLAY_TEXT_META:
+      return {
+        ...state,
+        displayTextMeta: payload.display
+      };
+
     case types.LOGOUT_SUCCESS:
       return initialState;
     default:

@@ -6,12 +6,37 @@ import Notebooks from './NotebooksPanel/';
 import TextsPanel from './TextsPanel';
 import Placeholder from './Placeholder';
 import { loadText, loadNotebooks } from '../../../store/actions';
+import isEqual from 'lodash/isEqual';
 
 const Desk = () => {
   const dispatch = useDispatch();
   const params = useParams();
-  const quillNotebookRef = React.useRef(null);
-  const { ui } = useSelector(state => state);
+  const {
+    ui,
+    notebooksPanel: { openNotebooks, addNotesTo }
+  } = useSelector(state => state);
+  const [refRenderTrigger, setRefRenderTrigger] = React.useState(null);
+  const testRef = React.useRef();
+  const quillNotebookRefs = React.useRef(
+    Object.fromEntries(
+      [new Set([...openNotebooks, addNotesTo])].map(id => ({ [id]: null }))
+    )
+  );
+
+  const createSetNotebookRef = id => ref => {
+    quillNotebookRefs.current[id] = ref;
+  };
+
+  useEffect(() => {
+    console.log(
+      '=======',
+      isEqual(quillNotebookRefs, refRenderTrigger),
+      quillNotebookRefs
+    );
+    setRefRenderTrigger(quillNotebookRefs);
+    return () => {};
+  }, [isEqual(quillNotebookRefs, refRenderTrigger)]);
+
   useEffect(() => {
     if (params.textIds) {
       const textParams = params.textIds.split('+');
@@ -48,7 +73,7 @@ const Desk = () => {
   }, []);
 
   return (
-    <div className='row grow flex-row mx-0 px-0'>
+    <div className='row grow flex-row mx-0 px-0' ref={testRef}>
       <div
         className={`col-md-${ui.mdFinderPanel} px-0 mt-0 pt-0 box`}
         style={{
@@ -63,7 +88,7 @@ const Desk = () => {
           display: ui.mdTextsPanel > 0 ? 'flex' : 'none'
         }}
       >
-        <TextsPanel quillNotebookRef={quillNotebookRef} />
+        <TextsPanel quillNotebookRefs={quillNotebookRefs} />
       </div>
       <div
         className={`col-md-${ui.mdNotebooksPanel} px-0 mx-0 box `}
@@ -71,7 +96,10 @@ const Desk = () => {
           display: ui.mdNotebooksPanel > 0 ? 'flex' : 'none'
         }}
       >
-        <Notebooks quillNotebookRef={quillNotebookRef} />
+        <Notebooks
+          createSetNotebookRef={createSetNotebookRef}
+          quillNotebookRefs={quillNotebookRefs}
+        />
       </div>
       <div
         className={`col-md-${12 - ui.mdFinderPanel} px-0 mx-0 box `}

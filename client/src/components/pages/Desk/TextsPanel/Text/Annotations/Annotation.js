@@ -1,245 +1,124 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import annotationTypes from '../../../../../Metapanel/annotationTypes';
 import ReactQuill from 'react-quill';
-import { BsPencil, BsCheck, BsX } from 'react-icons/bs';
+import { IconContext } from 'react-icons';
+import {
+  BsX,
+  BsArrowRightShort,
+  BsBoxArrowRight,
+  BsPlus,
+  BsArrowRepeat
+} from 'react-icons/bs';
 import {
   deleteAnnotation,
-  setAnnotationEditState,
-  updateAnnotation
+  updateAnnotation,
+  syncAnnotationWith
 } from '../../../../../../store/actions';
-import { extractNumber } from '../../../../../../functions/main';
+import {
+  // extractNumber,
+  // updateNotebookWithAnnotation,
+  committChangesToAnnotation
+} from '../../../../../../functions/main';
 
-const Annotation = ({ annotationId, quillNotebookRef, addAnnotationsTo }) => {
+const Annotation = ({ annotationId, quillNotebookRefs }) => {
   const dispatch = useDispatch();
-  const quillAnnotationRef = React.useRef(null);
+  const quillAnnotationRef = useRef(null);
   const {
     notebooks,
-    notebooksPanel: { activeNotebook },
     annotations,
-    textsPanel: { editAnnotationId }
+    notebooksPanel: { activeNotebook }
   } = useSelector(state => state);
   const annotation = annotations.byId[annotationId];
-
-  const [annotationInnerHTML, setAnnotationInnerHTML] = useState(
-    annotation.html
-  );
-  const [annotationDeltas, setAnnotationDeltas] = useState([]);
-  const [annotationPlainText, setAnnotationPlainText] = useState(
-    annotation.plainText
-  );
-
-  const [annotationType, _setAnnotationType] = useState(annotation.type);
-  const [lastEditAnnotationId, setLastEditAnnotationId] = useState('initial');
-  const [editingThisAnnotation, setEditingThisAnnotation] = useState(
-    editAnnotationId === annotationId
-  );
-  const annotationTypeRef = React.useRef(annotationType);
-  const setAnnotationType = value => {
-    _setAnnotationType(value);
-    annotationTypeRef.current = value;
-  };
+  const quillNotebookRef = React.useRef(null);
+  const [changedEditorCounter, setChangedEditorCounter] = useState(-1);
   const [mouseoverAnnotation, setMouseoverAnnotation] = useState(false);
-  const deleteClickHandler = () => dispatch(deleteAnnotation(annotationId));
 
+  const deleteClickHandler = () => dispatch(deleteAnnotation(annotationId));
+  const toggleSyncWith = e => {
+    if (!annotation.syncWith.includes(activeNotebook)) {
+      dispatch(
+        syncAnnotationWith(annotationId, [
+          ...annotation.syncWith,
+          activeNotebook
+        ])
+      );
+      createCommittChangesToAnnotation({ to: activeNotebook });
+    } else {
+      dispatch(
+        syncAnnotationWith(
+          annotationId,
+          annotation.syncWith.filter(id => id !== activeNotebook)
+        )
+      );
+    }
+  };
   const mouseEnterHandler = () => setMouseoverAnnotation(true);
   const mouseLeaveHandler = () => setMouseoverAnnotation(false);
-  const onNotEditableClickHandler = e => {
-    if (!window.getSelection().isCollapsed) return;
-    e.stopPropagation();
-    dispatch(setAnnotationEditState(annotationId));
-  };
-  const editClickHandler = e => {
-    e.stopPropagation();
-    dispatch(setAnnotationEditState(annotationId));
-  };
-  const checkClickHandler = e => dispatch(setAnnotationEditState(null));
-
-  const quillChangeHandler = useCallback(() => {
+  const onChangeHandler = () => {
     if (!quillAnnotationRef.current) return;
-    setAnnotationInnerHTML(quillAnnotationRef.current.editor.root.innerHTML);
-    setAnnotationDeltas(quillAnnotationRef.current.editor.getContents());
-    setAnnotationPlainText(quillAnnotationRef.current.editor.getText());
-  }, [quillAnnotationRef]);
+    setChangedEditorCounter(prevState => prevState + 1);
+  };
+  const createCommittChangesToAnnotation = forceUpdate => {
+    console.log(quillNotebookRef);
+    console.log(quillNotebookRefs);
+    committChangesToAnnotation(
+      annotation,
+      quillAnnotationRef,
+      quillNotebookRefs,
+      notebooks,
+      [...annotation.syncWith, ...(forceUpdate ? [forceUpdate.to] : [])],
+      dispatch,
+      updateAnnotation,
+      deleteAnnotation,
+      forceUpdate
+    );
+  };
 
-  const onAnnotationTypeChangeHandler = e => setAnnotationType(e.target.value);
-
-  React.useEffect(() => {
-    console.log('editingThisAnnotation?', editingThisAnnotation);
-    console.log(annotationInnerHTML, annotationDeltas);
-
-    if (editingThisAnnotation) {
-      // if start editing
-      if (!quillAnnotationRef.current) return;
-      quillAnnotationRef.current.editor.setSelection(
-        quillAnnotationRef.current.editor.getLength(),
-        0 // 2do maybe improve and set to where click was made.
-      );
-      quillChangeHandler(); // set html, deltas + plainText
-      console.log('setLastEditAnnotationId to', annotationId);
-      setLastEditAnnotationId(annotationId);
-      return;
-    }
-
-    if (lastEditAnnotationId !== annotationId) return;
-    console.log('--------start saving previous edit ---------');
+  // mount notebookRefs
+  useEffect(() => {
     if (
-      !annotationInnerHTML ||
-      annotationInnerHTML === '<p><br></p>' ||
-      annotationDeltas.length === 0
+      quillNotebookRef &&
+      quillNotebookRefs &&
+      quillNotebookRefs.current &&
+      Object.keys(quillNotebookRefs.current)
+        .map(id => !!quillNotebookRefs.current[id])
+        .some(el => !!el)
     ) {
-      dispatch(deleteAnnotation(annotationId));
-      setLastEditAnnotationId(null);
-      return;
+      quillNotebookRef.current =
+        quillNotebookRefs.current[
+          annotation.syncWith.length > 0
+            ? annotation.syncWith[0]
+            : activeNotebook
+        ];
     }
+    return () => {};
+  }, [
+    Object.keys(quillNotebookRefs.current)
+      .map(id => !!quillNotebookRefs.current[id])
+      .some(el => !el)
+  ]);
 
-    console.log('adding');
-    let indexInNotebookAnnotations = null;
-    // if something then add to notebook
-    if (addAnnotationsTo && addAnnotationsTo !== 'none') {
-      console.log('addAnnotationsTo', addAnnotationsTo);
-      const currentNotebookDeltas = quillNotebookRef.current.editor.getContents();
+  // improve commit function: ones it known where to insert, keep on inserting without expensive check.
+  useEffect(() => {
+    if (changedEditorCounter < 0) return;
+    console.log('starting commitChangetimer', changedEditorCounter);
+    const commitChangeTimer = setTimeout(() => {
+      console.log('exec timer');
+      createCommittChangesToAnnotation(null);
+    }, 1500);
 
-      let newAnnotationInstance = true,
-        retainNumber = 0,
-        deleteNumber = 0;
-      const notebook = notebooks.byId[addAnnotationsTo];
-
-      const previousInstanceOfAnnotation = notebook.annotations.filter(
-        annotation => {
-          if (annotation.annotationId !== annotationId) return false;
-          console.log(currentNotebookDeltas.ops);
-          const relevantDeltas = currentNotebookDeltas.ops.filter(op => {
-            if (!op.attributes || !op.attributes.annotation) return false;
-            return op.attributes.annotation.version === annotation.version;
-          });
-          const annotationInstancePlainText = relevantDeltas
-            .map(op => (op.insert ? op.insert : ''))
-            .join('');
-          console.log(relevantDeltas);
-          if (
-            annotationInstancePlainText
-              .replace(/\s+/g, '')
-              .includes(annotation.plainText.replace(/\s+/g, ''))
-          ) {
-            return true;
-          }
-          return false;
-        }
-      )[0];
-
-      if (previousInstanceOfAnnotation) {
-        indexInNotebookAnnotations = notebook.annotations.findIndex(
-          annotation =>
-            annotation.annotationId === annotationId &&
-            annotation.version === previousInstanceOfAnnotation.version
-        );
-        const firstAnnotationDeltaIndex = currentNotebookDeltas.ops.findIndex(
-          op => {
-            if (!op.attributes || !op.attributes.annotation) return false;
-            return (
-              op.attributes.annotation.annotationId === annotationId &&
-              op.attributes.annotation.version ===
-                previousInstanceOfAnnotation.version
-            );
-          }
-        );
-        const leadingDeltas = currentNotebookDeltas.ops.slice(
-          0,
-          firstAnnotationDeltaIndex
-        );
-        retainNumber = leadingDeltas
-          .map(op => (op.insert ? op.insert.length : 0))
-          .reduce((c, v) => c + v, 0);
-        deleteNumber = previousInstanceOfAnnotation.plainText.length;
-        newAnnotationInstance = false;
-      }
-
-      const length = quillNotebookRef.current.editor.getLength();
-      const updatedContents = {
-        ops: [
-          ...(newAnnotationInstance
-            ? [...(length > 0 ? [{ retain: length }] : []), { insert: '\n' }]
-            : [
-                ...(retainNumber > 0 ? [{ retain: retainNumber }] : []),
-                ...(deleteNumber > 0 ? [{ delete: deleteNumber }] : [])
-              ]),
-          ...annotationDeltas.ops.map(op => {
-            if (!op.attributes) op.attributes = {};
-            op.attributes.annotation = {
-              annotationId: annotationId,
-              sectionId: annotation.sectionId,
-              textId: annotation.textId,
-              version: `v${extractNumber(annotation.version, 0) + 1}`,
-              backgroundColor: `rgba(200,250,242,0.3)`,
-              borderColor: `rgb(200,250,242)`
-            };
-            return op;
-          }),
-          ...(newAnnotationInstance ? [{ insert: '\n' }] : [])
-        ]
-      };
-      quillNotebookRef.current.editor.updateContents(updatedContents);
-    }
-
-    dispatch(
-      updateAnnotation({
-        annotationId: annotationId,
-        type: annotationTypeRef.current,
-        plainText: annotationPlainText,
-        html: annotationInnerHTML,
-        version: `v${extractNumber(annotation.version, 0) + 1}`,
-        notebookId: addAnnotationsTo,
-        indexInNotebookAnnotations: indexInNotebookAnnotations
-      })
-    );
-    console.log('....adding');
-    console.log('setLastEditAnnotationId to', null);
-    setLastEditAnnotationId(null);
-  }, [editingThisAnnotation]);
+    return () => {
+      clearTimeout(commitChangeTimer);
+    };
+  }, [changedEditorCounter]);
 
   React.useEffect(() => {
-    console.log(
-      '+++++++++++++++',
-      editAnnotationId,
-      'from ',
-      annotationId,
-      editAnnotationId === annotationId
-    );
-    setEditingThisAnnotation(editAnnotationId === annotationId);
-    return () => {};
-  }, [editAnnotationId]);
-
-  if (editAnnotationId !== annotationId)
-    return (
-      <div
-        className='d-flex align-items-center SidepanelAnnotation'
-        onMouseEnter={mouseEnterHandler}
-        onMouseLeave={mouseLeaveHandler}
-        onClick={onNotEditableClickHandler}
-      >
-        <div className='flex-shrink-1'>
-          {annotationTypes[annotationType].icon}
-        </div>
-        <div className='flex-grow-1'>
-          <p
-            className='SidepanelAnnotationWrapper'
-            dangerouslySetInnerHTML={{ __html: annotationInnerHTML }}
-          ></p>
-        </div>
-        <div
-          className='flex-shrink-1'
-          style={{ visibility: mouseoverAnnotation ? 'visible' : 'hidden' }}
-        >
-          <div onClick={editClickHandler}>
-            <BsPencil />
-          </div>
-          <div onClick={deleteClickHandler}>
-            <BsX />
-          </div>
-        </div>
-      </div>
-    );
+    if (!annotation.plainText) quillAnnotationRef.current.focus();
+    return () => {
+      if (!quillAnnotationRef.current) return;
+      createCommittChangesToAnnotation(null);
+    };
+  }, []);
 
   return (
     <div
@@ -247,36 +126,18 @@ const Annotation = ({ annotationId, quillNotebookRef, addAnnotationsTo }) => {
       onMouseEnter={mouseEnterHandler}
       onMouseLeave={mouseLeaveHandler}
     >
-      <div className='flex-shrink-1'>
-        <div className='row'>{annotationTypes[annotationType].icon}</div>
-        <div className='row'>
-          <select
-            id={`${annotationId}_selectCategory`}
-            style={{ width: '14px', marginLeft: '-14px' }}
-            className='custom-select'
-            value={annotationType}
-            onChange={onAnnotationTypeChangeHandler}
-          >
-            {Object.keys(annotationTypes).map(type => (
-              <option key={type} value={type}>
-                {annotationTypes[type].type}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
       <div className='flex-grow-1 SidepanelAnnotation'>
         <div style={{ display: 'block' }}>
           <ReactQuill
             id={`${annotationId}_quill`}
-            onChange={quillChangeHandler}
             ref={quillAnnotationRef}
+            onChange={onChangeHandler}
             theme='bubble'
-            defaultValue={annotationInnerHTML}
-            placeholder={annotationTypes[annotationType].placeholder}
+            defaultValue={annotation.html}
+            placeholder={'Add a note...'}
             modules={{
               toolbar: [
-                [{ header: [1, 2, 3, false] }],
+                [{ header: [2, 3, 4, 5, false] }],
                 ['bold', 'italic', 'underline'],
                 [{ color: [] }, { background: [] }],
                 [{ list: 'ordered' }, { list: 'bullet' }],
@@ -295,11 +156,39 @@ const Annotation = ({ annotationId, quillNotebookRef, addAnnotationsTo }) => {
         className='flex-shrink-1 ml-n2  align-items-center'
         style={{ zIndex: 10, float: 'right' }}
       >
-        <div onClick={checkClickHandler}>
-          <BsCheck />
-        </div>
-        <div onClick={deleteClickHandler}>
+        <div
+          className='row flex-shrink-1'
+          style={{ visibility: mouseoverAnnotation ? 'visible' : 'hidden' }}
+          onClick={deleteClickHandler}
+        >
           <BsX />
+        </div>
+        <div className='row growContent'>
+          <button
+            style={{ height: '100%' }}
+            className={`btn btn-sm btn-light ${
+              annotation.syncWith.includes(activeNotebook) ? 'active' : ''
+            }`}
+            onClick={toggleSyncWith}
+          >
+            {(annotation.syncWith.length > 0
+              ? annotation.syncWith
+              : ['none']
+            ).map(notebookId => (
+              <div key={notebookId}>
+                <IconContext.Provider
+                  value={{
+                    size: '0.9rem',
+                    color: notebookId === 'none' ? '#aaa' : '#000'
+                  }}
+                >
+                  <div>
+                    <BsArrowRepeat />
+                  </div>
+                </IconContext.Provider>
+              </div>
+            ))}
+          </button>
         </div>
       </div>
     </div>
@@ -307,3 +196,8 @@ const Annotation = ({ annotationId, quillNotebookRef, addAnnotationsTo }) => {
 };
 
 export default Annotation;
+
+// 2do: observed weird behaviour:
+// auto delte notes doesnt work well...
+// focus newly created notes
+// save connection to notebook also

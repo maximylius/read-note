@@ -7,7 +7,6 @@ import {
   updateNotebook
 } from '../../../../store/actions';
 import NavTab from '../../../Metapanel/NavTab';
-import { BsClipboard } from 'react-icons/bs';
 
 function Nav() {
   const dispatch = useDispatch();
@@ -24,7 +23,6 @@ function Nav() {
   return (
     <nav className='navbar sticky-top navbar-expand-sm navbar-dark bg-light ml-0 pl-2 pb-0'>
       <div className='container pl-0'>
-        <BsClipboard />
         <ul className='nav nav-tabs mr-auto ml-1'>
           {notebooksToDisplay.map(id => (
             <NavTab
@@ -35,6 +33,7 @@ function Nav() {
                 dispatch(updateNotebook({ _id: id, title: newTitle }))
               }
               currentTitle={notebooks.byId[id].title}
+              maxTitleLength={20}
               openAction={() =>
                 dispatch(openNotebook({ notebookId: id, history: history }))
               }

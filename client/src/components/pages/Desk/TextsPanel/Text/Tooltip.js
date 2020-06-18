@@ -31,7 +31,7 @@ const Tooltip = ({ quillTextRef, selection }) => {
     //   validSelection.boundingClientRect.bottom * 0.4
     // }px`
   };
-  const onClickHandler = () => {
+  const addSectionClickHandler = () => {
     dispatch(
       addSection({
         categoryId: 'none',
@@ -70,96 +70,24 @@ const Tooltip = ({ quillTextRef, selection }) => {
   const playClickHandler = () => {
     if (!quillTextRef.current) return;
     const quillRange = quillTextRef.current.editor.getSelection();
-    const deltas = quillTextRef.current.editor.getContents();
-    const editorLength = quillTextRef.current.editor.getLength();
-
-    let deltaIndex = 0,
-      cumulativeLength = 0,
-      words = [],
-      previousEndsWithWhitespace = true,
-      concat = false;
-
-    // if (speedReader.words.length !== 0) dispatch & return;
-    while (deltaIndex < deltas.ops.length) {
-      let innerText =
-        typeof deltas.ops[deltaIndex].insert === 'string'
-          ? deltas.ops[deltaIndex].insert
-          : ' ';
-      if (!previousEndsWithWhitespace) {
-        previousEndsWithWhitespace = /^\s+/.test(innerText);
-        concat = previousEndsWithWhitespace;
-      }
-
-      while (innerText) {
-        if (deltaIndex === 0)
-          console.log(innerText, previousEndsWithWhitespace);
-        if (/^\s+/.test(innerText)) {
-          const lengthWithWhite = innerText.length;
-          innerText = innerText.trimStart();
-          cumulativeLength += lengthWithWhite - innerText.length;
-          if (!innerText) {
-            previousEndsWithWhitespace = true;
-            continue;
-          }
-        }
-
-        const sliceIndex = /\s+/i.exec(innerText)
-          ? /\s+/i.exec(innerText).index
-          : innerText.length;
-        const plainText = innerText.slice(0, sliceIndex);
-
-        if (!concat) {
-          words.push({
-            index: cumulativeLength,
-            plainText: plainText,
-            ...(deltas.ops[deltaIndex].attributes && {
-              attributes: deltas.ops[deltaIndex].attributes
-            })
-          });
-        } else {
-          const lastContent = words.pop();
-          words.push({
-            index: lastContent.index,
-            plainText: lastContent.plainText + plainText,
-            ...((deltas.ops[deltaIndex].attributes ||
-              lastContent.attributes) && {
-              attributes: {
-                ...lastContent.attributes,
-                ...deltas.ops[deltaIndex].attributes
-              }
-            })
-          });
-        }
-
-        innerText = innerText.slice(sliceIndex);
-        cumulativeLength += plainText.length;
-        if (concat) concat = false;
-        if (!innerText) previousEndsWithWhitespace = false;
-      }
-
-      deltaIndex += 1;
-    }
-
     const begin =
       quillRange.index > 50
         ? Math.max(
             0,
-            words.findIndex(word => word.index > quillRange.index) - 1
+            speedReader.words.findIndex(word => word.index > quillRange.index) -
+              1
           )
         : 0;
     const end =
       quillRange.length > 50
-        ? words.findIndex(
+        ? speedReader.words.findIndex(
             word => word.index >= quillRange.length + quillRange.index
           )
-        : words.length - 1;
-    console.log(words);
-    dispatch(openSpeedReader(words, begin, end));
-    if (editorLength !== cumulativeLength)
-      throw `Editor length (${editorLength}) is not equal to cumulative length (${cumulativeLength}). Embeded contents possibly will be missing in speedreader.`;
+        : speedReader.words.length - 1;
+    dispatch(openSpeedReader(activeTextPanel, begin, end, begin));
   };
 
-  if (window.getSelection().anchorNode === null) return <></>;
+  if (window.getSelection().isCollapsed) return <></>;
   return (
     <div
       className='ql-bubble'
@@ -181,7 +109,7 @@ const Tooltip = ({ quillTextRef, selection }) => {
         <span className='ql-tooltip-arrow'></span>
         <div className='ql-toolbar'> */}
       <div>
-        <button className='btn btn-secondary' onClick={onClickHandler}>
+        <button className='btn btn-secondary' onClick={addSectionClickHandler}>
           <BsPlus /> section
         </button>
         <button

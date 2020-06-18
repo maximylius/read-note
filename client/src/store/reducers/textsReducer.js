@@ -39,8 +39,7 @@ export default (state = initialState, action) => {
           ...state.byId,
           [payload.textId]: {
             ...state.byId[payload.textId],
-            sectionIds: payload.textSectionIds,
-            formatDeltas: payload.formatDeltas
+            sectionIds: payload.textSectionIds
           }
         }
       };
@@ -52,8 +51,7 @@ export default (state = initialState, action) => {
           ...state.byId,
           [payload.textId]: {
             ...state.byId[payload.textId],
-            sectionIds: sortSectionIds(payload.sections.byId),
-            formatDeltas: payload.formatDeltas
+            sectionIds: payload.textSectionIds
           }
         }
       };
@@ -66,8 +64,7 @@ export default (state = initialState, action) => {
             ...state.byId[payload.textId],
             sectionIds: [...state.byId[payload.textId].sectionIds].filter(
               id => id !== payload.sectionId
-            ),
-            formatDeltas: payload.formatDeltas
+            )
           }
         }
       };
@@ -78,8 +75,7 @@ export default (state = initialState, action) => {
           ...state.byId,
           [payload.textId]: {
             ...state.byId[payload.textId],
-            sectionIds: [],
-            formatDeltas: payload.formatDeltas
+            sectionIds: []
           }
         }
       };

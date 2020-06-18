@@ -6,6 +6,7 @@ import 'react-quill/dist/quill.core.css';
 import 'react-quill/dist/quill.snow.css';
 import 'react-quill/dist/quill.bubble.css';
 import 'bootstrap/dist/css/bootstrap.css';
+import 'quill-mention/dist/quill.mention.css';
 import './App.css';
 import Navbar from './components/Metapanel/Navbar';
 import Alert from './components/Metapanel/Alert';

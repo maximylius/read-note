@@ -4,14 +4,15 @@ import ReactQuill from 'react-quill';
 import Tooltip from './Tooltip';
 import {
   setCommittedSections,
-  setTentativeSections
+  setTentativeSections,
+  setSpeedReader
 } from '../../../../../store/actions';
 import SectionBlot from '../../../../Metapanel/SectionBlot';
 import isEqual from 'lodash/isEqual';
 import { extractNumber, ObjectKeepKeys } from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
-const TextMain = ({ quillTextRef, quillNotebookRef }) => {
+const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
   const dispatch = useDispatch();
   const {
     textsPanel: {
@@ -274,8 +275,83 @@ const TextMain = ({ quillTextRef, quillNotebookRef }) => {
       .getElementById('quillTextPanel')
       .addEventListener('mousemove', mousemoveHandler);
 
+    // parse text for textreader
+    if (!quillTextRef.current) return;
+    const deltas = quillTextRef.current.editor.getContents();
+    const editorLength = quillTextRef.current.editor.getLength();
+
+    let deltaIndex = 0,
+      cumulativeLength = 0,
+      words = [],
+      previousEndsWithWhitespace = true,
+      concat = false;
+
+    // if (speedReader.words.length !== 0) dispatch & return;
+    while (deltaIndex < deltas.ops.length) {
+      let innerText =
+        typeof deltas.ops[deltaIndex].insert === 'string'
+          ? deltas.ops[deltaIndex].insert
+          : ' ';
+      if (!previousEndsWithWhitespace) {
+        previousEndsWithWhitespace = /^\s+/.test(innerText);
+        concat = previousEndsWithWhitespace;
+      }
+
+      while (innerText) {
+        if (/^\s+/.test(innerText)) {
+          const lengthWithWhite = innerText.length;
+          innerText = innerText.trimStart();
+          cumulativeLength += lengthWithWhite - innerText.length;
+          if (!innerText) {
+            previousEndsWithWhitespace = true;
+            continue;
+          }
+        }
+
+        const sliceIndex = /\s+/i.exec(innerText)
+          ? /\s+/i.exec(innerText).index
+          : innerText.length;
+        const plainText = innerText.slice(0, sliceIndex);
+
+        if (!concat) {
+          words.push({
+            index: cumulativeLength,
+            plainText: plainText,
+            ...(deltas.ops[deltaIndex].attributes && {
+              attributes: deltas.ops[deltaIndex].attributes
+            })
+          });
+        } else {
+          const lastContent = words.pop();
+          words.push({
+            index: lastContent.index,
+            plainText: lastContent.plainText + plainText,
+            ...((deltas.ops[deltaIndex].attributes ||
+              lastContent.attributes) && {
+              attributes: {
+                ...lastContent.attributes,
+                ...deltas.ops[deltaIndex].attributes
+              }
+            })
+          });
+        }
+
+        innerText = innerText.slice(sliceIndex);
+        cumulativeLength += plainText.length;
+        if (concat) concat = false;
+        if (!innerText) previousEndsWithWhitespace = false;
+      }
+
+      deltaIndex += 1;
+    }
+    console.log(words);
+    dispatch(setSpeedReader(activeTextPanel, words));
+
+    if (editorLength !== cumulativeLength)
+      throw `Editor length (${editorLength}) is not equal to cumulative length (${cumulativeLength}). Embeded contents possibly will be missing in speedreader.`;
+
     return () => {};
-  }, [quillTextRef]);
+  }, [quillTextRef, activeTextPanel]);
 
   return (
     <div

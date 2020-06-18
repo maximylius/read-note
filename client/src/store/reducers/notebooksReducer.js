@@ -25,33 +25,20 @@ export default (state = initialState, action) => {
         ...state,
         byId: filterObjectByKeys(state.byId, [payload.notebookId], null)
       };
-    case types.ATTACH_ANNOTATION_TO_NOTEBOOK:
+    case types.SET_NOTEBOOK_ANNOTATION_VERSIONS:
       return {
         ...state,
         byId: {
           ...state.byId,
-          [payload.notebookId]: {
-            ...state.byId[payload.notebookId],
-            annotations: payload.indexInNotebookAnnotations
-              ? state.byId[payload.notebookId].annotations.map(
-                  (annotation, index) =>
-                    index === payload.indexInNotebookAnnotations
-                      ? {
-                          ...annotation,
-                          version: payload.version,
-                          plainText: payload.plainText
-                        }
-                      : annotation
-                )
-              : [
-                  ...state.byId[payload.notebookId].annotations,
-                  {
-                    annotationId: payload.annotationId,
-                    version: payload.version,
-                    plainText: payload.plainText
-                  }
-                ]
-          }
+          ...Object.fromEntries(
+            payload.notebookUpdates.map(notebookUpdate => [
+              notebookUpdate.notebookId,
+              {
+                ...state.byId[notebookUpdate.notebookId],
+                annotationVersions: notebookUpdate.annotationVersions
+              }
+            ])
+          )
         }
       };
     case types.LOGOUT_SUCCESS:

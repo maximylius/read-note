@@ -19,7 +19,7 @@ const sectionItemIdPrepend = 'sec_';
 const SectionItem = ({
   sectionId,
   quillTextRef,
-  quillNotebookRef,
+  quillNotebookRefs,
   addAnnotationsTo
 }) => {
   const dispatch = useDispatch();
@@ -84,7 +84,7 @@ const SectionItem = ({
   };
   const newNoteClickhandler = e => {
     e.stopPropagation();
-    console.log('newNoteClick-------------------------');
+    console.log('newNoteClick---------New sectionId-----', sectionId);
     dispatch(
       addAnnotation({
         type: annotationTypes.note.type,
@@ -140,45 +140,47 @@ const SectionItem = ({
           <BsTrash />
         </a>
       </span>
-      <div
-        style={{
-          display: committedToSection || expandAll ? 'block' : 'none'
-        }}
-      >
-        <div className='input-group input-group-sm mb-2'>
-          <div className='input-group-prepend' id={`${sectionId}_secCatSelect`}>
-            <span className='input-group-text'>
-              <BsBookmark />
-            </span>
+      {(committedToSection || expandAll) && (
+        <>
+          <div className='input-group input-group-sm mb-2'>
+            <div
+              className='input-group-prepend'
+              id={`${sectionId}_secCatSelect`}
+            >
+              <span className='input-group-text'>
+                <BsBookmark />
+              </span>
+            </div>
+            <select
+              className='form-control custom-select white-opacity-50'
+              value={selectedCategory}
+              onChange={onCategoryChangeHandler}
+            >
+              {Object.keys(categories.byId).map(id => (
+                <option key={id} value={id}>
+                  {categories.byId[id].title}
+                </option>
+              ))}
+            </select>
           </div>
-          <select
-            className='form-control custom-select white-opacity-50'
-            value={selectedCategory}
-            onChange={onCategoryChangeHandler}
-          >
-            {Object.keys(categories.byId).map(id => (
-              <option key={id} value={id}>
-                {categories.byId[id].title}
-              </option>
-            ))}
-          </select>
-        </div>
 
-        {annotationsToDisplay.map(id => (
-          <Annotations
-            key={id}
-            annotationId={id}
-            addAnnotationsTo={addAnnotationsTo}
-            quillNotebookRef={quillNotebookRef}
-          />
-        ))}
-        <button
-          className='btn btn-light btn-block btn-sm'
-          onClick={newNoteClickhandler}
-        >
-          <BsPlus /> new note
-        </button>
-      </div>
+          {annotationsToDisplay.map(id => (
+            <Annotations
+              key={id}
+              sectionId={sectionId}
+              annotationId={id}
+              addAnnotationsTo={addAnnotationsTo}
+              quillNotebookRefs={quillNotebookRefs}
+            />
+          ))}
+          <button
+            className='btn btn-light btn-block btn-sm'
+            onClick={newNoteClickhandler}
+          >
+            <BsPlus /> new note
+          </button>
+        </>
+      )}
     </li>
   );
 };

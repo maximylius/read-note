@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   BsPlayFill,
@@ -36,12 +36,25 @@ function SpeedReader() {
   const dispatch = useDispatch();
   const {
     ui,
-    textsPanel: { speedReader }
+    textsPanel: { speedReader, activeTextPanel }
   } = useSelector(state => state);
-  const [words, setWords] = useState(speedReader.words);
-  const [index, setIndex] = useState(speedReader.begin);
-  const [minIndex, setMinIndex] = useState(speedReader.begin);
-  const [pause, setPause] = useState(true);
+  const words = speedReader.words;
+  const end = speedReader.byId[activeTextPanel].end;
+  const endRef = useRef(speedReader.byId[activeTextPanel].end);
+  // const [words, setWords] = useState(speedReader.words);
+  const [index, _setIndex] = useState(speedReader.byId[activeTextPanel].index);
+  const indexRef = useRef(speedReader.byId[activeTextPanel].index);
+  const setIndex = to => {
+    _setIndex(to);
+    indexRef.current = to;
+  };
+  const [minIndex, setMinIndex] = useState(
+    speedReader.byId[activeTextPanel].begin
+  );
+  const minIndexRef = useRef(speedReader.byId[activeTextPanel].begin);
+
+  // const [pause, setPause] = useState(true);
+  const pause = !speedReader.byId[activeTextPanel].play;
   const pausedAtRef = React.useRef(null);
   const reachedEndRef = React.useRef(null);
   const [mouseIsDown, _setMouseIsDown] = useState(false);
@@ -84,14 +97,25 @@ function SpeedReader() {
   );
 
   const playClickHandler = () => {
-    dispatch(playSpeedReader());
-    if (reachedEndRef.current === true) reachedEndRef.current = 'exceeded';
+    dispatch(playSpeedReader(activeTextPanel));
+    if (reachedEndRef.current === true) {
+      reachedEndRef.current = 'exceeded';
+      endRef.current = words.length - 1;
+    }
     setMinIndex(Math.min(minIndex, index));
-    setPause(false);
+    minIndexRef.current = Math.min(minIndex, index);
+    // setPause(false);
   };
   const pauseClickHandler = useCallback(() => {
-    setPause(true);
-    dispatch(pauseSpeedReader());
+    // setPause(true);
+    dispatch(
+      pauseSpeedReader(
+        activeTextPanel,
+        minIndexRef.current,
+        endRef.current,
+        indexRef.current
+      )
+    );
   }, []);
 
   const rewindClickHandler = () => {
@@ -166,10 +190,18 @@ function SpeedReader() {
     }
     if (
       index === words.length - 1 ||
-      (index === speedReader.end && reachedEndRef.current !== 'exceeded')
+      (index === end && reachedEndRef.current !== 'exceeded')
     ) {
-      setPause(true);
-      if (index === speedReader.end) {
+      dispatch(
+        pauseSpeedReader(
+          activeTextPanel,
+          minIndexRef.current,
+          endRef.current,
+          indexRef.current
+        )
+      );
+      // setPause(true);
+      if (index === end) {
         reachedEndRef.current = true;
       }
       return;
@@ -181,9 +213,18 @@ function SpeedReader() {
   }, [pause, index]);
 
   React.useEffect(() => {
+    console.log('mounting speedreader:', speedReader.byId[activeTextPanel]);
     document.addEventListener('mouseup', mouseUpHandler);
     return () => {
       document.removeEventListener('mouseup', mouseUpHandler);
+      dispatch(
+        pauseSpeedReader(
+          activeTextPanel,
+          minIndexRef.current,
+          endRef.current,
+          indexRef.current
+        )
+      );
     };
   }, []);
 
@@ -237,7 +278,10 @@ function SpeedReader() {
         <button className='btn btn-light btn-lg' onClick={toggleRythm}>
           Rythm: {rythms[rythm]}
         </button>
-        Words per Minute: Time until finished:
+        <span style={{ display: pause ? 'block' : 'none' }}>
+          <span>Words per Minute:</span>
+          <span>Time until finished:</span>
+        </span>
       </div>
       <div className='pt-3' onMouseDown={progressMouseDownHandler}>
         <div className='row custom-progress'>
@@ -248,7 +292,7 @@ function SpeedReader() {
                 words.length,
                 index,
                 minIndex,
-                speedReader.end,
+                end,
                 reachedEndRef.current === 'exceeded'
               )}%`
             }}
@@ -260,7 +304,7 @@ function SpeedReader() {
                 words.length,
                 index,
                 minIndex,
-                speedReader.end,
+                end,
                 reachedEndRef.current === 'exceeded'
               )}%`
             }}
@@ -272,7 +316,7 @@ function SpeedReader() {
                 words.length,
                 index,
                 minIndex,
-                speedReader.end,
+                end,
                 reachedEndRef.current === 'exceeded'
               )}%`
             }}

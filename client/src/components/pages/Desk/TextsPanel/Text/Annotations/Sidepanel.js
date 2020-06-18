@@ -4,171 +4,155 @@ import { useSelector, useDispatch } from 'react-redux';
 import SectionItem from './SectionItem';
 import {
   setExpandAll,
-  collapseAnnotationsPanel
+  collapseAnnotationsPanel,
+  setDisplayTextMeta,
+  openSpeedReader,
+  addSection,
+  playSpeedReader
 } from '../../../../../../store/actions';
 import { IconContext } from 'react-icons';
 import {
   BsBoxArrowInRight,
   BsArrowsCollapse,
   BsArrowsExpand,
-  BsInfoCircle
+  BsInfoCircle,
+  BsPlus,
+  BsPlay,
+  BsPlayFill
 } from 'react-icons/bs';
+import TextMeta from './TextMeta';
 
-const Sidepanel = ({ quillTextRef, quillNotebookRef }) => {
+const Sidepanel = ({ quillTextRef, quillNotebookRefs }) => {
   const dispatch = useDispatch();
   const {
     sections,
     texts,
-    textsPanel: { activeTextPanel, expandAll },
-    notebooks,
-    notebooksPanel: { openNotebooks, activeNotebook }
+    textsPanel: { activeTextPanel, expandAll, displayTextMeta, speedReader }
   } = useSelector(state => state);
-  const [addNotesToNotebook, setAddNotesToNotebook] = useState({
-    add: activeNotebook ? true : false,
-    to: activeNotebook ? activeNotebook : 'none'
-  });
   const sectionsToDisplay = texts.byId[activeTextPanel]
     ? texts.byId[activeTextPanel].sectionIds.filter(id =>
         Object.keys(sections.byId).includes(id)
       )
     : [];
 
-  const [notebooksToDisplay, setNotebooksToDisplay] = useState(
-    openNotebooks.filter(id => Object.keys(notebooks.byId).includes(id))
-  );
-
   const toggleAnnotationsPanel = useCallback(
     () => dispatch(collapseAnnotationsPanel()),
     []
   );
-  const toggleExpandAll = useCallback(
-    () => dispatch(setExpandAll({ expandAll: !expandAll })),
-    []
-  );
-  const changeNotebookSelectorHandler = useCallback(e => {
-    e.persist(); //check what it actually does...
-    console.log(e.target.value);
-    setAddNotesToNotebook(prevState => ({ ...prevState, to: e.target.value }));
-  }, []);
-
-  const toggleAddNotesToNotebook = useCallback(e => {
-    setAddNotesToNotebook(prevState => ({
-      ...prevState,
-      add: !prevState.add
-    }));
-  }, []);
-
-  React.useEffect(() => {
-    console.log('openNotebooks', openNotebooks);
-    console.log('notebooksToDisplay', notebooksToDisplay);
-    setNotebooksToDisplay(
-      openNotebooks.filter(id => Object.keys(notebooks.byId).includes(id))
-    );
-    console.log('addNotesToNotebook.to', addNotesToNotebook.to);
-    console.log('notebooksToDisplay', notebooksToDisplay);
-    console.log('activeNotebook', activeNotebook);
-
-    if (notebooksToDisplay.includes(addNotesToNotebook.to)) return;
-    if (notebooksToDisplay.length === 0) {
-      setAddNotesToNotebook(prevState => ({
-        add: false,
-        to: 'none'
-      }));
-      return;
+  const playClickHandler = () => {
+    if (!speedReader.isOpenFor.includes(activeTextPanel)) {
+      dispatch(
+        openSpeedReader(
+          activeTextPanel,
+          speedReader.byId[activeTextPanel].begin || 0,
+          speedReader.byId[activeTextPanel].end || speedReader.words.length - 1,
+          speedReader.byId[activeTextPanel].index || 0
+        )
+      );
+    } else {
+      dispatch(playSpeedReader(activeTextPanel));
     }
-    setAddNotesToNotebook(prevState => ({
-      add: prevState.to === 'none' ? true : prevState.add,
-      to: activeNotebook
-    }));
-    return () => {};
-  }, [
-    _isEqual(
-      notebooksToDisplay,
-      openNotebooks.filter(id => Object.keys(notebooks.byId).includes(id))
-    )
-  ]);
+  };
+  const toggleExpandAll = () =>
+    dispatch(setExpandAll({ expandAll: !expandAll }));
+  const toggleDisplayTextMeta = () => {
+    dispatch(setDisplayTextMeta(!displayTextMeta));
+  };
+  const addSectionClickHandler = () => {
+    const words = speedReader.words;
+    const speedReaderDetails = speedReader.byId[activeTextPanel];
+    const begin =
+      words[speedReaderDetails.lastIndex || speedReaderDetails.begin].index;
+    const end =
+      words[speedReaderDetails.index].index +
+      words[speedReaderDetails.index].plainText.length;
+    dispatch(
+      addSection({
+        categoryId: 'none',
+        begin: begin,
+        end: end
+      })
+    );
 
-  console.log('render sidepanel. sectionsToDisplay', sectionsToDisplay);
+    console.log('speedReaderDetails.index', speedReaderDetails.index);
+    console.log('speedReaderDetails.lastIndex', speedReaderDetails.lastIndex);
+    console.log('speedReaderDetails.begin', speedReaderDetails.begin);
+    console.log('begin', begin, 'end', end);
+  };
+
   return (
     <>
       <button
-        className='btn btn-lg btn-light mt-2'
+        className='btn btn-lg btn-light mt-1'
         onClick={toggleAnnotationsPanel}
       >
         <IconContext.Provider value={{ size: '1.5rem' }}>
           <BsBoxArrowInRight />
         </IconContext.Provider>
       </button>
+      <span style={{ visibility: !displayTextMeta ? 'visible' : 'hidden' }}>
+        <button
+          className='btn btn-lg btn-light mt-1'
+          onClick={playClickHandler}
+        >
+          {/* 2do: fill background color of button with percentage of text read. */}
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            {!speedReader.isOpenFor.includes(activeTextPanel) ? (
+              <BsPlay />
+            ) : (
+              <BsPlayFill />
+            )}
+          </IconContext.Provider>
+        </button>
+        <button className='btn btn-lg btn-light mt-1' onClick={toggleExpandAll}>
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            {expandAll ? <BsArrowsCollapse /> : <BsArrowsExpand />}
+          </IconContext.Provider>
+        </button>
+      </span>
 
-      <button className='btn btn-lg btn-light mt-2' onClick={toggleExpandAll}>
+      <button
+        className={`btn btn-lg btn-light mt-1 ${
+          displayTextMeta ? 'active' : ''
+        }`}
+        onClick={toggleDisplayTextMeta}
+      >
         <IconContext.Provider value={{ size: '1.5rem' }}>
-          {expandAll ? <BsArrowsCollapse /> : <BsArrowsExpand />}
+          <BsInfoCircle />
         </IconContext.Provider>
       </button>
-      <div className='input-group mb-3'>
-        <div className='input-group-prepend'>
-          <span className='input-group-text'>
-            <input
-              type='checkbox'
-              aria-label='add annotations to'
-              checked={
-                addNotesToNotebook.to === 'none'
-                  ? false
-                  : addNotesToNotebook.add
-              }
-              onChange={toggleAddNotesToNotebook}
-              {...(addNotesToNotebook.to === 'none' && {
-                disabled: true
-              })}
-            ></input>
-          </span>
-        </div>
-        <div className='input-group-prepend'>
-          <span className='input-group-text'>
-            <small>add notes to</small>
-          </span>
-        </div>
-        <select
-          className='custom-select'
-          value={addNotesToNotebook.to}
-          onChange={changeNotebookSelectorHandler}
-          {...(addNotesToNotebook.to === 'none' && {
-            disabled: true
-          })}
-        >
-          {notebooksToDisplay.length === 0 ? (
-            <option value='none'> - none available - </option>
-          ) : (
-            notebooksToDisplay.map(id => (
-              <option key={`${id}_option`} value={id}>
-                {notebooks.byId[id].title}
-              </option>
+
+      {!displayTextMeta ? (
+        <ul className='list-group pt-2'>
+          {sectionsToDisplay.length > 0 ? (
+            sectionsToDisplay.map(id => (
+              <SectionItem
+                key={id}
+                sectionId={id}
+                quillTextRef={quillTextRef}
+                quillNotebookRefs={quillNotebookRefs}
+              />
             ))
+          ) : (
+            <p>
+              <small>
+                <BsInfoCircle /> Add sections and annotations by selecting
+                text...
+              </small>{' '}
+            </p>
           )}
-        </select>
-      </div>
-      <ul className='list-group pt-4'>
-        {/* 2do: sort sections correctly /.reduce can create new sorted object/ */}
-        {sectionsToDisplay.length > 0 ? (
-          sectionsToDisplay.map(id => (
-            <SectionItem
-              key={id}
-              sectionId={id}
-              addAnnotationsTo={
-                addNotesToNotebook.add ? addNotesToNotebook.to : null
-              }
-              quillTextRef={quillTextRef}
-              quillNotebookRef={quillNotebookRef}
-            />
-          ))
-        ) : (
-          <p>
-            <small>
-              <BsInfoCircle /> Add sections and annotations by selecting text...
-            </small>{' '}
-          </p>
-        )}
-      </ul>
+          {speedReader.isOpenFor.includes(activeTextPanel) && (
+            <button
+              className='btn btn-light btn-block btn-lg'
+              onClick={addSectionClickHandler}
+            >
+              <BsPlus /> section
+            </button>
+          )}
+        </ul>
+      ) : (
+        <TextMeta />
+      )}
     </>
   );
 };

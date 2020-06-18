@@ -423,27 +423,45 @@ export const setHoldControl = controllIsPressed => (dispatch, getState) =>
     payload: controllIsPressed
   });
 
-export const openSpeedReader = (words, begin, end) => dispatch => {
+export const openSpeedReader = (textId, begin, end, index) => dispatch => {
+  console.log('openSpeedReader', { begin, end, index });
   dispatch({
     type: types.OPEN_SPEED_READER,
-    payload: { words, begin, end }
+    payload: { textId, begin, end, index }
   });
 };
 
-export const playSpeedReader = () => dispatch =>
+export const setSpeedReader = (textId, words) => dispatch => {
   dispatch({
-    type: types.PLAY_SPEED_READER
+    type: types.SET_SPEED_READER,
+    payload: { textId, words }
+  });
+};
+
+export const playSpeedReader = textId => dispatch =>
+  dispatch({
+    type: types.PLAY_SPEED_READER,
+    payload: { textId }
   });
 
-export const pauseSpeedReader = () => dispatch =>
+export const pauseSpeedReader = (textId, begin, end, index) => dispatch =>
   dispatch({
-    type: types.PAUSE_SPEED_READER
+    type: types.PAUSE_SPEED_READER,
+    payload: { textId, begin, end, index }
   });
 
-export const closeSpeedReader = () => dispatch =>
+export const closeSpeedReader = textId => dispatch =>
   dispatch({
-    type: types.CLOSE_SPEED_READER
+    type: types.CLOSE_SPEED_READER,
+    payload: { textId }
   });
+
+export const setDisplayTextMeta = display => dispatch => {
+  dispatch({
+    type: types.SET_DISPLAY_TEXT_META,
+    payload: { display }
+  });
+};
 
 /**
  *
@@ -611,30 +629,37 @@ export const loadNotebooks = ({
 }) => async (dispatch, getState) => {
   const { notebooks } = getState();
 
-  if (notebookIds.length === 0) {
-    console.log('not logged in or no notebooks...');
-    return;
-  }
-  if (
-    Object.keys(notebooks.byId).length === notebookIds.length &&
-    !Object.keys(notebooks.byId).some(id => !notebookIds.includes(id))
-  ) {
-    console.log('notebooks already fetched');
-    return;
-  }
-  const notebooksRes = await axios.get(
-    `/api/notebooks/${notebookIds.join('+')}`
-  ); // add auth
-  console.log(notebooksRes);
-
-  const notebooksById = {};
-  notebooksRes.data.forEach(
-    notebook => (notebooksById[notebook._id] = notebook)
+  const notbooksToGet = [],
+    notebooksById = {};
+  notebookIds.forEach(notebookId =>
+    notbooksToGet.push(
+      ...(notebooks.byId[notebookId] && notebooks.byId[notebookId].title
+        ? []
+        : [notebookId])
+    )
   );
+
+  if (notbooksToGet.length > 0) {
+    const notebooksRes = await axios.get(
+      `/api/notebooks/${notebookIds.join('+')}`
+    ); // add auth
+    console.log(notebooksRes);
+
+    notebooksRes.data.forEach(
+      notebook => (notebooksById[notebook._id] = notebook)
+    );
+  }
+
   dispatch({
     type: types.GET_NOTEBOOKS,
     payload: { notebooksById, open, setToActive }
   });
+  if (history)
+    notebookIds.forEach(notebookId =>
+      history.push(
+        regExpHistory(history.location.pathname, notebookId, 'open', 'notebook')
+      )
+    );
 };
 
 export const closeNotebook = ({ notebookId, history }) => (
@@ -668,6 +693,21 @@ export const openNotebook = ({ notebookId, history }) => dispatch => {
  *
  * @NOTEBOOK
  */
+
+export const setAddNotesToNotebook = ({ autoAddNotes, addNotesTo }) => (
+  dispatch,
+  getState
+) => {
+  const { notebooksPanel } = getState();
+  if (autoAddNotes === undefined) autoAddNotes = notebooksPanel.autoAddNotes;
+  if (addNotesTo === undefined) addNotesTo = notebooksPanel.addNotesTo;
+
+  dispatch({
+    type: types.SET_AUTO_ADD_NOTES_TO,
+    payload: { autoAddNotes, addNotesTo }
+  });
+};
+
 export const addNotebook = ({ history }) => (dispatch, getState) => {
   const {
     auth: { isAuthenticated },
@@ -680,7 +720,7 @@ export const addNotebook = ({ history }) => (dispatch, getState) => {
     _id: spareIds['notebooks'][0],
     title: '',
     deltas: [],
-    annotations: [],
+    annotationVersions: {},
     keywords: [],
     created: Date.now(),
     lastEdited: Date.now(),
@@ -754,7 +794,7 @@ export const updateNotebook = notebookUpdate => (dispatch, getState) => {
 
   axios.put(
     `/api/notebooks/${notebookUpdate._id}`,
-    filterObjectByKeys(notebookUpdate, ['_id'], null)
+    ObjectRemoveKeys(notebookUpdate, ['_id'])
   );
 };
 
@@ -765,7 +805,7 @@ export const deleteNotebook = notebookId => (getState, dispatch) => {
     auth: { isAuthenticated }
   } = getState();
   const notebook = notebooks.byId[notebookId];
-  const notebookAnnotations = notebook.annotations;
+  const notebookAnnotationIds = Object.keys(notebook.annotationVersions);
   dispatch({
     type: types.DELETE_NOTEBOOK,
     payload: { notebookId }
@@ -773,10 +813,8 @@ export const deleteNotebook = notebookId => (getState, dispatch) => {
 
   // update server
   axios.delete(`/api/notebooks/${notebookId}`);
-  notebookAnnotations.forEach(annotation => {
-    axios.put(
-      `/api/annotations/${annotation.annotationId}/deletednotebook/${notebookId}`
-    );
+  notebookAnnotationIds.forEach(annotationId => {
+    axios.put(`/api/annotations/${annotationId}/deletednotebook/${notebookId}`);
   });
   if (isAuthenticated) {
     axios.put(
@@ -980,25 +1018,17 @@ export const addSection = ({ categoryId, begin, end }) => (
   );
 
   const textSections = {
-    ...filterObjectByKeys(sections.byId, null, text.sectionIds),
+    ...ObjectKeepKeys(sections.byId, text.sectionIds),
     [section._id]: section
   };
-  console.log(textSections);
   const textSectionIds = sortSectionIds(textSections);
-  console.log(textSectionIds);
-  // const ranges = [
-  //   ...text.formatDivs,
-  //   ...text.sectionIds.map(id => sections.byId[id]),
-  //   { ...section }
-  // ];
-  // console.log(ranges);
+
   dispatch({
     type: types.ADD_SECTION,
     payload: {
       section,
       textSectionIds: textSectionIds,
       textId: activeTextPanel
-      // divs: divsParser(text.textcontent, ranges)
     }
   });
 
@@ -1076,9 +1106,14 @@ export const updateSection = update => (dispatch, getState) => {
     }
   });
 
+  const textSections = {
+    ...ObjectKeepKeys(sections.byId, text.sectionIds)
+  };
+  const textSectionIds = sortSectionIds(textSections);
+
   dispatch({
     type: types.UPDATE_SECTION,
-    payload: { section, textId: text._id, sections }
+    payload: { section, textId: text._id, textSectionIds }
   });
 
   axios.put(`/api/sections/${update._id}`, request);
@@ -1171,6 +1206,13 @@ export const deleteAllSections = () => (dispatch, getState) => {
  *
  * @Annotations
  */
+export const syncAnnotationWith = (annotationId, notebookIds) => dispatch => {
+  dispatch({
+    type: types.SYNC_ANNOTATION_WITH,
+    payload: { annotationId, notebookIds }
+  });
+};
+
 export const addAnnotation = ({ type, sectionId }) => (dispatch, getState) => {
   const {
     auth: { isAuthenticated },
@@ -1186,6 +1228,7 @@ export const addAnnotation = ({ type, sectionId }) => (dispatch, getState) => {
     plainText: '',
     sectionId,
     textId: activeTextPanel,
+    syncWith: [],
     connectedWith: [],
     version: 'v0',
     created: Date.now(),
@@ -1225,21 +1268,14 @@ export const addAnnotation = ({ type, sectionId }) => (dispatch, getState) => {
   });
 };
 
-export const setAnnotationEditState = annotationIdOrNull => dispatch => {
-  dispatch({
-    type: types.SET_ANNOTATION_EDIT_STATE,
-    payload: { annotationIdOrNull }
-  });
-};
-
 export const updateAnnotation = ({
   annotationId,
   type,
   html,
   plainText,
   version,
-  notebookId,
-  indexInNotebookAnnotations
+  syncWith,
+  notebookUpdates
 }) => (dispatch, getState) => {
   if ([annotationId, type, html, plainText, version].includes(undefined))
     throw `undefined props in updateAnnotation: ${[
@@ -1247,7 +1283,9 @@ export const updateAnnotation = ({
       type,
       html,
       plainText,
-      version
+      syncWith,
+      version,
+      notebookUpdates
     ]}`;
   const { annotations } = getState();
   const annotation = {
@@ -1256,34 +1294,36 @@ export const updateAnnotation = ({
     html,
     plainText,
     version,
-    ...(notebookId && {
-      connectedWith: [
-        ...new Set([
-          ...annotations.byId[annotationId].connectedWith,
-          notebookId
-        ])
-      ]
-    })
+    syncWith,
+    connectedWith: [
+      ...new Set([
+        ...annotations.byId[annotationId].connectedWith,
+        ...notebookUpdates.flatMap(notebookUpdate =>
+          Object.keys(notebookUpdate.annotationVersions).includes(annotationId)
+            ? [notebookUpdate.notebookId]
+            : []
+        )
+      ])
+    ]
   };
   dispatch({
     type: types.UPDATE_ANNOTATION,
     payload: { annotation }
   });
+  dispatch({
+    type: types.SET_NOTEBOOK_ANNOTATION_VERSIONS,
+    payload: { notebookUpdates }
+  });
+
   axios.put(
     `/api/annotations/${annotation._id}`,
     ObjectRemoveKeys(annotation, ['_id'])
   );
-  if (!notebookId) return;
-  dispatch({
-    type: types.ATTACH_ANNOTATION_TO_NOTEBOOK,
-    payload: {
-      annotationId,
-      plainText,
-      version,
-      notebookId,
-      indexInNotebookAnnotations
-    }
-  });
+  notebookUpdates.forEach(notebookUpdate =>
+    axios.put(`/api/notebooks/${notebookUpdate.notebookId}`, {
+      annotationVersions: notebookUpdate.annotationVersions
+    })
+  );
 };
 
 export const deleteAnnotation = annotationId => (dispatch, getState) => {
