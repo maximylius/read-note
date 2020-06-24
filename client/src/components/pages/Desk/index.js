@@ -7,6 +7,7 @@ import TextsPanel from './TextsPanel';
 import Placeholder from './Placeholder';
 import { loadText, loadNotebooks } from '../../../store/actions';
 import isEqual from 'lodash/isEqual';
+import Flowchart from './Flowchart';
 
 const Desk = () => {
   const dispatch = useDispatch();
@@ -73,44 +74,49 @@ const Desk = () => {
   }, []);
 
   return (
-    <div className='row grow flex-row mx-0 px-0' ref={testRef}>
-      <div
-        className={`col-md-${ui.mdFinderPanel} px-0 mt-0 pt-0 box`}
-        style={{
-          display: ui.mdFinderPanel > 0 ? 'flex' : 'none'
-        }}
-      >
-        <FinderPanel />
+    <>
+      {/* <Flowchart /> */}
+      <div className='row grow flex-row mx-0 px-0' ref={testRef}>
+        <div
+          className={`col-md-${ui.mdFinderPanel} px-0 mt-0 pt-0 box`}
+          style={{
+            display: ui.mdFinderPanel > 0 ? 'flex' : 'none'
+          }}
+        >
+          <FinderPanel />
+        </div>
+        <div
+          className={`col-md-${ui.mdTextsPanel} px-0 mx-0 box`}
+          style={{
+            display: ui.mdTextsPanel > 0 ? 'flex' : 'none'
+          }}
+        >
+          <TextsPanel quillNotebookRefs={quillNotebookRefs} />
+        </div>
+        <div
+          className={`col-md-${ui.mdNotebooksPanel} px-0 mx-0 box `}
+          style={{
+            display: ui.mdNotebooksPanel > 0 ? 'flex' : 'none'
+          }}
+        >
+          <Notebooks
+            createSetNotebookRef={createSetNotebookRef}
+            quillNotebookRefs={quillNotebookRefs}
+          />
+        </div>
+        <div
+          className={`col-md-${12 - ui.mdFinderPanel} px-0 mx-0 box `}
+          style={{
+            display:
+              ui.mdTextsPanel === 0 && ui.mdNotebooksPanel === 0
+                ? 'flex'
+                : 'none'
+          }}
+        >
+          <Placeholder />
+        </div>
       </div>
-      <div
-        className={`col-md-${ui.mdTextsPanel} px-0 mx-0 box`}
-        style={{
-          display: ui.mdTextsPanel > 0 ? 'flex' : 'none'
-        }}
-      >
-        <TextsPanel quillNotebookRefs={quillNotebookRefs} />
-      </div>
-      <div
-        className={`col-md-${ui.mdNotebooksPanel} px-0 mx-0 box `}
-        style={{
-          display: ui.mdNotebooksPanel > 0 ? 'flex' : 'none'
-        }}
-      >
-        <Notebooks
-          createSetNotebookRef={createSetNotebookRef}
-          quillNotebookRefs={quillNotebookRefs}
-        />
-      </div>
-      <div
-        className={`col-md-${12 - ui.mdFinderPanel} px-0 mx-0 box `}
-        style={{
-          display:
-            ui.mdTextsPanel === 0 && ui.mdNotebooksPanel === 0 ? 'flex' : 'none'
-        }}
-      >
-        <Placeholder />
-      </div>
-    </div>
+    </>
   );
 };
 

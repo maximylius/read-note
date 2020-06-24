@@ -11,6 +11,7 @@ import authReducer from './reducers/authReducer';
 import errorReducer from './reducers/errorReducer';
 import userReducer from './reducers/userReducer';
 import categoriesReducer from './reducers/categoriesReducer';
+import flowchartReducer from './reducers/flowchartReducer';
 
 export default combineReducers({
   auth: authReducer,
@@ -24,5 +25,6 @@ export default combineReducers({
   texts: textsReducer,
   sections: sectionsReducer,
   annotations: annotationsReducer,
+  flowchart: flowchartReducer,
   categories: categoriesReducer
 });

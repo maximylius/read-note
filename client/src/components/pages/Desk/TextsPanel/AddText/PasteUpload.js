@@ -12,7 +12,7 @@ function PasteUpload() {
   const { spareIds } = useSelector(state => state);
   const quillUploadRef = React.useRef(null);
   const [textcontent, setTextcontent] = useState('');
-  const [deltas, setDeltas] = useState([]);
+  const [deltas, setDeltas] = useState(null);
   const onChangeHandler = () => {
     if (!quillUploadRef || !quillUploadRef.current) return;
     setTextcontent(quillUploadRef.current.editor.getText());
@@ -58,8 +58,7 @@ function PasteUpload() {
 
       <div
         style={{
-          display:
-            textcontent.length > 0 || deltas.length > 1 ? 'block' : 'none'
+          display: textcontent.length > 0 || deltas ? 'block' : 'none'
         }}
       >
         <button

@@ -1,4 +1,5 @@
 import React from 'react';
+import Flowchart from '../Desk/Flowchart/';
 
 function Welcome() {
   return (
@@ -10,6 +11,8 @@ function Welcome() {
         <p className='lead'>
           Upload your text to start reading and annotating.
         </p>
+        <Flowchart />
+
         <p className='lead'>
           Showcase what this site can do: Speedread, organize, keep track.
         </p>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setAlert, registerUser } from '../../../store/actions';
+import { addAlert, registerUser } from '../../../store/actions';
 
 function Signup() {
   const dispatch = useDispatch();
@@ -13,14 +13,11 @@ function Signup() {
       dispatch(registerUser({ username, email, password }));
     } else {
       dispatch(
-        setAlert({
+        addAlert({
           type: 'alert alert-warning',
-          message: `Fill in ${missingFields} to upload text.`
+          message: `<p>Please fill in ${missingFields}.</p>`
         })
       );
-      setTimeout(() => {
-        dispatch(setAlert(null));
-      }, 2500);
     }
   };
 

@@ -9,7 +9,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'quill-mention/dist/quill.mention.css';
 import './App.css';
 import Navbar from './components/Metapanel/Navbar';
-import Alert from './components/Metapanel/Alert';
+import Alerts from './components/Metapanel/Alerts';
 import Desk from './components/pages/Desk';
 import About from './components/pages/About/';
 import NotFound from './components/pages/NotFound/';
@@ -41,7 +41,7 @@ const App = () => {
       <Router>
         <div className='box'>
           <Navbar />
-          <Alert />
+          <Alerts />
           <Switch>
             <Route exact path='/' component={Welcome} />
             <Route

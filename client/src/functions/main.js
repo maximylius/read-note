@@ -665,3 +665,15 @@ export const committChangesToAnnotation = (
     })
   );
 };
+
+export const getAllKeys = obj => {
+  const allKeys = [];
+  const keyIterator = obj => {
+    Object.keys(obj).forEach(key => {
+      allKeys.push(key);
+      if (typeof obj[key] === 'object') keyIterator(obj[key]);
+    });
+  };
+  keyIterator(obj);
+  return allKeys;
+};

@@ -9,6 +9,11 @@ import {
   deepCompare,
   regExpHistory
 } from '../functions/main';
+/**
+ *
+ *
+ * @ACTION_FUNCTIONS
+ */
 
 /**
  *
@@ -47,7 +52,8 @@ export const registerUser = ({ username, email, password }) => dispatch => {
 export const loadUser = () => async (dispatch, getState) => {
   const {
     auth: { token },
-    texts
+    texts,
+    textsPanel: { openTexts }
   } = getState();
   if (!token || token === 'undefined') {
     console.log('no token, no request. 2do: request session token.');
@@ -67,55 +73,55 @@ export const loadUser = () => async (dispatch, getState) => {
     });
 
     const user = userRes.data.user;
-    if (user.notebookIds.length > 0) {
-      const notebooksRes = await axios.get(
-        `/api/notebooks/${user.notebookIds.join('+')}`
-      );
-
-      console.log(notebooksRes);
-
-      const notebooksById = {};
-      notebooksRes.data.forEach(
-        notebook => (notebooksById[notebook._id] = notebook)
-      );
-      dispatch({
-        type: types.GET_NOTEBOOKS,
-        payload: { notebooksById }
-      });
-    }
-    const textsToGet = user.textIds.filter(
-      id => !Object.keys(texts.byId).includes(id)
-    );
-    if (textsToGet.length > 0) {
-      const textsRes = await axios.get(
-        `/api/texts/meta/${textsToGet.join('+')}`
-      );
-      const textsMetaById = {};
-      textsRes.data.forEach(text => (textsMetaById[text._id] = text));
-      dispatch({
-        type: types.GET_USER_TEXTS_META,
-        payload: { textsMetaById }
-      });
-    }
-
-    if (user.annotationIds.length > 0) {
-      const annotationsRes = await axios.get(
-        `/api/annotations/${user.annotationIds.join('+')}`
-      );
-      const annotationsById = {};
-      annotationsRes.data.forEach(
-        annotation => (annotationsById[annotation._id] = annotation)
-      );
-      dispatch({
-        type: types.GET_ANNOTATIONS,
-        payload: { annotationsById }
-      });
-    }
+    fetchUserData(user, openTexts, dispatch);
   } catch (error) {
     console.log(error);
     dispatch(returnErrors(error.response.data, error.response.status));
     dispatch({
       type: types.AUTH_ERROR
+    });
+  }
+};
+
+const fetchUserData = async (user, openTexts, dispatch) => {
+  if (user.notebookIds.length > 0) {
+    const notebooksRes = await axios.get(
+      `/api/notebooks/${user.notebookIds.join('+')}`
+    );
+
+    console.log(notebooksRes);
+
+    const notebooksById = {};
+    notebooksRes.data.forEach(
+      notebook => (notebooksById[notebook._id] = notebook)
+    );
+    dispatch({
+      type: types.GET_NOTEBOOKS,
+      payload: { notebooksById }
+    });
+  }
+  const textsToGet = user.textIds.filter(id => !openTexts.includes(id));
+  if (textsToGet.length > 0) {
+    const textsRes = await axios.get(`/api/texts/meta/${textsToGet.join('+')}`);
+    const textsMetaById = {};
+    textsRes.data.forEach(text => (textsMetaById[text._id] = text));
+    dispatch({
+      type: types.GET_USER_TEXTS_META,
+      payload: { textsMetaById }
+    });
+  }
+
+  if (user.annotationIds.length > 0) {
+    const annotationsRes = await axios.get(
+      `/api/annotations/${user.annotationIds.join('+')}`
+    );
+    const annotationsById = {};
+    annotationsRes.data.forEach(
+      annotation => (annotationsById[annotation._id] = annotation)
+    );
+    dispatch({
+      type: types.GET_ANNOTATIONS,
+      payload: { annotationsById }
     });
   }
 };
@@ -144,50 +150,8 @@ export const loginUser = ({ email, password }) => async (
       type: types.LOGIN_SUCCESS,
       payload: userRes.data
     });
-    // duplicacted code:
     const user = userRes.data.user;
-    if (user.notebookIds.length > 0) {
-      const notebooksRes = await axios.get(
-        `/api/notebooks/${user.notebookIds.join('+')}`
-      );
-
-      console.log(notebooksRes);
-
-      const notebooksById = {};
-      notebooksRes.data.forEach(
-        notebook => (notebooksById[notebook._id] = notebook)
-      );
-      dispatch({
-        type: types.GET_NOTEBOOKS,
-        payload: { notebooksById }
-      });
-    }
-    const textsToGet = user.textIds.filter(id => !openTexts.includes(id));
-    if (textsToGet.length > 0) {
-      const textsRes = await axios.get(
-        `/api/texts/meta/${textsToGet.join('+')}`
-      );
-      const textsMetaById = {};
-      textsRes.data.forEach(text => (textsMetaById[text._id] = text));
-      dispatch({
-        type: types.GET_USER_TEXTS_META,
-        payload: { textsMetaById }
-      });
-    }
-
-    if (user.annotationIds.length > 0) {
-      const annotationsRes = await axios.get(
-        `/api/annotations/${user.annotationIds.join('+')}`
-      );
-      const annotationsById = {};
-      annotationsRes.data.forEach(
-        annotation => (annotationsById[annotation._id] = annotation)
-      );
-      dispatch({
-        type: types.GET_ANNOTATIONS,
-        payload: { annotationsById }
-      });
-    }
+    fetchUserData(user, openTexts, dispatch);
   } catch (err) {
     console.log(err);
     dispatch(
@@ -243,16 +207,32 @@ export const clearErrors = () => {
  *
  * @UI
  */
-export const setAlert = warningObj => dispatch =>
+export const addAlert = (alertObj, timeout) => (dispatch, getState) => {
+  const {
+    ui: { alertId }
+  } = getState();
   dispatch({
-    type: types.SET_ALERT,
-    payload: warningObj
-      ? {
-          message: warningObj.message,
-          type: warningObj.type
-        }
-      : null
+    type: types.ADD_ALERT,
+    payload: {
+      alertObj: { id: alertId + 1, ...alertObj }
+    }
   });
+  setTimeout(() => {
+    dispatch({
+      type: types.CLEAR_ALERT,
+      payload: {
+        id: alertId + 1
+      }
+    });
+  }, timeout || 3000);
+};
+
+export const removeAlert = id => dispatch => {
+  dispatch({
+    type: types.CLEAR_ALERT,
+    payload: { id }
+  });
+};
 
 export const expandFinderPanel = () => dispatch =>
   dispatch({ type: types.EXPAND_FINDER_PANEL });
@@ -719,7 +699,7 @@ export const addNotebook = ({ history }) => (dispatch, getState) => {
   const notebook = {
     _id: spareIds['notebooks'][0],
     title: '',
-    deltas: [],
+    deltas: null,
     annotationVersions: {},
     keywords: [],
     created: Date.now(),
@@ -1357,4 +1337,53 @@ export const deleteAnnotation = annotationId => (dispatch, getState) => {
       tokenConfig(getState)
     ); //2do auth only.
   }
+};
+
+// FLOWCHART
+export const toggleFlowchart = () => dispatch => {
+  dispatch({
+    type: types.TOGGLE_FLOWCHART
+  });
+};
+export const openFlowchartSidepanel = () => dispatch => {
+  dispatch({
+    type: types.OPEN_FLOWCHART_SIDEPANEL
+  });
+};
+export const closeFlowchartSidepanel = () => dispatch => {
+  dispatch({
+    type: types.CLOSE_FLOWCHART_SIDEPANEL
+  });
+};
+
+export const inspectTextInFlowchart = id => dispatch => {
+  dispatch({
+    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
+    payload: { id, type: 'text' }
+  });
+};
+export const inspectSectionInFlowchart = id => dispatch => {
+  dispatch({
+    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
+    payload: { id, type: 'section' }
+  });
+};
+export const inspectAnnotationInFlowchart = id => dispatch => {
+  dispatch({
+    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
+    payload: { id, type: 'annotation' }
+  });
+};
+export const inspectNotebookInFlowchart = id => dispatch => {
+  dispatch({
+    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
+    payload: { id, type: 'notebook' }
+  });
+};
+
+export const closeFlowchartElement = id => dispatch => {
+  dispatch({
+    type: types.CLOSE_FLOWCHART_ELEMENT,
+    payload: { id }
+  });
 };
