@@ -1,14 +1,14 @@
 /**
  @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
+6     Improve dagre layout
 
 @REMOVE BUGS  & NEW FEATURES------------------------
 6     understand embeded blots in order to insert annotations.
 6     implement connectedWith when @mention is used.
 6     manage connections
 6     think about way to have embeded blots represent flexible data
-6     implement react-flow and dagre ?
 6     make login session more stable
-4 unexpected beahivour when updating multiple instance of an annotation in same notebook: everything in the middle gets deleted. Possible reason: same annotation versions through coopy paste. New update which check whether there already is instance of this annotation.
+4     2do: drag and drop annotation into note.
 4 enable scrolling of sections.
 4 fix url regexp
 6 handle error: if text does not exist: do not open, remove from url, log message.

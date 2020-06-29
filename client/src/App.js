@@ -8,6 +8,8 @@ import 'react-quill/dist/quill.bubble.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'quill-mention/dist/quill.mention.css';
 import './App.css';
+import './styles/flowchart.css';
+import './styles/note.css';
 import Navbar from './components/Metapanel/Navbar';
 import Alerts from './components/Metapanel/Alerts';
 import Desk from './components/pages/Desk';

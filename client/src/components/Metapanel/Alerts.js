@@ -11,10 +11,11 @@ const Alerts = () => {
 
   return (
     <div className='alertContainer'>
-      {alerts
+      {[...alerts]
         .filter((el, index) => index >= alerts.length - maxStack)
+        .reverse()
         .map(el => (
-          <div key={el.id} className={`alertElement ${el.type}`}>
+          <div key={el.id} className={`alertElement ${el.type} fade-in`}>
             <button
               className='closeAlertElement'
               onClick={() => dispatch(removeAlert(el.id))}

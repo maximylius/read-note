@@ -10,8 +10,8 @@ export default class BlotEmbedSeperator extends Inline {
     let node = super.create();
     node.setAttribute('data-case', value.case); // begin|| end
     node.setAttribute('data-embed-type', value.embedType); // note | section(quote) | annotation
-    node.setAttribute('data-id', value.id);
-    node.setAttribute('data-id-path', value.idPath);
+    node.setAttribute('data-res-id', value.resId);
+    node.setAttribute('data-res-info', value.resInfo);
     node.setAttribute('data-is-open', value.isOpen);
     node.setAttribute('class', `embedSeperator case-${value.case}`);
     return node;
@@ -20,8 +20,8 @@ export default class BlotEmbedSeperator extends Inline {
     return {
       case: node.getAttribute('data-case'),
       embedType: node.getAttribute('data-embed-type'),
-      id: node.getAttribute('data-id'),
-      idPath: node.getAttribute('data-id-path'),
+      resId: node.getAttribute('data-res-id'),
+      resInfo: node.getAttribute('data-res-info'),
       isOpen: node.getAttribute('data-is-open'),
       className: node.getAttribute('class')
     };
@@ -30,8 +30,8 @@ export default class BlotEmbedSeperator extends Inline {
     return {
       case: node.getAttribute('data-case'),
       embedType: node.getAttribute('data-embed-type'),
-      id: node.getAttribute('data-id'),
-      idPath: node.getAttribute('data-id-path'),
+      resId: node.getAttribute('data-res-id'),
+      resInfo: node.getAttribute('data-res-info'),
       isOpen: node.getAttribute('data-is-open'),
       className: node.getAttribute('class')
     };

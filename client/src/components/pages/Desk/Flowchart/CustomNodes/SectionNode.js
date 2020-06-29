@@ -6,14 +6,12 @@ import { inspectSectionInFlowchart } from '../../../../../store/actions';
 
 export default memo(props => {
   const dispatch = useDispatch();
-  console.log(props);
   const {
     id,
     data: { width, height, label }
   } = props;
   const onClickHandler = () => {
     // 2do distinguish drag and click
-    console.log(id, 'clicked');
     dispatch(inspectSectionInFlowchart(id));
   };
   return (

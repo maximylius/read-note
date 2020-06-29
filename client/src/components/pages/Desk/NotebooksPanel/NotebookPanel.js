@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useDispatch, useSelector, ReactReduxContext } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import ReactQuill from 'react-quill';
 import QuillMention from 'quill-mention';
 import _isEqual from 'lodash/isEqual';
 import AnnotationBlot from '../../../Metapanel/AnnotationBlot';
 import BlotEmbedSeperator from '../../../Metapanel/BlotEmbedSeperator';
+import {
+  mentionModuleCreator,
+  atValuesCreator,
+  extractAtValueResType,
+  extractAtValueResId
+} from '../../../Metapanel/mentionModule';
 import {
   loadText,
   setCommittedSections,
@@ -18,31 +24,6 @@ import { getAllKeys } from '../../../../functions/main';
 
 ReactQuill.Quill.register(AnnotationBlot);
 ReactQuill.Quill.register(BlotEmbedSeperator);
-
-const initialDelta = [
-  { insert: 'Heading for section' },
-  { attributes: { header: 1 }, insert: '\n' },
-  {
-    insert:
-      'These possible effect of spatial relocation of economic activity should also be considered when assessing the economic impact of specific transport improvements. '
-  },
-  {
-    attributes: {
-      bold: true
-    },
-    insert:
-      'Additional to the effects of economic relocation, changes in residential choices also have to be considered, to better predict changes in agglomeration levels. '
-  },
-  {
-    insert:
-      'Our measure of effective density could be further improved. To better estimate cost of traveling between two locations, distance should be included in terms of fuel cost. As we have not included the cost of distance we did slightly underestimate the accessibility of regions at far distances.'
-  }
-];
-
-const hashValues = [
-  { id: 3, value: 'Fredrik Sundqvist 2' },
-  { id: 4, value: 'Patrik Sjölin 2' }
-];
 
 // 2do each notebook needs a title and a section below that is partly uneditable (their ids shall be numbered notebookId_2_outOf_9 ), that contains all notebook links. shall be updated when changes are committed. shall be collapsable.
 // also contain a section that contains link to notebook that are only one way.
@@ -66,287 +47,363 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
   const notebook = notebooks.byId[notebookId];
   const [quillValue, setQuillValue] = useState(notebook.deltas || '');
   const [changedEditorCounter, setChangedEditorCounter] = useState(-1);
+  const [atValues, setAtValues] = React.useState(
+    atValuesCreator(texts.byId, notebooks.byId, sections.byId)
+  );
+  const atKeysRef = React.useRef([
+    ...Object.keys(texts.byId),
+    ...Object.keys(notebooks.byId),
+    ...Object.keys(sections.byId)
+  ]);
 
   // when shall the numbers be updated? at best whenever a mention is used. how to notice?
-  const atValues = Object.keys(texts.byId)
-    .map(id => {
-      let nr = 0; // 2do check with while loop through notebook state
-      return {
-        id: `${id}_${nr}_${notebookId}`,
-        value: texts.byId[id].title
-      };
-    })
-    .concat(
-      Object.keys(notebooks.byId).map(id => {
-        let nr = 0; // 2do check with while loop through notebook state
-        return {
-          id: `${id}_${nr}_${notebookId}`,
-          value: notebooks.byId[id].title
-        };
-      })
-    )
-    .concat(
-      Object.keys(sections.byId).map(id => {
-        const textTitle = texts.byId[sections.byId[id].textId].title;
-        const sectionTitle = sections.byId[id].title;
+  const mentionModule = React.useCallback(mentionModuleCreator(atValues, []), [
+    atValues
+  ]);
 
-        let value =
-          textTitle +
-          // .slice(0, Math.max(6, 24 - sectionTitle.length))
-          ' - ' +
-          sectionTitle;
-        let nr = 0; // 2do check with while loop through notebook state
-        return {
-          id: `${id}_${nr}_${notebookId}`,
-          value
-        };
-      })
-    );
+  const onChangeHandler = (__HTML, changeDelta, source, editor) => {
+    console.log(changeDelta, editor, source, '--------------');
+    if (source === 'api') {
+      console.log('api change....');
+      return;
+    }
+    const currentDelta = editor.getContents();
+    let isInconsistent = false,
+      listEmbedSeperators = {},
+      inconsistencyMessage =
+        '<p><strong>Operation not allowed.</strong> <br />Emebed content cannot be removed partly. Collapse or remove completly. </p>';
 
-  const mentionModule = React.useCallback(
-    {
-      allowedChars: /^[A-Za-z\s]*$/,
-      mentionDenotationChars: ['@', '#'],
-      source: function (searchTerm, renderList, mentionChar) {
-        let values;
-
-        if (mentionChar === '@') {
-          values = atValues;
-        } else {
-          values = hashValues;
-        }
-
-        if (searchTerm.length === 0) {
-          renderList(values, searchTerm);
-        } else {
-          const matches = [];
-          for (let i = 0; i < values.length; i++)
-            if (
-              ~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())
-            )
-              matches.push(values[i]);
-          renderList(matches, searchTerm);
+    // check whether it is inconsistent
+    // if (changeDelta.ops.some(op => op.delete)) { // 2do: add pastehandler to uncomment this.
+    isInconsistent = currentDelta.ops.some((op, index) => {
+      if (op.insert && op.insert.mention) {
+        const resInfo = op.insert.mention.id;
+        if (!listEmbedSeperators[resInfo]) {
+          listEmbedSeperators[resInfo] = {};
         }
       }
-    },
-    [user.textIds, user.notebookIds]
-  );
-
-  const onChangeHandler = () => {
-    if (!quillNotebookRefs.current[notebookId]) return;
-    const editor = quillNotebookRefs.current[notebookId].editor;
-    const currentDelta = editor.getContents();
-    const whiteList = [];
-    // check whether it is inconsistent: add Title section and link section.
-    // let hasTitle = false;
-    // let inConnections = null;
-    const isInconsistent = currentDelta.ops.some((op, index) => {
       if (!op.attributes) return false;
-      // if (op.attributes.noteTitle) {
-      //   if (hasTitle)
-      //     return '<p>Title can only be set once in a single line for a notebook.</p>';
-      // } else {
-      //   if (index === currentDelta.ops.length - 1) return 'No title supplied.';
-      //   hasTitle = true;
-      //   return false;
-      // }
-      // if (op.attributes.connectedWith) {
-      //   if (!inConnections) {
-      //     // should be something 1_outOf_8 or 1_12
-      //   } else {
-      //     // should be (parseInt( inConnections.split("_")[0])+1)+"_"+inConnections.split("_").slice(1).join("_")
-      //   }
-      // }
       if (!op.attributes.embedSeperator) return false;
+      const resInfo = op.attributes.embedSeperator.resInfo;
       if (op.attributes.embedSeperator.case === 'begin') {
-        // if (!hasTitle) return 'No title supplied.';
-        // if(inConnections.split("_")[0]!==inConnections.split("_")[2]) return "No manual adjustment possible"
-        // hasTitle = false;
-        // inConnections = null;
         if (
-          //check whether end of embed exists
-          currentDelta.ops
-            .slice(index + 1)
-            .some(
-              el =>
-                el.attributes &&
-                el.attributes.embedSeperator &&
-                el.attributes.embedSeperator.case === 'end' &&
-                el.attributes.embedSeperator.idPath ===
-                  op.attributes.embedSeperator.idPath
-            ) && //check whether mention blot still exists
-          currentDelta.ops
-            .slice(0, index + 1)
-            .some(
-              el =>
-                el.insert &&
-                el.insert.mention &&
-                el.insert.mention.id === op.attributes.embedSeperator.idPath
-            )
+          listEmbedSeperators[resInfo] &&
+          !listEmbedSeperators[resInfo].begin &&
+          !listEmbedSeperators[resInfo].end
         ) {
-          whiteList.push(op.attributes.embedSeperator.idPath);
+          listEmbedSeperators[resInfo].begin = true;
           return false;
         } else {
-          return '<p><strong>Operation not allowed.</strong> <br />Emebed content cannot be removed partly. Collapse or remove completly. </p>';
+          return inconsistencyMessage;
         }
-      } else return !whiteList.includes(op.attributes.embedSeperator.idPath);
+      } else if (
+        listEmbedSeperators[resInfo] &&
+        listEmbedSeperators[resInfo].begin &&
+        !listEmbedSeperators[resInfo].end
+      ) {
+        listEmbedSeperators[resInfo].end = true;
+        return false;
+      } else {
+        return inconsistencyMessage;
+      }
     });
+    // }
+
+    // else if (newMention) {
+    //   // if nothing is deleted only added
+    //   // then it always needs to update the content with a new number
+
+    //   let allMentionIdPaths = [],
+    //     duplicatedMentionIdPaths = [],
+    //     mentionOps = [],
+    //     embedPaths = [notebookId]; //
+
+    //   currentDelta.ops.forEach((op, index) => {
+    //     if (op.insert && op.insert.mention) {
+    //       if (
+    //         op.insert.mention.id //RegExp
+    //           .includes(embedPaths[embedPaths.length - 1])
+    //       ) {
+    //       }
+
+    //       if (allMentionIdPaths.includes(op.insert.mention.id)) {
+    //         duplicatedMentionIdPaths.push(op.insert.mention.id);
+    //       }
+    //       allMentionIdPaths.push(op.insert.mention.id);
+    //       mentionOps.push(index);
+    //     } else if (op.attributes && op.attributes.embedSeperator) {
+    //       if ((op.attributes.embedSeperator.case = 'begin')) {
+    //         embedPaths.push(op.attributes.embedSeperator.resInfo);
+    //       } else {
+    //         embedPaths.pop();
+    //       }
+    //     }
+    //   });
+
+    //   // it does need to know :
+    //   // is resInfo still correct? Maybe mention has been moved inside different notebook
+    //   //
+    //   console.log(mentionOps);
+    //   currentDelta.ops.forEach((op, index) => {
+    //     if (!op.insert || !op.insert.mention) return;
+    //     if (listMentions.includes(op.insert.mention.id)) {
+    //       needsUpdate = true;
+    //       currentDelta.ops[index].insert.mention.id =
+    //         op.insert.mention.id +
+    //         listMentions.filter(
+    //           el => el.includes(op.insert.mention.id) //2do: RegExp
+    //         ).length -
+    //         1;
+    //     }
+    //     listMentions.push(op.insert.mention.id);
+    //   });
+    //   // only check for @mentions
+    // }
+
     if (isInconsistent) {
-      editor.history.undo();
+      console.log(currentDelta);
+      //history not exposed for editor ref from change event
+      quillNotebookRefs.current[notebookId].editor.history.undo();
       dispatch(
         addAlert({
           message: isInconsistent,
           type: 'warning'
         })
       );
-    } else {
-      setChangedEditorCounter(prevState => prevState + 1);
+      return;
     }
+    //  else {
+    //   if (needsUpdate) {
+    //     // carefully check whether this update is necessary:
+    //     //
+    //     quillNotebookRefs.current[notebookId].editor.updateContents(
+    //       currentDelta
+    //     );
+    //   }
+    // }
+    setChangedEditorCounter(prevState => prevState + 1);
   };
 
+  // check which notebooks to update.
+  // if update: update connectedWith for the notebook(s).
   const handleEditorChange = () => {
+    console.log('handle change');
     if (!quillNotebookRefs.current[notebookId]) return;
     const editor = quillNotebookRefs.current[notebookId].editor;
-    const currentDeltas = editor.getContents();
+    const delta = editor.getContents();
 
-    // clean current deltas from embeded content:
-    // this is also the point where the embededPath shall be derived right?
-    // 2do: add links to connectedWith state
-    // 2do: add mutedConnections to state
-    const embeds = currentDeltas.ops.flatMap((op, opIndex) =>
-      op.attributes && op.attributes.embedSeperator
-        ? {
-            case: op.attributes.embedSeperator.case,
-            id: op.attributes.embedSeperator.id,
-            parent: op.attributes.embedSeperator.idPath.split('_')[2],
-            idPath: op.attributes.embedSeperator.idPath,
-            index: opIndex
-          }
-        : []
-    );
-    console.log('embeds', embeds);
-
-    const embededNotebooks = [
-      {
-        id: notebookId,
-        beginIndex: 0,
-        endIndex: currentDeltas.ops.length - 1,
-        deltas: notebooks.byId[notebookId].deltas,
-        embedIndexes: []
-      }
-    ];
-    const embedPath = { begin: 0, end: currentDeltas.ops.length - 1 };
-    const currentPath = [];
-    let currentPos = embedPath;
-    embeds.forEach(embed => {
-      console.log('embed:', embed);
-      currentPos = embedPath;
-      currentPath.forEach(el => (currentPos = currentPos[el]));
-      console.log('currentPath:', currentPath);
-      if (embed.case === 'begin') {
-        console.log('begin of embed');
-        currentPos[embed.idPath] = { begin: embed.index };
-        console.log(currentPos, 'currentPos');
-        currentPath.push(embed.idPath);
-      } else {
-        console.log('end of embed');
-        if (currentPath[currentPath.length - 1] !== embed.idPath)
-          throw 'Error: inconsistent embeds.';
-        currentPos.end = embed.index;
-        embededNotebooks.push({
-          id: embed.id,
-          beginIndex: currentPos.begin + 1, //excl sep
-          endIndex: currentPos.end - 1, //excl sep
-          embedIndexes: Object.keys(currentPos)
-            .filter(key => !['begin', 'end'].includes(key))
-            .map(key => ({
-              begin: currentPos[key].begin,
-              end: currentPos[key].end
-            })),
-          deltas: notebooks.byId[embed.id].deltas
-        });
-        currentPath.pop();
-      }
-      console.log('currentPath', currentPath, 'embedPath', embedPath);
-    });
-    embededNotebooks[0].embedIndexes = Object.keys(embedPath)
-      .filter(key => !['begin', 'end'].includes(key))
-      .map(key => ({
-        begin: embedPath[key].begin,
-        end: embedPath[key].end
-      }));
-    console.log('embedPath final', embedPath);
-
-    console.log('embededNotebooks', embededNotebooks);
-    embededNotebooks.forEach(embededNotebook => {
-      // include from begin Index to first embed index, then exclude until embed end, then include from end+1 to next first embedIndex, then exlude until embed,  then include from embed end +1 until end index
-      // exclude them seperators
-      console.log('embededNotebook', embededNotebook);
-      const concernedOps = [...embededNotebook.embedIndexes, {}].flatMap(
-        (embedIndex, index) => {
-          // console.log("slice frrom", ,"to", );
-          return currentDeltas.ops.slice(
-            index === 0
-              ? embededNotebook.beginIndex
-              : embededNotebook.embedIndexes[index - 1].end + 1, //excl sep
-            index === embededNotebook.embedIndexes.length
-              ? embededNotebook.endIndex + 1
-              : embededNotebook.embedIndexes[index].begin //excl sep
-          ); // more complex: remove its embeds!
+    // id:[0  id:[30    70]   id:[90   id:[110  115]    130]    270]
+    // id0:ops:: (0,270) ---(30,70), (90, 130)
+    // id0:ops:: (0,30), (71,90), (131, 270)
+    // this is also the point where the embededPath shall be derived right? // not so important yet.
+    // notesConnectedWith={
+    // [id1]:[id2, id3, id4],
+    // [id3]: [id5],
+    // [id5]: [id6]
+    // }
+    // embeds={
+    // [id1]: {begin: 0, end: delta.ops.length-1},
+    // [id2]: {begin: 15, end: 22}
+    // }
+    const notesConnectedWith = {},
+      nestPath = [notebookId];
+    const displayedNotes = {
+      [notebookId]: { begin: 0, end: delta.ops.length - 1, embeds: [] }
+    };
+    delta.ops.forEach((op, opIndex) => {
+      if (op.insert && op.insert.mention) {
+        const resId = extractAtValueResId(op.insert.mention.id);
+        if (!notesConnectedWith[nestPath[nestPath.length - 1]]) {
+          notesConnectedWith[nestPath[nestPath.length - 1]] = [];
         }
-      );
-
-      console.log('concernedOps', concernedOps);
-      console.log('embededNotebook.deltas.ops', embededNotebook.deltas.ops);
-
-      if (_isEqual(concernedOps, embededNotebook.deltas.ops)) {
-        console.log('no change in', notebooks.byId[embededNotebook.id].title);
-        if (
-          embededNotebook.id === notebookId &&
-          !_isEqual(notebooks.byId[notebookId].embedPath, embedPath)
-        ) {
-          // think about whether changing the embed path can change the displayed embeds?
-          dispatch(
-            updateNotebook({
-              _id: notebookId,
-              embedPath
-            })
-          );
-        }
+        notesConnectedWith[nestPath[nestPath.length - 1]].push(resId);
         return;
       }
-      // each main notebook should contain a path of what is expanded: embeds: [{id,nr, id_nr: `${id}_${nr}`, expaneded: false, type: "notebook", id:id, embeds: [{...}]},{...}]
-      // if other notebook than active one is changed than an update / remount has to be forced on those places where it is active
-
-      console.log('currentDeltas', currentDeltas);
-      const embedPlainText = concernedOps
-        .map(op =>
-          typeof op.insert === 'string'
-            ? op.insert
-            : op.insert.mention
-            ? op.insert.mention.value
-            : ''
-        )
-        .join('');
-      console.log(
-        notebooks.byId[embededNotebook.id].title,
-        'embedPlainText',
-        embedPlainText
-      );
-      dispatch(
-        updateNotebook({
-          _id: embededNotebook.id,
-          deltas: { ops: concernedOps },
-          plainText: embedPlainText,
-          embedPath
-        })
-      );
+      if (!op.attributes || !op.attributes.embedSeperator) return;
+      const resId = op.attributes.embedSeperator.resId;
+      if (op.attributes.embedSeperator.case === 'begin') {
+        if (displayedNotes[resId])
+          throw 'ERROR: embed has occured more than once.';
+        displayedNotes[nestPath[nestPath.length - 1]].embeds.push(resId);
+        displayedNotes[resId] = { begin: opIndex + 1, embeds: [] };
+        nestPath.push(resId);
+      } else {
+        if (!displayedNotes[resId])
+          throw 'ERROR: embed was closed before opened.';
+        displayedNotes[resId].end = opIndex - 1;
+        nestPath.pop();
+      }
     });
+    console.log(
+      'displayedNotes\n',
+      displayedNotes,
+      '\nnotesConnectedWith\n',
+      notesConnectedWith,
+      '\nnestPath\n',
+      nestPath
+    );
+    Object.keys(displayedNotes).forEach(resId => {
+      const displayedNote = displayedNotes[resId];
+      const noteOps = delta.ops.filter(
+        (op, i) =>
+          displayedNote.begin <= i &&
+          displayedNote.end >= i &&
+          !displayedNote.embeds.some(
+            embedId =>
+              displayedNotes[embedId].begin - 1 <= i &&
+              displayedNotes[embedId].end + 1 >= i
+          )
+      );
+
+      console.log('noteOps', noteOps);
+      const savedOps = notebooks.byId[resId].deltas.ops;
+      // 2do: wrong behaviour when embed is changed: parent is changed also. embed is also changed on first parent change.
+      let shouldUpdate =
+        noteOps.length !== savedOps.length ||
+        noteOps.some((op, i) => {
+          // mentions are DOMStringMaps and need to be converted to simple object to enable comparison with plain object from store
+          if (!op.insert || !op.insert.mention)
+            return !_isEqual(op, savedOps[i]);
+          op.insert.mention = { ...op.insert.mention };
+          return !_isEqual(op, savedOps[i]);
+        });
+
+      if (shouldUpdate) {
+        console.log('will update', notebooks.byId[resId].title);
+        const notePlainText = noteOps
+          .map(op =>
+            typeof op.insert === 'string'
+              ? op.insert
+              : op.insert.mention
+              ? op.insert.mention.value
+              : ' '
+          )
+          .join('');
+        dispatch(
+          updateNotebook({
+            _id: resId,
+            deltas: { ops: noteOps },
+            plainText: notePlainText,
+            connectedWith: notesConnectedWith[resId]
+          })
+        );
+      } else {
+        console.log('doesnt need to update', notebooks.byId[resId].title);
+      }
+    });
+    // const embeds=[]//2do understand what was the reason
+    // embeds.forEach(embed => {
+    //   console.log('embed:', embed);
+    //   currentPos = embedPath;
+    //   currentPath.forEach(el => (currentPos = currentPos[el]));
+    //   console.log('currentPath:', currentPath);
+    //   if (embed.case === 'begin') {
+    //     console.log('begin of embed');
+    //     currentPos[embed.resInfo] = { begin: embed.index };
+    //     console.log(currentPos, 'currentPos');
+    //     currentPath.push(embed.resInfo);
+    //   } else {
+    //     console.log('end of embed');
+    //     if (currentPath[currentPath.length - 1] !== embed.resInfo)
+    //       throw 'Error: inconsistent embeds.';
+    //     currentPos.end = embed.index;
+    //     embededNotebooks.push({
+    //       id: embed.id,
+    //       beginIndex: currentPos.begin + 1, //excl sep
+    //       endIndex: currentPos.end - 1, //excl sep
+    //       embedIndexes: Object.keys(currentPos)
+    //         .filter(key => !['begin', 'end'].includes(key))
+    //         .map(key => ({
+    //           begin: currentPos[key].begin,
+    //           end: currentPos[key].end
+    //         })),
+    //       deltas: notebooks.byId[embed.id].deltas
+    //     });
+    //     currentPath.pop();
+    //   }
+    //   console.log('currentPath', currentPath, 'embedPath', embedPath);
+    // });
+    // embededNotebooks[0].embedIndexes = Object.keys(embedPath)
+    //   .filter(key => !['begin', 'end'].includes(key))
+    //   .map(key => ({
+    //     begin: embedPath[key].begin,
+    //     end: embedPath[key].end
+    //   }));
+    // console.log('embedPath final', embedPath);
+
+    // console.log('embededNotebooks', embededNotebooks);
+    // 2do: add links to connectedWith state
+    // embededNotebooks.forEach(embededNotebook => {
+    //   // include from begin Index to first embed index, then exclude until embed end, then include from end+1 to next first embedIndex, then exlude until embed,  then include from embed end +1 until end index
+    //   // exclude them seperators
+    //   console.log('embededNotebook', embededNotebook);
+    //   const concernedOps = [...embededNotebook.embedIndexes, {}].flatMap(
+    //     (embedIndex, index) => {
+    //       // console.log("slice frrom", ,"to", );
+    //       return delta.ops.slice(
+    //         index === 0
+    //           ? embededNotebook.beginIndex
+    //           : embededNotebook.embedIndexes[index - 1].end + 1, //excl sep
+    //         index === embededNotebook.embedIndexes.length
+    //           ? embededNotebook.endIndex + 1
+    //           : embededNotebook.embedIndexes[index].begin //excl sep
+    //       ); // more complex: remove its embeds!
+    //     }
+    //   );
+
+    //   console.log('concernedOps', concernedOps);
+    //   console.log('embededNotebook.deltas.ops', embededNotebook.deltas.ops);
+
+    //   if (_isEqual(concernedOps, embededNotebook.deltas.ops)) {
+    //     console.log('no change in', notebooks.byId[embededNotebook.id].title);
+    //     if (
+    //       embededNotebook.id === notebookId &&
+    //       !_isEqual(notebooks.byId[notebookId].embedPath, embedPath)
+    //     ) {
+    //       // think about whether changing the embed path can change the displayed embeds?
+    //       dispatch(
+    //         updateNotebook({
+    //           _id: notebookId,
+    //           embedPath
+    //         })
+    //       );
+    //     }
+    //     return;
+    //   }
+    //   // each main notebook should contain a path of what is expanded: embeds: [{id,nr, id_nr: `${id}_${nr}`, expaneded: false, type: "notebook", id:id, embeds: [{...}]},{...}]
+    //   // if other notebook than active one is changed than an update / remount has to be forced on those places where it is active
+
+    //   console.log('currentDeltas', delta);
+    //   const embedPlainText = concernedOps
+    //     .map(op =>
+    //       typeof op.insert === 'string'
+    //         ? op.insert
+    //         : op.insert.mention
+    //         ? op.insert.mention.value
+    //         : ''
+    //     )
+    //     .join('');
+    //   console.log(
+    //     notebooks.byId[embededNotebook.id].title,
+    //     'embedPlainText',
+    //     embedPlainText
+    //   );
+    //   dispatch(
+    //     updateNotebook({
+    //       _id: embededNotebook.id,
+    //       deltas: { ops: concernedOps },
+    //       plainText: embedPlainText,
+    //       embedPath
+    //     })
+    //   );
+    // });
   };
 
-  React.useEffect(() => {
+  // settimout handleEditorChange
+  useEffect(() => {
     if (changedEditorCounter < 0) return;
     if (!quillNotebookRefs.current[notebookId]) return;
+    console.log('start timer');
     const commitChangeTimer = setTimeout(() => {
       handleEditorChange();
     }, 5000);
@@ -356,18 +413,20 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
     };
   }, [changedEditorCounter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       handleEditorChange();
     };
   }, []);
 
-  // make whole embed as content editable false, but turn inner contenteditable to true.
   // 2do include a paste sanitizer: should check whether links are inside. if so it should give the links a new number.
   // 2do improve
   const clickHandler = e => {
     console.log(e.target, e.target.className);
-    if (typeof e.target.className !== 'string') return;
+    console.log(
+      'selection:::::::::',
+      quillNotebookRefs.current[notebookId].editor.getSelection()
+    );
     if (
       (!e.target.className.includes('ql-mention-denotation-char') &&
         (e.target.className.includes('mention') ||
@@ -377,118 +436,169 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
           ))) ||
       e.target.className.includes('navline')
     ) {
-      const idPath = e.target.className.includes('navline')
-        ? e.target.dataset.idPath
+      const resInfo = e.target.className.includes('navline')
+        ? e.target.dataset.resInfo
         : e.target.dataset.id ||
           e.target.parentElement.dataset.id ||
           e.target.parentElement.parentElement.dataset.id;
+      console.log(resInfo);
       let dontOpen, closeIndexes;
-      // idPath contains: resource-nr-parentResource
+      // resInfo contains: resource-nr-parentResource
       // will it always be unique?
       // a parentResource can only be opened once. for that reason: yes
+      const resType = extractAtValueResType(resInfo);
+      if (!resType || resType !== 'note') {
+        // dont embed resource. 2do: open instead!
+        return;
+      }
 
-      const resId = idPath.split('_')[0];
+      const resId = extractAtValueResId(resInfo);
+      const deltaToEmbed = notebooks.byId[resId].deltas;
+      const editor = quillNotebookRefs.current[notebookId].editor;
+      const length = editor.getLength();
+      const delta = editor.getContents();
+      const currentPath = [notebookId],
+        allPaths = {};
+      const selection = quillNotebookRefs.current[
+        notebookId
+      ].editor.getSelection();
+      let deltaPosition = 0,
+        deltaIndex = 0,
+        seperatorIndexes = null;
 
-      if (resId === notebookId) {
-        // 2do or elsewhere in idPath
+      while (deltaPosition < selection.index) {
+        if (
+          delta.ops[deltaIndex].attributes &&
+          delta.ops[deltaIndex].attributes.embedSeperator
+        ) {
+          if (
+            (delta.ops[deltaIndex].attributes.embedSeperator.case = 'begin')
+          ) {
+            allPaths[delta.ops[deltaIndex].attributes.embedSeperator.resId] = {
+              begin: deltaIndex
+            };
+            currentPath.push(
+              delta.ops[deltaIndex].attributes.embedSeperator.resId
+            );
+          } else {
+            allPaths[
+              delta.ops[deltaIndex].attributes.embedSeperator.resId
+            ].end = deltaIndex;
+            currentPath.pop();
+          }
+        }
+        deltaPosition += delta.ops[deltaIndex].insert.length || 1;
+        deltaIndex++;
+      } //2do check what happen when first delta is used
+      console.log('d-1', delta.ops[deltaIndex - 1]);
+      console.log('d-0', delta.ops[deltaIndex - 0]);
+      console.log('d+1', delta.ops[deltaIndex + 1]);
+      console.log('d+2', delta.ops[deltaIndex + 2]);
+      if (
+        delta.ops[deltaIndex + 1].attributes &&
+        delta.ops[deltaIndex + 1].attributes.embedSeperator &&
+        delta.ops[deltaIndex + 1].attributes.embedSeperator.resId === resId
+      ) {
+        //  check whether delta is followed by opening tag or not.
+        // then close
+        let begin = deltaIndex + 1;
+        console.log('tested ops', delta.ops.slice(deltaIndex + 1));
+        let end =
+          deltaIndex +
+          1 +
+          delta.ops
+            .slice(deltaIndex + 1)
+            .findIndex(
+              op =>
+                op.attributes &&
+                op.attributes.embedSeperator &&
+                op.attributes.embedSeperator.resId === resId &&
+                op.attributes.embedSeperator.case === 'end'
+            );
+        seperatorIndexes = { begin, end };
+        editor.updateContents({
+          ops: [...delta.ops.slice(0, begin), ...delta.ops.slice(end + 1)]
+        });
+        // 2do: check if there are unsaved changes in the area that is about to be collapsed. if so dispatch them.
+        console.log('close.', seperatorIndexes);
+        return;
+      }
+
+      if (currentPath.includes(resId)) {
+        // this check is only necessary when it is not open.
+        // 2do or elsewhere in resInfo
         dispatch(
           addAlert({
             message: `<p>You are <strong>already</strong> working within <strong>${notebooks.byId[notebookId].title}</strong>.</p>`,
             type: 'info'
           })
         );
+        console.log('dont open. dont do nothing.');
         return;
       }
-      const mentionType = Object.keys(texts.byId).includes(resId)
-        ? 'text'
-        : Object.keys(sections.byId).includes(resId)
-        ? 'section'
-        : Object.keys(annotations.byId).includes(resId)
-        ? 'annotation'
-        : Object.keys(notebooks.byId).includes(resId)
-        ? 'notebook'
-        : undefined;
-      console.log(resId, 'resId', mentionType, 'mentionType');
-      if (!mentionType || mentionType !== 'notebook') return;
-      const deltaToEmbed = notebooks.byId[resId].deltas;
-      const editor = quillNotebookRefs.current[notebookId].editor;
-      const length = editor.getLength();
-      const deltas = editor.getContents();
-      const deltaIndex = deltas.ops.findIndex(
-        op => op.insert.mention && op.insert.mention.id === idPath
-      );
 
-      // or if resId is been open upwards the tree.
-      // if resId is open sidewards in the tree close this other instance. Otherwise sync problems.
+      // OPEN: (and possibly close elsewhere.)
 
-      closeIndexes = {
-        begin: deltas.ops.findIndex(
-          op =>
-            op.attributes &&
-            op.attributes.embedSeperator &&
-            op.attributes.embedSeperator.case === 'begin' &&
-            op.attributes.embedSeperator.idPath === idPath
-        ),
-        end: deltas.ops.findIndex(
-          op =>
-            op.attributes &&
-            op.attributes.embedSeperator &&
-            op.attributes.embedSeperator.case === 'end' &&
-            op.attributes.embedSeperator.idPath === idPath
-        )
-      };
-      if (closeIndexes.begin >= 0 && closeIndexes.end >= 0) {
-        // resource is open and shall be closed.
-        dontOpen = true;
-      } else {
-        closeIndexes = {
-          begin: deltas.ops.findIndex(
-            op =>
-              op.attributes &&
-              op.attributes.embedSeperator &&
-              op.attributes.embedSeperator.case === 'begin' &&
-              op.attributes.embedSeperator.idPath.includes(
-                idPath.split('_').slice(0, 2).join('_')
-              )
-          ),
-          end: deltas.ops.findIndex(
-            op =>
-              op.attributes &&
-              op.attributes.embedSeperator &&
-              op.attributes.embedSeperator.case === 'end' &&
-              op.attributes.embedSeperator.idPath.includes(
-                idPath.split('_').slice(0, 2).join('_')
-              )
-          )
+      // check whether it is open before
+      if (Object.keys(allPaths).includes(resId)) {
+        seperatorIndexes = {
+          begin: allPaths[resId].begin,
+          end: allPaths[resId].end
         };
-        if (closeIndexes.begin >= 0 && closeIndexes.end >= 0) {
-          // resource is open else where and shall be open in new place and closed in old place
-        } else {
-          closeIndexes = null; // set to null to not close any.
+      } else {
+        // search whether resource is open after
+        let deltaSearchIndex = deltaIndex;
+        while (deltaSearchIndex < delta.ops.length) {
+          if (
+            delta.ops[deltaIndex].attributes &&
+            delta.ops[deltaIndex].attributes.embedSeperator
+          ) {
+            if (
+              (delta.ops[deltaIndex].attributes.embedSeperator.case = 'begin')
+            ) {
+              allPaths[
+                delta.ops[deltaIndex].attributes.embedSeperator.resId
+              ] = { begin: deltaIndex };
+            } else {
+              allPaths[
+                delta.ops[deltaIndex].attributes.embedSeperator.resId
+              ].end = deltaIndex;
+            }
+          }
+          deltaSearchIndex++;
+        }
+
+        if (Object.keys(allPaths).includes(resId)) {
+          seperatorIndexes.begin = {
+            begin: allPaths[resId].begin,
+            end: allPaths[resId].end
+          };
         }
       }
 
-      console.log('deltas on click', deltas);
-      const deltasAfterClick = {
+      // open resource
+      // update change
+      console.log('open! close:', closeIndexes);
+      const deltaAfterClick = {
         ops: [
           { delete: length },
           ...(closeIndexes && closeIndexes.begin < deltaIndex
             ? [
-                ...deltas.ops.slice(0, closeIndexes.begin),
-                ...deltas.ops.slice(closeIndexes.end + 1, deltaIndex + 1)
+                ...delta.ops.slice(0, closeIndexes.begin),
+                ...delta.ops.slice(closeIndexes.end + 1, deltaIndex + 1)
               ]
-            : deltas.ops.slice(0, deltaIndex + 1)),
+            : delta.ops.slice(0, deltaIndex + 1)),
           ...(dontOpen
             ? []
             : [
                 {
-                  insert: '\n ',
+                  insert: ' \n',
                   attributes: {
                     embedSeperator: {
                       case: 'begin',
-                      embedType: mentionType,
-                      id: resId,
-                      idPath: idPath,
+                      embedType: resType,
+                      resId: resId,
+                      resInfo: resInfo,
                       isOpen: true
                     }
                   }
@@ -499,9 +609,9 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
                   attributes: {
                     embedSeperator: {
                       case: 'end',
-                      embedType: mentionType,
-                      id: resId,
-                      idPath: idPath,
+                      embedType: resType,
+                      resId: resId,
+                      resInfo: resInfo,
                       isOpen: true
                     }
                   }
@@ -509,19 +619,18 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
               ]),
           ...(closeIndexes && closeIndexes.begin > deltaIndex
             ? [
-                ...deltas.ops.slice(deltaIndex + 1, closeIndexes.begin - 1),
-                ...deltas.ops.slice(closeIndexes.end + 1, deltas.ops.length)
+                ...delta.ops.slice(deltaIndex + 1, closeIndexes.begin - 1),
+                ...delta.ops.slice(closeIndexes.end + 1, delta.ops.length)
               ]
-            : deltas.ops.slice(deltaIndex + 1, deltas.ops.length))
+            : delta.ops.slice(deltaIndex + 1, delta.ops.length))
         ]
       };
-      // 2do updated embed Path with the change:
-      // either remove it or add it.
-      // shall children always collapsed.
-      console.log('deltasAfterClick', deltasAfterClick);
-      editor.updateContents(deltasAfterClick);
-      // 2do: call a timeout and then add bar next to text
-      console.log('expand me...');
+      editor.updateContents(deltaAfterClick);
+
+      // // 2do updated embed Path with the change:
+      // // either remove it or add it.
+      // // shall children always collapsed.
+      // // 2do: call a timeout and then add bar next to text
       return;
     }
     if (e.target.className.includes('ql-mention-denotation-char')) {
@@ -576,8 +685,9 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
     dispatch(setCommittedSections([e.target.dataset.sectionId], false));
     dispatch(setTentativeSections([e.target.dataset.sectionId], false));
   };
-  // clickhandler for section blots
-  React.useEffect(() => {
+
+  // clickhandler for section blots // remove or replace with embed clickhandler
+  useEffect(() => {
     document
       .getElementById(`notebookCardBody${notebookId}`)
       .addEventListener('click', clickHandler);
@@ -589,9 +699,10 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
     };
   }, [notebookId, user.textIds, user.notebookIds]);
 
-  // navline
-  React.useEffect(() => {
+  // navline //only DOM manipulation, no render trigger
+  useEffect(() => {
     if (!quillNotebookRefs.current[notebookId]) return;
+    console.log('updateNavline');
     const cardBody = document.getElementById(`notebookCardBody${notebookId}`);
     // delete navlines and replace them with new ones
     Array.from(cardBody.querySelectorAll('.navline')).forEach(navline =>
@@ -607,7 +718,7 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
     const navline = document.createElement('div');
     navline.className = `navline navline-${index}`;
     navline.id = 'navline_scroll_' + notebookId;
-    navline.dataset.idPath = 'none_none_none';
+    navline.dataset.resInfo = 'none_none_none';
     navline.style = `height: ${
       cardBodyRect.height + 2 * parentPadding
     }px; left:${cardBodyRect.width + 9}px; top:${top - cardBodyRect.top}px;`;
@@ -618,7 +729,7 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
       if (seperator.dataset.case === 'end') return;
       const endIndex = seperators.findIndex(
         el =>
-          el.dataset.idPath === seperator.dataset.idPath &&
+          el.dataset.resInfo === seperator.dataset.resInfo &&
           el.dataset.case === 'end'
       );
       if (endIndex < 0) return;
@@ -627,8 +738,8 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
       const { bottom } = seperators[endIndex].getBoundingClientRect();
       const navline = document.createElement('div');
       navline.className = `navline navline-${index}`;
-      navline.id = 'navline_' + seperator.dataset.idPath;
-      navline.dataset.idPath = seperator.dataset.idPath;
+      navline.id = 'navline_' + seperator.dataset.resInfo;
+      navline.dataset.resInfo = seperator.dataset.resInfo;
       navline.style = `height: ${
         bottom - top + extendTop + extendBottom
       }px; left:${cardBodyRect.width + 9}px; top:${
@@ -643,6 +754,25 @@ const NotebookPanel = ({ setNotebookRef, quillNotebookRefs, notebookId }) => {
     notebooks.byId[notebookId].embedPath,
     mdNotebooksPanel
   ]);
+
+  // update atValues // possible more efficient to integrate in redux store
+  useEffect(() => {
+    const currentKeys = [
+      ...Object.keys(texts.byId),
+      ...Object.keys(notebooks.byId),
+      ...Object.keys(sections.byId)
+    ];
+    if (
+      currentKeys.length === atKeysRef.current &&
+      !currentKeys.some(key => !atKeysRef.current.includes(key))
+    )
+      return;
+
+    atKeysRef.current = currentKeys;
+    setAtValues(atValuesCreator(texts.byId, notebooks.byId, sections.byId));
+
+    return () => {};
+  }, [texts.byId, sections.byId, notebooks.byId]);
 
   if (!notebook) return <></>;
   return (

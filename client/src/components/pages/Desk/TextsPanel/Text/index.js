@@ -116,7 +116,7 @@ function Textpage({ quillNotebookRefs }) {
             </div>
           </div>
           {speedReader.isOpenFor.includes(activeTextPanel) && (
-            <SpeedReader key={activeTextPanel} />
+            <></> // <SpeedReader key={activeTextPanel} />
           )}
 
           <div

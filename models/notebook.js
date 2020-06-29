@@ -8,6 +8,7 @@ const schema = new Schema({
   plainText: { type: String },
   annotationVersions: { type: Object },
   embedsPath: [],
+  // distinguish between incoming and outgoing connections?
   keywords: [{ type: String }],
   created: { type: Date, default: Date.now },
   lastEdited: { type: Date, default: Date.now },

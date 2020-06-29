@@ -11,6 +11,7 @@ body,
   background-color: #27edff34;
   color: auto;
 }
+
 .alertContainer {
   width: 30rem;
   background-color: transparent;
@@ -20,11 +21,20 @@ body,
   z-index: 1100;
 }
 .alertElement {
-  border-radius: 1rem;
-  border: 0.25rem solid rgb(253, 243, 194);
-  background-color: rgb(253, 249, 230);
+  border-radius: 0.5rem;
+  border: 4px solid rgba(167, 167, 167, 0.5);
+  background-color: rgba(255, 255, 255, 0.95);
   padding: 0.3rem 2.5rem 0.2rem 1rem;
   margin-bottom: 1rem;
+}
+.alertElement.info {
+  border: 4px solid rgba(87, 151, 255, 0.5);
+}
+.alertElement.warning {
+  border: 4px solid rgba(255, 251, 27, 0.5);
+}
+.alertElement.danger {
+  border: 4px solid rgba(255, 27, 27, 0.5);
 }
 button.closeAlertElement {
   position: absolute;
@@ -34,128 +44,12 @@ button.closeAlertElement {
   border-radius: 0.75rem;
   border: none;
   background-color: rgba(255, 255, 255, 0.4);
+  transition: ease-in-out;
+  transition-property: all;
+  transition-duration: 0.5s;
 }
 .closeAlertElement:hover {
   background-color: rgba(255, 255, 255, 0.85);
-}
-
-.ql-editor {
-  overflow-x: hidden;
-}
-
-.embedSeperator {
-  background-color: transparent;
-  border: none;
-  height: 50px;
-  padding: 0 0;
-}
-.embedSeperator.case-begin {
-  background-image: linear-gradient(
-    -175deg,
-    rgb(131, 216, 255),
-    rgb(173, 228, 253),
-    transparent,
-    transparent,
-    transparent
-  );
-  margin: 0 -25px -30px 0;
-  border-top: 1px solid rgb(173, 228, 253);
-}
-.embedSeperator.case-end {
-  background-image: linear-gradient(
-    175deg,
-    transparent,
-    transparent,
-    transparent,
-    rgb(173, 228, 253),
-    rgb(131, 216, 255)
-  );
-  margin: -20px -25px 20px 0;
-  border-bottom: 1px solid rgb(173, 228, 253);
-}
-
-span.mention {
-  cursor: pointer;
-}
-span.ql-mention-denotation-char {
-  cursor: alias;
-}
-
-.navline {
-  cursor: zoom-out;
-  border-radius: 5rem 0 0 5rem;
-  width: 16px;
-  position: absolute;
-  background-color: #f00;
-}
-
-/* 2do how to best creat an ability for a nested color family strucure? */
-.navline-0 {
-  cursor: default;
-  border-radius: 0;
-  background-color: rgb(221, 236, 250);
-}
-.navline-1 {
-  background-color: rgb(165, 226, 245);
-}
-.navline-2 {
-  background-color: rgb(99, 195, 240);
-}
-.navline-3 {
-  background-color: rgb(39, 197, 123);
-}
-.navline-4 {
-  background-color: rgb(102, 238, 174);
-}
-.navline-5 {
-  background-color: rgb(201, 241, 125);
-}
-.navline-6 {
-  background-color: rgb(243, 234, 104);
-}
-
-.react-flow__node {
-  border-radius: 0.5rem;
-  padding: 0.25rem;
-  text-align: center;
-}
-
-.react-flow__node-text {
-  background-color: rgb(18, 44, 90) !important;
-  color: #fff !important;
-}
-.react-flow__node-section {
-  background-color: rgb(64, 87, 126) !important;
-  color: #fff !important;
-}
-.react-flow__node-annotation {
-  background-color: rgb(243, 165, 195) !important;
-}
-.react-flow__node-notebook {
-  background-color: rgb(236, 133, 101) !important;
-}
-
-.flowchart {
-  z-index: 1050;
-  background-color: #fff;
-}
-
-.flowchartOpen {
-  position: fixed;
-  left: 0px;
-  top: 60px;
-  height: 90%;
-  width: 100%;
-  border: 2px solid rgb(45, 223, 255);
-}
-
-.flowchartPreview {
-  position: fixed;
-  right: 0px;
-  bottom: 0px;
-  height: 50px;
-  width: 150px;
-  border: 2px solid rgb(45, 223, 255);
 }
 
 .parent-height {
@@ -234,6 +128,55 @@ span.ql-mention-denotation-char {
 .custom-progress .post-contents {
   height: 100%;
 }
+
+.fade-in {
+  animation: fadeIn ease 0.5;
+  -webkit-animation: fadeIn ease 0.5s;
+  -moz-animation: fadeIn ease 0.5s;
+  -o-animation: fadeIn ease 0.5s;
+  -ms-animation: fadeIn ease 0.5s;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-o-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-ms-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* 
 .QuillEditorAnnotation {
   cursor: pointer;

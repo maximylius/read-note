@@ -10,7 +10,8 @@ import InspectText from './InspectText';
 import InspectAnnotation from './InspectAnnotation';
 import InspectSection from './InspectSection';
 import InspectNotebook from './InspectNotebook';
-import Search from '../../FinderPanel/Search';
+import { Search } from './Search';
+import FilterOptions from './FilterOptions';
 
 const FlowchartSidepanel = ({ flowchartInstance }) => {
   const dispatch = useDispatch();
@@ -28,68 +29,40 @@ const FlowchartSidepanel = ({ flowchartInstance }) => {
   };
   console.log(inspectElements);
   return (
-    <div className='col-3 bg-secondary'>
-      <div className='row '>
-        <span>
-          <button
-            className='btn btn-lg btn-light mt-1'
-            onClick={closeSidepanel}
-          >
-            <IconContext.Provider value={{ size: '1.5rem' }}>
-              <BsBoxArrowInRight />
-            </IconContext.Provider>
-          </button>
-          <button
-            className='btn btn-lg btn-light mt-1'
-            onClick={closeFlowchart}
-          >
-            <IconContext.Provider value={{ size: '1.5rem' }}>
-              <BsX />
-            </IconContext.Provider>
-          </button>
-        </span>
-        <h5>Search</h5>
-        <Search />
-        {/* use text editor instead of input field. disallow all formats expect mentions. filter by words search, # and @. varying placeholder can show examples. #topic to see only main notes. */}
-        <h5>Filter</h5>
-        <p>Ancestors: all | only | direct | none </p>
-        <p>Descendants: all | only | direct | none </p>
-        {inspectElements.map(el => {
-          if (el.type === 'text')
-            return (
-              <InspectText
-                key={el.id}
-                id={el.id}
-                flowchartInstance={flowchartInstance}
-              />
-            );
-          if (el.type === 'section')
-            return (
-              <InspectSection
-                key={el.id}
-                id={el.id}
-                flowchartInstance={flowchartInstance}
-              />
-            );
-          if (el.type === 'annotation')
-            return (
-              <InspectAnnotation
-                key={el.id}
-                id={el.id}
-                flowchartInstance={flowchartInstance}
-              />
-            );
-          if (el.type === 'notebook')
-            return (
-              <InspectNotebook
-                key={el.id}
-                id={el.id}
-                flowchartInstance={flowchartInstance}
-              />
-            );
-          throw 'undefined element type to inspect in flowchart';
-        })}
-      </div>
+    <div className='col-3 flowchartSidepanel'>
+      <span>
+        <button className='btn btn-lg btn-light mt-1' onClick={closeSidepanel}>
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            <BsBoxArrowInRight />
+          </IconContext.Provider>
+        </button>
+        <button className='btn btn-lg btn-light mt-1' onClick={closeFlowchart}>
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            <BsX />
+          </IconContext.Provider>
+        </button>
+      </span>
+      <Search />
+      {/* use text editor instead of input field. disallow all formats expect mentions. filter by words search, # and @. varying placeholder can show examples. #topic to see only main notes. */}
+      <FilterOptions />
+      {inspectElements.map(el => (
+        <div key={el.id} className='flowchartInspectElContainer'>
+          {el.type === 'text' ? (
+            <InspectText id={el.id} flowchartInstance={flowchartInstance} />
+          ) : el.type === 'section' ? (
+            <InspectSection id={el.id} flowchartInstance={flowchartInstance} />
+          ) : el.type === 'annotation' ? (
+            <InspectAnnotation
+              id={el.id}
+              flowchartInstance={flowchartInstance}
+            />
+          ) : el.type === 'notebook' ? (
+            <InspectNotebook id={el.id} flowchartInstance={flowchartInstance} />
+          ) : (
+            <></>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

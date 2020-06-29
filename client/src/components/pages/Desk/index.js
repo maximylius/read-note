@@ -75,7 +75,7 @@ const Desk = () => {
 
   return (
     <>
-      {/* <Flowchart /> */}
+      <Flowchart />
       <div className='row grow flex-row mx-0 px-0' ref={testRef}>
         <div
           className={`col-md-${ui.mdFinderPanel} px-0 mt-0 pt-0 box`}

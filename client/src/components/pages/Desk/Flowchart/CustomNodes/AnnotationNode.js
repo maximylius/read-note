@@ -6,14 +6,12 @@ import { inspectAnnotationInFlowchart } from '../../../../../store/actions';
 
 export default memo(props => {
   const dispatch = useDispatch();
-  console.log(props);
   const {
     id,
     data: { width, height, label }
   } = props;
   const onClickHandler = () => {
     // 2do distinguish drag and click
-    console.log(id, 'clicked');
     dispatch(inspectAnnotationInFlowchart(id));
   };
   return (
@@ -22,17 +20,19 @@ export default memo(props => {
         type='source'
         position='top'
         id='a'
-        style={{ background: 'transparent' }}
+        className='flowchartCustomHandle'
       />
-      <span>
-        <strong>{label}</strong>
-      </span>
       <Handle
         type='target'
         position='bottom'
         id='b'
-        style={{ background: 'transparent' }}
+        className='flowchartCustomHandle'
       />
+      <div className='flowchartHandleInnerBox'>
+        <span>
+          <strong>{label}</strong>
+        </span>
+      </div>
     </div>
   );
 });

@@ -9,6 +9,8 @@ import {
   deepCompare,
   regExpHistory
 } from '../functions/main';
+import _isEqual from 'lodash/isEqual';
+
 /**
  *
  *
@@ -20,6 +22,53 @@ import {
  *
  * @AUTH
  */
+const putUserUpdateIfAuth = (isAuthenticated, getState, updateObj) => {
+  if (!isAuthenticated) return;
+  axios.put(`/api/users/update`, updateObj, tokenConfig(getState)); // 2do: add auth only...
+};
+
+const fetchUserData = async (user, openTexts, dispatch) => {
+  if (user.notebookIds.length > 0) {
+    const notebooksRes = await axios.get(
+      `/api/notebooks/${user.notebookIds.join('+')}`
+    );
+
+    console.log(notebooksRes);
+
+    const notebooksById = {};
+    notebooksRes.data.forEach(
+      notebook => (notebooksById[notebook._id] = notebook)
+    );
+    dispatch({
+      type: types.GET_NOTEBOOKS,
+      payload: { notebooksById }
+    });
+  }
+  const textsToGet = user.textIds.filter(id => !openTexts.includes(id));
+  if (textsToGet.length > 0) {
+    const textsRes = await axios.get(`/api/texts/meta/${textsToGet.join('+')}`);
+    const textsMetaById = {};
+    textsRes.data.forEach(text => (textsMetaById[text._id] = text));
+    dispatch({
+      type: types.GET_USER_TEXTS_META,
+      payload: { textsMetaById }
+    });
+  }
+
+  if (user.annotationIds.length > 0) {
+    const annotationsRes = await axios.get(
+      `/api/annotations/${user.annotationIds.join('+')}`
+    );
+    const annotationsById = {};
+    annotationsRes.data.forEach(
+      annotation => (annotationsById[annotation._id] = annotation)
+    );
+    dispatch({
+      type: types.GET_ANNOTATIONS,
+      payload: { annotationsById }
+    });
+  }
+};
 
 export const registerUser = ({ username, email, password }) => dispatch => {
   // Headers
@@ -83,49 +132,6 @@ export const loadUser = () => async (dispatch, getState) => {
   }
 };
 
-const fetchUserData = async (user, openTexts, dispatch) => {
-  if (user.notebookIds.length > 0) {
-    const notebooksRes = await axios.get(
-      `/api/notebooks/${user.notebookIds.join('+')}`
-    );
-
-    console.log(notebooksRes);
-
-    const notebooksById = {};
-    notebooksRes.data.forEach(
-      notebook => (notebooksById[notebook._id] = notebook)
-    );
-    dispatch({
-      type: types.GET_NOTEBOOKS,
-      payload: { notebooksById }
-    });
-  }
-  const textsToGet = user.textIds.filter(id => !openTexts.includes(id));
-  if (textsToGet.length > 0) {
-    const textsRes = await axios.get(`/api/texts/meta/${textsToGet.join('+')}`);
-    const textsMetaById = {};
-    textsRes.data.forEach(text => (textsMetaById[text._id] = text));
-    dispatch({
-      type: types.GET_USER_TEXTS_META,
-      payload: { textsMetaById }
-    });
-  }
-
-  if (user.annotationIds.length > 0) {
-    const annotationsRes = await axios.get(
-      `/api/annotations/${user.annotationIds.join('+')}`
-    );
-    const annotationsById = {};
-    annotationsRes.data.forEach(
-      annotation => (annotationsById[annotation._id] = annotation)
-    );
-    dispatch({
-      type: types.GET_ANNOTATIONS,
-      payload: { annotationsById }
-    });
-  }
-};
-
 export const loginUser = ({ email, password }) => async (
   dispatch,
   getState
@@ -150,6 +156,7 @@ export const loginUser = ({ email, password }) => async (
       type: types.LOGIN_SUCCESS,
       payload: userRes.data
     });
+
     const user = userRes.data.user;
     fetchUserData(user, openTexts, dispatch);
   } catch (err) {
@@ -269,20 +276,25 @@ export const toggleKeepFinderOpen = () => dispatch => {
  *
  * @SPARE_IDS
  */
-export const fillSpareIds = () => (dispatch, getState) => {
-  const { spareIds } = getState();
+const fetchSpareIds = (prefix, number, dispatch) => {
+  axios.post(`/api/${prefix}/spareIds/${number}`).then(res => {
+    dispatch({
+      type: types.PUSH_SPARE_IDS,
+      payload: { prefix, spareIds: res.data.spareIds }
+    });
+  });
+};
+const fillDefinedSpareIds = (spareIds, dispatch) => {
   Object.keys(spareIds).forEach(prefix => {
     if (spareIds[prefix].length < 3) {
-      axios
-        .post(`/api/${prefix}/spareIds/${3 - spareIds[prefix].length}`)
-        .then(res => {
-          dispatch({
-            type: types.PUSH_SPARE_IDS,
-            payload: { prefix, spareIds: res.data.spareIds }
-          });
-        });
+      fetchSpareIds(prefix, 3 - spareIds[prefix].length, dispatch);
     }
   });
+};
+
+export const fillSpareIds = () => (dispatch, getState) => {
+  const { spareIds } = getState();
+  fillDefinedSpareIds(spareIds, dispatch);
 };
 
 export const getNewSpareIds = (prefix, numberOfSpareIds) =>
@@ -497,21 +509,11 @@ export const uploadTextcontent = (
     ])
   );
 
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      { textIds: [...user.textIds, text._id] },
-      tokenConfig(getState)
-    ); // 2do: add auth only...
-  }
-
-  const prefix = 'texts';
-  axios.post(`/api/${prefix}/spareIds/1`).then(res => {
-    dispatch({
-      type: types.PUSH_SPARE_IDS,
-      payload: { prefix, spareIds: res.data.spareIds }
-    });
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    textIds: [...user.textIds, text._id]
   });
+
+  fetchSpareIds('texts', 1, dispatch);
 };
 
 export const updateText = (textId, textUpdate) => (dispatch, getState) => {
@@ -570,16 +572,10 @@ export const deleteText = id => (dispatch, getState) => {
     }
   });
   axios.delete(`/api/texts/${id}`);
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      {
-        textIds: user.textIds.filter(textId => textId !== id)
-      },
-      tokenConfig(getState)
-    ); // 2do: add auth only...
-  }
-  console.log('delete attempted, refresh page...');
+
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    textIds: user.textIds.filter(textId => textId !== id)
+  });
 };
 
 export const deleteAllTexts = () => {
@@ -729,25 +725,12 @@ export const addNotebook = ({ history }) => (dispatch, getState) => {
     filterObjectByKeys(notebook, ['_id'], null)
   );
 
-  const prefix = 'notebooks';
-  axios.post(`/api/${prefix}/spareIds/1`).then(res => {
-    dispatch({
-      type: types.PUSH_SPARE_IDS,
-      payload: { prefix, spareIds: res.data.spareIds }
-    });
+  fetchSpareIds('notebooks', 1, dispatch);
+
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    notebookIds: [...user.notebookIds, notebook._id]
   });
-  // save to server if authenticated
-  if (isAuthenticated) {
-    console.log('put to server.');
-    axios.put(
-      `/api/users/update`,
-      {
-        notebookIds: [...user.notebookIds, notebook._id]
-      },
-      tokenConfig(getState)
-      //
-    );
-  }
+
   history.push(
     regExpHistory(
       history.location.pathname,
@@ -796,15 +779,10 @@ export const deleteNotebook = notebookId => (getState, dispatch) => {
   notebookAnnotationIds.forEach(annotationId => {
     axios.put(`/api/annotations/${annotationId}/deletednotebook/${notebookId}`);
   });
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      {
-        notebookIds: user.notebookIds.filter(id => id !== notebookId)
-      },
-      tokenConfig(getState)
-    );
-  }
+
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    notebookIds: user.notebookIds.filter(id => id !== notebookId)
+  });
 };
 
 /**
@@ -1022,23 +1000,12 @@ export const addSection = ({ categoryId, begin, end }) => (
       sectionIds: textSectionIds
     })
     .catch(err => console.error(err, 'err.response.data, err.response.status'));
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      {
-        sectionIds: user.sectionIds.concat(section._id)
-      },
-      tokenConfig(getState)
-    ); //2do auth only.
-  }
 
-  const prefix = 'sections';
-  axios.post(`/api/${prefix}/spareIds/1`).then(res => {
-    dispatch({
-      type: types.PUSH_SPARE_IDS,
-      payload: { prefix, spareIds: res.data.spareIds }
-    });
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    sectionIds: user.sectionIds.concat(section._id)
   });
+
+  fetchSpareIds('sections', 1, dispatch);
 };
 
 export const updateSection = update => (dispatch, getState) => {
@@ -1076,10 +1043,10 @@ export const updateSection = update => (dispatch, getState) => {
     );
     request.title = section.title;
   }
-  // only send changed parts to server // 2do include Array & Obj compare
+  // only send changed parts to server
   Object.keys(update).forEach(updateKey => {
     if (Object.keys(section).includes(updateKey)) {
-      if (update[updateKey] !== section[updateKey]) {
+      if (!_isEqual(update[updateKey], section[updateKey])) {
         request[updateKey] = update[updateKey];
         section[updateKey] = update[updateKey];
       }
@@ -1114,15 +1081,10 @@ export const deleteSection = sectionId => (dispatch, getState) => {
       id => id !== sectionId
     )
   });
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update}`,
-      {
-        sectionIds: user.sectionIds.filter(id => id !== sectionId)
-      },
-      tokenConfig(getState)
-    ); //2do auth only.
-  }
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    sectionIds: user.sectionIds.filter(id => id !== sectionId)
+  });
+
   const sectionIds = texts.byId[activeTextPanel].sectionIds.filter(
     id => id !== sectionId
   );
@@ -1141,44 +1103,6 @@ export const deleteSection = sectionId => (dispatch, getState) => {
       // divs: divsParser(texts.byId[activeTextPanel].textcontent, ranges)
     }
   });
-};
-
-export const deleteAllSections = () => (dispatch, getState) => {
-  const {
-    auth: { isAuthenticated },
-    user,
-    sections,
-    texts,
-    textsPanel: { activeTextPanel }
-  } = getState();
-  const sectionIdsToDelete = texts.byId[activeTextPanel].sectionIds;
-
-  if (sectionIdsToDelete.length > 0) {
-    axios.delete(`/api/sections/${sectionIdsToDelete.join('+')}`);
-    axios.put(`/api/texts/${texts._id}`, {
-      sectionIds: [] //2do handle if sections are created by multiple users
-    });
-
-    sections.byId = {}; // reset to empty object
-    dispatch({
-      type: types.DELETE_ALL_SECTIONS,
-      payload: {
-        textId: activeTextPanel,
-        sectionIds: sectionIdsToDelete
-      }
-    });
-    if (isAuthenticated) {
-      axios.put(
-        `/api/users/update`,
-        {
-          sectionIds: user.sectionIds.filter(
-            id => !sectionIdsToDelete.includes(id)
-          )
-        },
-        tokenConfig(getState)
-      ); //2do auth only.
-    }
-  }
 };
 
 /**
@@ -1229,23 +1153,12 @@ export const addAnnotation = ({ type, sectionId }) => (dispatch, getState) => {
   axios.put(`/api/sections/${sectionId}`, {
     annotationIds: [...sections.byId[sectionId].annotationIds, annotation._id]
   });
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      {
-        annotationIds: [...user.annotationIds, annotation._id]
-      },
-      tokenConfig(getState)
-    ); //2do auth only.
-  }
 
-  const prefix = 'annotations';
-  axios.post(`/api/${prefix}/spareIds/1`).then(res => {
-    dispatch({
-      type: types.PUSH_SPARE_IDS,
-      payload: { prefix, spareIds: res.data.spareIds }
-    });
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    annotationIds: [...user.annotationIds, annotation._id]
   });
+
+  fetchSpareIds('annotations', 1, dispatch);
 };
 
 export const updateAnnotation = ({
@@ -1328,15 +1241,10 @@ export const deleteAnnotation = annotationId => (dispatch, getState) => {
       id => id !== annotationId
     )
   });
-  if (isAuthenticated) {
-    axios.put(
-      `/api/users/update`,
-      {
-        annotationIds: user.annotationIds.filter(id => id !== annotationId)
-      },
-      tokenConfig(getState)
-    ); //2do auth only.
-  }
+
+  putUserUpdateIfAuth(isAuthenticated, getState, {
+    annotationIds: user.annotationIds.filter(id => id !== annotationId)
+  });
 };
 
 // FLOWCHART
@@ -1353,6 +1261,25 @@ export const openFlowchartSidepanel = () => dispatch => {
 export const closeFlowchartSidepanel = () => dispatch => {
   dispatch({
     type: types.CLOSE_FLOWCHART_SIDEPANEL
+  });
+};
+export const setNonLayoutedFlowchartElements = elements => dispatch => {
+  dispatch({
+    type: types.SET_NONLAYOUTED_FLOWCHART_ELEMENTS,
+    payload: { elements }
+  });
+};
+export const setFlowchartElements = elements => dispatch => {
+  dispatch({
+    type: types.SET_FLOWCHART_ELEMENTS,
+    payload: { elements }
+  });
+};
+
+export const strictFlowchartSearchresults = strictSearchResults => dispatch => {
+  dispatch({
+    type: types.SET_FLOWCHART_SEARCHRESULTS,
+    payload: { strictSearchResults }
   });
 };
 
@@ -1385,5 +1312,37 @@ export const closeFlowchartElement = id => dispatch => {
   dispatch({
     type: types.CLOSE_FLOWCHART_ELEMENT,
     payload: { id }
+  });
+};
+
+export const toggleDisplayFlowChartNonMatches = () => dispatch => {
+  dispatch({
+    type: types.TOGGLE_DISPLAY_FLOWCHART_NONMATCHTES
+  });
+};
+
+export const setFilterAncestorsFlowchart = to => dispatch => {
+  dispatch({
+    type: types.SET_FILTER_ANCESTORS_FLOWCHART,
+    payload: { to }
+  });
+};
+
+export const setFilterDescendantsFlowchart = to => dispatch => {
+  dispatch({
+    type: types.SET_FILTER_DESCENDANTS_FLOWCHART,
+    payload: { to }
+  });
+};
+
+export const toggleTypesFilterFlowchart = toggleType => dispatch => {
+  dispatch({
+    type: types.TOGGLE_TYPES_FILTER_FLOWCHART,
+    payload: { toggleType }
+  });
+};
+export const toggleSearchWithinTextcontentFlowchart = () => dispatch => {
+  dispatch({
+    type: types.TOGGLE_SEARCHWITHIN_TEXTCONTENT_FLOWCHART
   });
 };

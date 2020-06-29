@@ -29,20 +29,22 @@ const InspectAnnotation = ({ id, flowchartInstance }) => {
   return (
     <div>
       <h5>{'annotations.byId[id].title'}</h5>
-      <span>
-        <button className='btn btn-sm btn-light' onClick={openClickHandler}>
-          open
-        </button>
-        <button className='btn btn-sm btn-light'>
-          <BsTrash />
-        </button>
-        <button
-          className='btn btn-sm btn-light'
-          onClick={removeElementFromInspect}
-        >
-          <BsXCircle />
-        </button>
-      </span>
+      <p className='flowchartInspectElToolbar'>
+        <span className='flowchartInspectElToolbar'>
+          <button className='btn btn-sm btn-light' onClick={openClickHandler}>
+            open
+          </button>
+          <button className='btn btn-sm btn-light'>
+            <BsTrash />
+          </button>
+          <button
+            className='btn btn-sm btn-light'
+            onClick={removeElementFromInspect}
+          >
+            <BsXCircle />
+          </button>
+        </span>
+      </p>
       <ReactQuill
         defaultValue={annotations.byId[id].html}
         theme='bubble'

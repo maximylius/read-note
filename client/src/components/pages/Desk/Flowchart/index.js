@@ -1,48 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import ReactFlow, { MiniMap, Controls } from 'react-flow-renderer';
+import ReactFlow, { MiniMap, Controls, Background } from 'react-flow-renderer';
 import dagre from 'dagre';
 import TextNode from './CustomNodes/TextNode';
 import SectionNode from './CustomNodes/SectionNode';
 import AnnotationNode from './CustomNodes/AnnotationNode';
 import NotebookNode from './CustomNodes/NotebookNode';
 import FlowchartSidepanel from './Sidepanel/';
-import { toggleFlowchart } from '../../../../store/actions';
+import {
+  toggleFlowchart,
+  setFlowchartElements,
+  setNonLayoutedFlowchartElements
+} from '../../../../store/actions';
 // 2do: dimensions depending on type and content
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 50;
 
-let initialElements = [
-  {
-    name: '4',
-    label: 'El 4',
-    links: []
-  },
-  {
-    name: '0',
-    label: 'El 0',
-    links: [{ name: '1' }]
-  },
-  {
-    name: '1',
-    label: 'El 1',
-    links: []
-  },
-  {
-    name: '2',
-    label: 'El 2',
-    links: [{ name: '3' }, { name: '4' }]
-  },
-  {
-    name: '3',
-    label: 'El 3',
-    links: [{ name: '4' }]
-  }
-];
+// let initialElements = [{
+//     name: '2',
+//     label: 'El 2',
+//     links: [{ name: '3' }, { name: '4' }]
+//   }];
 
-const generateFlow = elements => {
+const generateFlow = (elements, strictSearchResults) => {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({});
+  g.setGraph({
+    rankdir: 'TB',
+    ranksep: 200,
+    align: 'DR',
+    ranker: 'longest-path'
+  });
   g.setDefaultEdgeLabel(function () {
     return {};
   });
@@ -50,7 +37,7 @@ const generateFlow = elements => {
   elements.forEach(e => {
     g.setNode(e.name, {
       label: e.label,
-      type: e.type,
+      notype: e.type,
       className: e.className,
       width: NODE_WIDTH,
       height: NODE_HEIGHT
@@ -67,7 +54,7 @@ const generateFlow = elements => {
     let n = g.node(i);
     return {
       id: i,
-      type: n.type,
+      type: n.notype,
       data: {
         label: n.label,
         width: n.width,
@@ -88,15 +75,29 @@ const generateFlow = elements => {
     points: g.edge(e).points,
     source: e.w,
     target: e.v,
-    animated: false
-  }));
+    ...(strictSearchResults &&
+    [e.w, e.v].some(el => strictSearchResults.includes(el))
+      ? {
+          style: {
+            stroke: 'rgb(255, 46, 143)',
+            strokeWidth: '4'
+          },
+          animated: false
+        }
+      : {
+          style: {
+            stroke: 'rgba(0,0,0,0.15)'
+          },
 
+          animated: false
+        })
+  }));
+  console.log('nodes', nodes, 'edges', edges);
   return [...nodes, ...edges];
 };
 
 let flowchartInstance = null;
 const onLoad = reactFlowInstance => {
-  console.log(reactFlowInstance, 'reactFlowInstance');
   flowchartInstance = reactFlowInstance;
   reactFlowInstance.fitView({ padding: 0 });
 };
@@ -104,13 +105,21 @@ const onLoad = reactFlowInstance => {
 const miniMapSwitch = node => {
   switch (node.type) {
     case 'text':
-      return 'rgb(18, 44, 90)';
+      return `rgba(18, 44, 90, ${
+        node.className.includes('customOpacity') ? 0.3 : 1
+      })`;
     case 'section':
-      return 'rgb(64, 87, 126)';
+      return `rgba(64, 87, 126, ${
+        node.className.includes('customOpacity') ? 0.3 : 1
+      })`;
     case 'annotation':
-      return 'rgb(243, 165, 195)';
+      return `rgba(243, 165, 195, ${
+        node.className.includes('customOpacity') ? 0.3 : 1
+      })`;
     case 'notebook':
-      return 'rgb(236, 133, 101)';
+      return `rgba(236, 133, 101, ${
+        node.className.includes('customOpacity') ? 0.2 : 1
+      })`;
     default:
       return '#ccc';
   }
@@ -124,9 +133,18 @@ const Flowchart = () => {
     annotations,
     texts,
     notebooks,
-    flowchart: { isOpen, sidepanelOpen }
+    flowchart: {
+      isOpen,
+      sidepanelOpen,
+      elements,
+      nonLayoutedElements,
+      strictSearchResults,
+      displayNonMatches,
+      filterTypes,
+      filterAncestors,
+      filterDescendants
+    }
   } = useSelector(state => state);
-  const [elements, setElements] = React.useState([]);
 
   const openFlowchart = () => {
     dispatch(toggleFlowchart());
@@ -135,67 +153,122 @@ const Flowchart = () => {
     }, 30);
   };
 
-  React.useEffect(
+  useEffect(
     () => {
       // 2do: only trigger update when necessary
       // if (!isOpen) return;
-      const textConnections = Object.keys(texts.byId).map(id => ({
+      const connectedTexts = Object.keys(texts.byId).map(id => ({
         name: id,
         type: 'text',
         className: 'flowchartText',
         label: texts.byId[id].title,
         links: texts.byId[id].sectionIds.map(id => ({ name: id }))
       }));
-      const sectionConnections = Object.keys(sections.byId).map(id => ({
+      const connectedSections = Object.keys(sections.byId).map(id => ({
         name: id,
         type: 'section',
         className: 'flowchartSection',
         label: sections.byId[id].title,
         links: sections.byId[id].annotationIds.map(id => ({ name: id }))
       }));
-      const annotationConnections = Object.keys(annotations.byId).map(id => ({
+      const connectedAnnotations = Object.keys(annotations.byId).map(id => ({
         name: id,
         type: 'annotation',
         className: 'flowchartAnnotation',
         label: annotations.byId[id].plainText.slice(0, 20) + '...',
         links: annotations.byId[id].connectedWith.map(id => ({ name: id }))
       }));
-      const notebookConnections = Object.keys(notebooks.byId).map(id => ({
+      const connectedNotebooks = Object.keys(notebooks.byId).map(id => ({
         name: id,
         type: 'notebook',
         className: 'flowchartNotebook',
         label: notebooks.byId[id].title,
         links: []
       }));
-      let to = [
-        ...textConnections,
-        ...sectionConnections,
-        ...annotationConnections,
-        ...notebookConnections
-      ];
-      // make sure no link is made to non existent
-      console.log(to);
-      to = to.map(el => ({
-        ...el,
-        links: el.links.filter(link => to.some(t => t.name === link.name))
-      }));
-      console.log(to);
-      setElements(generateFlow(to));
+      dispatch(
+        setNonLayoutedFlowchartElements([
+          ...connectedTexts,
+          ...connectedSections,
+          ...connectedAnnotations,
+          ...connectedNotebooks
+        ])
+      );
       return () => {};
     },
-    [isOpen]
-    // [sections, texts, notebooks, annotations]
+    // [isOpen]
+    [sections, texts, notebooks, annotations]
   );
+
+  useEffect(() => {
+    // displayNonMatches,
+    // searchWithinTextcontent,
+    // filterTypes,
+    // filterAncestors,
+    // filterDescendants
+    // console.log('nonLayoutedElements', nonLayoutedElements);
+    // console.log('strictSearchResults', strictSearchResults);
+    // make sure no link is made to non existent
+    let filteredElements;
+    if (strictSearchResults.length > 0) {
+      if (displayNonMatches) {
+        filteredElements = nonLayoutedElements.map(el => ({
+          ...el,
+          className: strictSearchResults.includes(el.name)
+            ? el.className
+            : el.className + ' customOpacity',
+          links: el.links.filter(link =>
+            nonLayoutedElements.some(el => el.name === link.name)
+          )
+        }));
+      } else {
+        filteredElements = nonLayoutedElements
+          .filter(el => strictSearchResults.includes(el.name))
+          .map(el => ({
+            ...el,
+            links: el.links.filter(link =>
+              strictSearchResults.includes(link.name)
+            )
+          }));
+      }
+    } else {
+      filteredElements = nonLayoutedElements.map(el => ({
+        ...el,
+        links: el.links.filter(link =>
+          nonLayoutedElements.some(el => el.name === link.name)
+        )
+      }));
+    }
+
+    dispatch(
+      setFlowchartElements(
+        generateFlow(
+          filteredElements,
+          strictSearchResults.length > 0 ? strictSearchResults : null
+        )
+      )
+    );
+    return () => {};
+  }, [
+    nonLayoutedElements,
+    strictSearchResults,
+    displayNonMatches,
+    filterTypes,
+    filterAncestors,
+    filterDescendants
+  ]);
+
   return (
-    // <ReactFlow elements={elements} key='feq3g36e56gtdzvetd' />
     <div
       {...(!isOpen && { onClick: openFlowchart })}
-      className={`row flowchart ${
+      className={`row flowchartContainer ${
         isOpen ? 'flowchartOpen' : 'flowchartPreview'
       }`}
     >
-      <div className={`col${isOpen && sidepanelOpen ? '-9' : '-12'}`}>
+      <div
+        className={`col${isOpen && sidepanelOpen ? '-9' : '-12'} flowchartArea`}
+      >
         <ReactFlow
+          key='reactFlowchartMainComponent'
           onLoad={onLoad}
           elements={elements}
           nodeTypes={{
@@ -207,14 +280,15 @@ const Flowchart = () => {
           // onElementClick={e => console.log(e)}
           onSelectionChange={e => console.log(e)}
           isInteractive={isOpen}
-          minZoom={0.1}
+          minZoom={0.15}
         >
-          {/* {isOpen && (
+          {isOpen && (
             <>
               <Controls />
               <MiniMap nodeColor={miniMapSwitch} />
+              <Background variant='dots' gap={50} size={0.7} />
             </>
-          )} */}
+          )}
         </ReactFlow>
       </div>
       {isOpen && sidepanelOpen && (

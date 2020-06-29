@@ -87,8 +87,6 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
       );
       updatingContents.ops.forEach((op, index) => {
         if (!op.attributes || !op.attributes.section) return;
-        console.log(op.attributes.section);
-        console.log(op.attributes.section.sectionIds);
         const sectionIds = op.attributes.section.sectionIds.split(',');
         if (sectionIds.length === 1) {
           delete op.attributes.section;
@@ -114,7 +112,6 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           ...updatingContents.ops
         ]
       };
-      console.log('updatedContents', updatedContents);
       quillTextRef.current.editor.updateContents(updatedContents);
     });
   }, []);
@@ -148,7 +145,6 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           })
         ]
       };
-      // console.log(updatedContents);
       quillTextRef.current.editor.updateContents(updatedContents);
     });
   }, []);
@@ -236,7 +232,6 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
     quillTextRef.current.editor.enable(false);
 
     const clickHandler = e => {
-      console.log(e, e.target, e.target.className);
       dispatch(
         setCommittedSections(
           typeof e.target.className !== 'string' ||
@@ -344,7 +339,6 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
 
       deltaIndex += 1;
     }
-    console.log(words);
     dispatch(setSpeedReader(activeTextPanel, words));
 
     if (editorLength !== cumulativeLength)
