@@ -1,23 +1,57 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { addAlert, registerUser } from '../../../store/actions';
+import { addAlert, registerUser, closeAllModals } from '../../../store/actions';
+import { BsXCircle } from 'react-icons/bs';
 
-function Signup() {
+const emailRegExp = /\S+@\S+\.\S+/;
+
+function Register() {
+  const history = useHistory();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const onSubmit = () => {
-    if (!missingFields) {
+    console.log('sumbit');
+    if (emailRegExp.test(email) && username.length > 2 && password.length > 6) {
       dispatch(registerUser({ username, email, password }));
     } else {
-      dispatch(
-        addAlert({
-          type: 'alert alert-warning',
-          message: `<p>Please fill in ${missingFields}.</p>`
-        })
-      );
+      if (!emailRegExp.test(email)) {
+        dispatch(
+          addAlert(
+            {
+              type: 'alert alert-warning',
+              message: `<p>Please enter a valid email adress.</p>`
+            },
+            5000
+          )
+        );
+      }
+      if (username.length <= 2) {
+        dispatch(
+          addAlert(
+            {
+              type: 'alert alert-warning',
+              message: `<p>Display name must contain at least 3 characters.</p>`
+            },
+            5000
+          )
+        );
+      }
+
+      if (password.length <= 6) {
+        dispatch(
+          addAlert(
+            {
+              type: 'alert alert-warning',
+              message: `<p>Password must contain at least 7 characters.</p>`
+            },
+            5000
+          )
+        );
+      }
     }
   };
 
@@ -35,8 +69,20 @@ function Signup() {
       : `${missingFields[0]}, ${missingFields[1]} and ${missingFields[2]}`;
 
   return (
-    <div className='row growContent w-100'>
-      <div className='container mt-3'>
+    <>
+      <div
+        className='page-modal-outer'
+        onClick={() => dispatch(closeAllModals(history))}
+      ></div>
+      <div className='page-modal-body'>
+        <div className='page-modal-toolbar'>
+          <button
+            className='page-modal-close'
+            onClick={() => dispatch(closeAllModals(history))}
+          >
+            <BsXCircle />
+          </button>
+        </div>
         <div className='card text-center'>
           <h1 className='display-4'>Register</h1>
           <div className='container'>
@@ -46,7 +92,9 @@ function Signup() {
               </div>
               <input
                 type='text'
-                className='form-control'
+                className={`form-control ${
+                  emailRegExp.test(email) ? 'input-valid' : 'input-non-valid'
+                }`}
                 aria-label='Email'
                 aria-describedby='Email'
                 placeholder='enter Email adress...'
@@ -60,7 +108,9 @@ function Signup() {
               </div>
               <input
                 type='text'
-                className='form-control'
+                className={`form-control ${
+                  username.length > 2 ? 'input-valid' : 'input-non-valid'
+                }`}
                 aria-label='username'
                 aria-describedby='username'
                 placeholder='enter username...'
@@ -74,7 +124,9 @@ function Signup() {
               </div>
               <input
                 type='password'
-                className='form-control'
+                className={`form-control ${
+                  password.length > 6 ? 'input-valid' : 'input-non-valid'
+                }`}
                 aria-label='Password'
                 aria-describedby='Password'
                 placeholder='enter password'
@@ -84,7 +136,7 @@ function Signup() {
             </div>
 
             <button
-              className='add-btn btn btn-secondary btn-block btn-xl mb-2'
+              className='add-btn btn btn-secondary btn-block btn-lg mb-2'
               onClick={onSubmit}
             >
               {missingFields
@@ -94,8 +146,8 @@ function Signup() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-export default Signup;
+export default Register;

@@ -2,115 +2,139 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import FinderPanel from './FinderPanel/';
-import Notebooks from './NotebooksPanel/';
+import Notes from './NotesPanel/';
 import TextsPanel from './TextsPanel';
 import Placeholder from './Placeholder';
-import { loadText, loadNotebooks } from '../../../store/actions';
+import { loadText, loadNotes } from '../../../store/actions';
 import isEqual from 'lodash/isEqual';
 import Flowchart from './Flowchart';
+import { regExpOpenTexts } from '../../../functions/main';
 
 const Desk = () => {
   const dispatch = useDispatch();
   const params = useParams();
-  const {
-    ui,
-    notebooksPanel: { openNotebooks, addNotesTo }
-  } = useSelector(state => state);
+  console.log('params:', params);
+  const openTextPanels = useSelector(s => s.textsPanel.openTextPanels);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+  const openNotes = useSelector(s => s.notesPanel.openNotes);
+  const activeNote = useSelector(s => s.notesPanel.activeNote);
+  const addNotesTo = useSelector(s => s.notesPanel.addNotesTo);
+  const mdFinderPanel = useSelector(s => s.ui.mdFinderPanel);
+  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
+  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
   const [refRenderTrigger, setRefRenderTrigger] = React.useState(null);
   const testRef = React.useRef();
-  const quillNotebookRefs = React.useRef(
+  const quillNoteRefs = React.useRef(
     Object.fromEntries(
-      [new Set([...openNotebooks, addNotesTo])].map(id => ({ [id]: null }))
+      [new Set([...openNotes, addNotesTo])].map(id => ({ [id]: null }))
     )
   );
 
-  const createSetNotebookRef = id => ref => {
-    quillNotebookRefs.current[id] = ref;
+  const createSetNoteRef = id => ref => {
+    quillNoteRefs.current[id] = ref;
   };
 
   useEffect(() => {
     console.log(
       '=======',
-      isEqual(quillNotebookRefs, refRenderTrigger),
-      quillNotebookRefs
+      isEqual(quillNoteRefs, refRenderTrigger),
+      quillNoteRefs
     );
-    setRefRenderTrigger(quillNotebookRefs);
+    setRefRenderTrigger(quillNoteRefs);
     return () => {};
-  }, [isEqual(quillNotebookRefs, refRenderTrigger)]);
+  }, [isEqual(quillNoteRefs, refRenderTrigger)]);
 
   useEffect(() => {
+    console.log('paramsparamsparamsparamsparamsparamsparamsparams', params);
     if (params.textIds) {
       const textParams = params.textIds.split('+');
-      textParams.forEach(param => {
+      const textsParamsToLoad = textParams.filter(
+        param =>
+          !openTextPanels.includes(param.split('-')[0]) ||
+          (param.split('-')[1] == '1' &&
+            param.split('-')[0] !== activeTextPanel)
+      );
+      let nextActiveText = false;
+      const textsToLoad = textsParamsToLoad.map(param => {
+        if (param.split('-')[1] === '1') nextActiveText = param.split('-')[0];
+        return param.split('-')[0];
+      });
+      textsToLoad.forEach(textId => {
         dispatch(
           loadText({
-            textId: param.split('-')[0],
+            textId: textId,
             openText: true,
-            setToActive: Boolean(param.split('-')[1]),
+            setToActive: textId === nextActiveText,
             history: null
           })
         );
       });
       console.log(textParams);
     }
-    if (params.notebookIds) {
-      const notebookParams = params.notebookIds.split('+');
-      console.log(notebookParams);
-      notebookParams.forEach(param => {
+    if (params.noteIds) {
+      const noteParams = params.noteIds.split('+');
+      const notesParamsToLoad = noteParams.filter(
+        param =>
+          !openNotes.includes(param.split('-')[0]) ||
+          (param.split('-')[1] == '1' && param.split('-')[0] !== activeNote)
+      );
+      let nextActiveNote = false;
+      const notesToLoad = notesParamsToLoad.map(param => {
+        if (param.split('-')[1] === '1') nextActiveNote = param.split('-')[0];
+        return param.split('-')[0];
+      });
+
+      notesToLoad.forEach(noteId => {
         dispatch(
-          loadNotebooks({
-            notebookIds: [param.split('-')[0]],
+          loadNotes({
+            noteIds: [noteId],
             open: true,
-            setToActive: Boolean(param.split('-')[1])
-              ? param.split('-')[0]
-              : false,
+            setToActive: noteId === nextActiveNote ? noteId : false,
             history: null
           })
         );
       });
+      console.log(noteParams);
     }
     return () => {};
     // eslint-disable-next-line
-  }, []);
+  }, [params]);
 
   return (
     <>
       <Flowchart />
       <div className='row grow flex-row mx-0 px-0' ref={testRef}>
         <div
-          className={`col-md-${ui.mdFinderPanel} px-0 mt-0 pt-0 box`}
+          className={`col-md-${mdFinderPanel} px-0 mt-0 pt-0 box`}
           style={{
-            display: ui.mdFinderPanel > 0 ? 'flex' : 'none'
+            display: mdFinderPanel > 0 ? 'flex' : 'none'
           }}
         >
           <FinderPanel />
         </div>
         <div
-          className={`col-md-${ui.mdTextsPanel} px-0 mx-0 box`}
+          className={`col-md-${mdTextsPanel} px-0 mx-0 box`}
           style={{
-            display: ui.mdTextsPanel > 0 ? 'flex' : 'none'
+            display: mdTextsPanel > 0 ? 'flex' : 'none'
           }}
         >
-          <TextsPanel quillNotebookRefs={quillNotebookRefs} />
+          <TextsPanel quillNoteRefs={quillNoteRefs} />
         </div>
         <div
-          className={`col-md-${ui.mdNotebooksPanel} px-0 mx-0 box `}
+          className={`col-md-${mdNotesPanel} px-0 mx-0 box `}
           style={{
-            display: ui.mdNotebooksPanel > 0 ? 'flex' : 'none'
+            display: mdNotesPanel > 0 ? 'flex' : 'none'
           }}
         >
-          <Notebooks
-            createSetNotebookRef={createSetNotebookRef}
-            quillNotebookRefs={quillNotebookRefs}
+          <Notes
+            createSetNoteRef={createSetNoteRef}
+            quillNoteRefs={quillNoteRefs}
           />
         </div>
         <div
-          className={`col-md-${12 - ui.mdFinderPanel} px-0 mx-0 box `}
+          className={`col-md-${12 - mdFinderPanel} px-0 mx-0 box `}
           style={{
-            display:
-              ui.mdTextsPanel === 0 && ui.mdNotebooksPanel === 0
-                ? 'flex'
-                : 'none'
+            display: mdTextsPanel === 0 && mdNotesPanel === 0 ? 'flex' : 'none'
           }}
         >
           <Placeholder />

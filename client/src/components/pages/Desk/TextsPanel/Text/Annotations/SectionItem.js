@@ -8,7 +8,7 @@ import {
   setCommittedSections,
   deleteSection,
   updateSection,
-  addAnnotation
+  addNote
 } from '../../../../../../store/actions';
 import annotationTypes from '../../../../../Metapanel/annotationTypes';
 import { BsDash, BsTrash, BsBookmark, BsPlus } from 'react-icons/bs';
@@ -19,7 +19,7 @@ const sectionItemIdPrepend = 'sec_';
 const SectionItem = ({
   sectionId,
   quillTextRef,
-  quillNotebookRefs,
+  quillNoteRefs,
   addAnnotationsTo
 }) => {
   const dispatch = useDispatch();
@@ -34,8 +34,8 @@ const SectionItem = ({
       tentativeSectionIds,
       holdControl
     }
-  } = useSelector(state => state);
-  const section = sections.byId[sectionId];
+  } = useSelector(s => s);
+  const section = sections[sectionId];
   const [selectedCategory, setSelectedCategory] = useState(
     section.categoryIds[0]
   );
@@ -86,9 +86,11 @@ const SectionItem = ({
     e.stopPropagation();
     console.log('newNoteClick---------New sectionId-----', sectionId);
     dispatch(
-      addAnnotation({
-        type: annotationTypes.note.type,
-        sectionId: sectionId
+      addNote({
+        isAnnotation: {
+          textId: activeTextPanel,
+          sectionId: sectionId
+        }
       })
     );
   };
@@ -100,9 +102,9 @@ const SectionItem = ({
     ? true
     : false;
 
-  const annotationsToDisplay = section.annotationIds.filter(id =>
-    Object.keys(annotations.byId).includes(id)
-  );
+  // const annotationsToDisplay = section.annotationIds.filter(id =>
+  //   Object.keys(annotations.byId).includes(id)
+  // );
   const occupancy = committedToSection || tentativeToSection ? high : std;
   const backgroundColor =
     'rgb(' +
@@ -164,15 +166,15 @@ const SectionItem = ({
             </select>
           </div>
 
-          {annotationsToDisplay.map(id => (
+          {/* {annotationsToDisplay.map(id => (
             <Annotations
               key={id}
               sectionId={sectionId}
               annotationId={id}
               addAnnotationsTo={addAnnotationsTo}
-              quillNotebookRefs={quillNotebookRefs}
+              quillNoteRefs={quillNoteRefs}
             />
-          ))}
+          ))} */}
           <button
             className='btn btn-light btn-block btn-sm'
             onClick={newNoteClickhandler}

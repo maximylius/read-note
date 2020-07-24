@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Handle } from 'react-flow-renderer';
-import { inspectAnnotationInFlowchart } from '../../../../../store/actions';
+import { inspectNoteInFlowchart } from '../../../../../store/actions';
 
 export default memo(props => {
   const dispatch = useDispatch();
@@ -12,7 +12,7 @@ export default memo(props => {
   } = props;
   const onClickHandler = () => {
     // 2do distinguish drag and click
-    dispatch(inspectAnnotationInFlowchart(id));
+    dispatch(inspectNoteInFlowchart(id));
   };
   return (
     <div style={{ width, height }} onClick={onClickHandler}>

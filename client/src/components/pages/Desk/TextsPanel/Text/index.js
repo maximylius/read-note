@@ -10,7 +10,7 @@ import { IconContext } from 'react-icons';
 import { BsBoxArrowInLeft, BsX } from 'react-icons/bs';
 import SpeedReader from './SpeedReader/';
 
-function Textpage({ quillNotebookRefs }) {
+function Textpage({ quillNoteRefs }) {
   const dispatch = useDispatch();
   const quillTextRef = React.useRef(null);
   const [boundingRect, setBoundingRect] = useState({
@@ -23,7 +23,7 @@ function Textpage({ quillNotebookRefs }) {
   const {
     ui,
     textsPanel: { speedReader, activeTextPanel }
-  } = useSelector(state => state);
+  } = useSelector(s => s);
   const mouseMoveHandler = React.useCallback(
     e => {
       if (e.clientY > boundingRect.bottom) {
@@ -67,81 +67,70 @@ function Textpage({ quillNotebookRefs }) {
   return (
     <div
       id='textContentFlexGrow'
-      className='row grow  flex-row card mx-0'
+      className='row flex-row growContent'
+      {...(ui.mdAnnotationsPanel === 0 && {
+        onMouseMove: mouseMoveHandler
+      })}
       onMouseLeave={onMouseLeaveHandler}
     >
-      <div className={`col-md-${12 - ui.mdAnnotationsPanel} box`}>
-        <div
-          className='row growContent'
-          {...(ui.mdAnnotationsPanel === 0 && {
-            onMouseMove: mouseMoveHandler
-          })}
+      <div
+        style={{
+          zIndex: 10,
+          right: '1rem',
+          position: 'absolute'
+        }}
+      >
+        <button
+          className='btn btn-lg btn-light mt-2'
+          onClick={closeSpeedReaderClickHandler}
+          style={{
+            display: speedReader.isOpenFor.includes(activeTextPanel)
+              ? 'block'
+              : 'none'
+          }}
         >
-          <div
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            <BsX />
+          </IconContext.Provider>
+        </button>
+        <div
+          style={{
+            display: displayOverlayButtons ? 'block' : 'none'
+          }}
+        >
+          <button
+            className='btn btn-lg btn-light mt-2'
+            onClick={toggleAnnotationsPanel}
             style={{
-              zIndex: 10,
-              right: '1rem',
-              position: 'absolute'
+              display: ui.mdAnnotationsPanel > 0 ? 'none' : 'block'
             }}
           >
-            <button
-              className='btn btn-lg btn-light mt-2'
-              onClick={closeSpeedReaderClickHandler}
-              style={{
-                display: speedReader.isOpenFor.includes(activeTextPanel)
-                  ? 'block'
-                  : 'none'
-              }}
-            >
-              <IconContext.Provider value={{ size: '1.5rem' }}>
-                <BsX />
-              </IconContext.Provider>
-            </button>
-            <div
-              style={{
-                display: displayOverlayButtons ? 'block' : 'none'
-              }}
-            >
-              <button
-                className='btn btn-lg btn-light mt-2'
-                onClick={toggleAnnotationsPanel}
-                style={{
-                  display: ui.mdAnnotationsPanel > 0 ? 'none' : 'block'
-                }}
-              >
-                <IconContext.Provider value={{ size: '1.5rem' }}>
-                  <BsBoxArrowInLeft />
-                </IconContext.Provider>
-              </button>
-            </div>
-          </div>
-          {speedReader.isOpenFor.includes(activeTextPanel) && (
-            <></> // <SpeedReader key={activeTextPanel} />
-          )}
-
-          <div
-            style={{
-              display: speedReader.isOpenFor.includes(activeTextPanel)
-                ? 'none'
-                : 'block'
-            }}
-          >
-            <TextMain
-              quillTextRef={quillTextRef}
-              quillNotebookRefs={quillNotebookRefs}
-            />
-          </div>
+            <IconContext.Provider value={{ size: '1.5rem' }}>
+              <BsBoxArrowInLeft />
+            </IconContext.Provider>
+          </button>
         </div>
       </div>
 
+      <div className={`col-md-${12 - ui.mdAnnotationsPanel} box`}>
+        {speedReader.isOpenFor.includes(activeTextPanel) ? (
+          // j
+          // <></> //
+          <SpeedReader key={activeTextPanel} />
+        ) : (
+          <div className='card'>
+            <TextMain
+              quillTextRef={quillTextRef}
+              quillNoteRefs={quillNoteRefs}
+            />
+          </div>
+        )}
+      </div>
       <div
-        className={`col-md-${ui.mdAnnotationsPanel}`}
-        style={{ display: ui.mdAnnotationsPanel > 0 ? 'block' : 'none' }}
+        className={`col-md-${ui.mdAnnotationsPanel} box`}
+        style={{ display: ui.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
       >
-        <Sidepanel
-          quillTextRef={quillTextRef}
-          quillNotebookRefs={quillNotebookRefs}
-        />
+        <Sidepanel quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />
       </div>
     </div>
   );

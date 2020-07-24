@@ -7,17 +7,14 @@ import {
   closeFlowchartSidepanel
 } from '../../../../../store/actions';
 import InspectText from './InspectText';
-import InspectAnnotation from './InspectAnnotation';
 import InspectSection from './InspectSection';
-import InspectNotebook from './InspectNotebook';
+import InspectNote from './InspectNote';
 import { Search } from './Search';
 import FilterOptions from './FilterOptions';
 
 const FlowchartSidepanel = ({ flowchartInstance }) => {
   const dispatch = useDispatch();
-  const {
-    flowchart: { inspectElements }
-  } = useSelector(state => state);
+  const inspectElements = useSelector(s => s.flowchart.inspectElements);
   const closeSidepanel = () => {
     dispatch(closeFlowchartSidepanel());
   };
@@ -51,13 +48,8 @@ const FlowchartSidepanel = ({ flowchartInstance }) => {
             <InspectText id={el.id} flowchartInstance={flowchartInstance} />
           ) : el.type === 'section' ? (
             <InspectSection id={el.id} flowchartInstance={flowchartInstance} />
-          ) : el.type === 'annotation' ? (
-            <InspectAnnotation
-              id={el.id}
-              flowchartInstance={flowchartInstance}
-            />
-          ) : el.type === 'notebook' ? (
-            <InspectNotebook id={el.id} flowchartInstance={flowchartInstance} />
+          ) : el.type === 'note' ? (
+            <InspectNote id={el.id} flowchartInstance={flowchartInstance} />
           ) : (
             <></>
           )}

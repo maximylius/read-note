@@ -1,6 +1,25 @@
 /**
  @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
-6     Improve dagre layout
+3     sidepanel takes to long to expand.
+6     reduce ammount of rerenders of notepanel
+7     reduce ammount of rerenders of flowchart
+6     issue notes can sometimes not be collapsed. happens with notes embed in other notes
+6     when are and should notes be remounted?
+6     on first load, some embeded notes are not loaded. for this reason they are not embeded. should update to also show those embeds
+6     trigger note update before switching into that notebook
+6     trigger note background update in mdPanel change
+6     Improve dagre layout 
+6     add flowchart for text comments 
+6     think about where to embed annotation-notes. 
+6     allow drag and drop of note into note
+6     rework actions
+6     add ability to create new notes within note
+6     rework actions (including parts not in note section: load, delete, regExpHistory)
+6     make login session stable
+6     turn log-in register into pop up window
+6     how to best structure server routes?
+4     think about emoji implementation in note names.
+5     allow quotes as links to sections to be expanded inside a non editable blockquote paragraph
 
 @REMOVE BUGS  & NEW FEATURES------------------------
 6     understand embeded blots in order to insert annotations.
@@ -254,7 +273,7 @@ react-flow-chart
 text editor needs to know which section belongs to which note. can possibly be achieved by wrapping it into a div with classname Notebook and id
 
 Do i need quill?
-   Deltas? Not necessarily when
+   Delta? Not necessarily when
    Custom blots: yes.
 
 

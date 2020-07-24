@@ -3,32 +3,28 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import { BsLink, BsToggleOn, BsX, BsXCircle, BsTrash } from 'react-icons/bs';
-import { closeFlowchartElement, loadText } from '../../../../../store/actions';
+import { closeFlowchartElement, loadNotes } from '../../../../../store/actions';
 
-const InspectAnnotation = ({ id, flowchartInstance }) => {
+const InspectNote = ({ id, flowchartInstance }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const { annotations } = useSelector(state => state);
+  const note = useSelector(s => s.notes[id]);
   const removeElementFromInspect = () => dispatch(closeFlowchartElement(id));
   const openClickHandler = () => {
     dispatch(
-      loadText({
-        textId: annotations.byId[id].textId,
-        openText: true,
-        setToActive: true,
+      loadNotes({
+        noteIds: [id],
+        open: true,
+        setToActive: id,
         history: history
       })
     );
-    //set committed to sectionId
   };
-  console.log(annotations.byId);
-  console.log(annotations.byId[id]);
-  console.log(id);
-  // 2do add clickhandler for links
   // onclick function that selections mindmap node also
+  // 2do add clickhandler for links
   return (
     <div>
-      <h5>{'annotations.byId[id].title'}</h5>
+      <h5>{note.title}</h5>
       <p className='flowchartInspectElToolbar'>
         <span className='flowchartInspectElToolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
@@ -45,13 +41,9 @@ const InspectAnnotation = ({ id, flowchartInstance }) => {
           </button>
         </span>
       </p>
-      <ReactQuill
-        defaultValue={annotations.byId[id].html}
-        theme='bubble'
-        readOnly={true}
-      />
+      <ReactQuill defaultValue={note.delta} theme='bubble' readOnly={true} />
     </div>
   );
 };
 
-export default InspectAnnotation;
+export default InspectNote;

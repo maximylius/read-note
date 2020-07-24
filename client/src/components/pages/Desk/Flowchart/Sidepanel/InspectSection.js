@@ -8,12 +8,12 @@ import { closeFlowchartElement, loadText } from '../../../../../store/actions';
 const InspectSection = ({ id, flowchartInstance }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const { sections } = useSelector(state => state);
+  const section = useSelector(s => s.sections[id]);
   const removeElementFromInspect = () => dispatch(closeFlowchartElement(id));
   const openClickHandler = () => {
     dispatch(
       loadText({
-        textId: sections.byId[id].textId,
+        textId: section.textId,
         openText: true,
         setToActive: true,
         history: history
@@ -24,7 +24,7 @@ const InspectSection = ({ id, flowchartInstance }) => {
   // onclick function that selections mindmap node also
   return (
     <div>
-      <h5>{sections.byId[id].title}</h5>
+      <h5>{section.title}</h5>
       <p className='flowchartInspectElToolbar'>
         <span className='flowchartInspectElToolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
@@ -42,7 +42,7 @@ const InspectSection = ({ id, flowchartInstance }) => {
         </span>
       </p>
       <ReactQuill
-        defaultValue={sections.byId[id].fullWords}
+        defaultValue={`<blockquoute>${section.fullWords}</blockquoute>`}
         theme='bubble'
         readOnly={true}
       />

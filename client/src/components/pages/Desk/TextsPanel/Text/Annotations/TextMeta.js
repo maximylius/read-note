@@ -4,11 +4,7 @@ import InputWithPrepend from '../../../../../Metapanel/InputWithPrepend';
 import { updateText } from '../../../../../../store/actions';
 function TextMeta() {
   const dispatch = useDispatch();
-  const {
-    texts,
-    textsPanel: { activeTextPanel }
-  } = useSelector(state => state);
-  const text = texts.byId[activeTextPanel];
+  const text = useSelector(s => s.texts[s.textsPanel.activeTextPanel]);
 
   const [changeCounter, setChangeCounter] = useState(0);
   const [title, _setTitle] = useState(text.title);
@@ -55,7 +51,7 @@ function TextMeta() {
     ) {
       console.log('dispatch');
       dispatch(
-        updateText(activeTextPanel, {
+        updateText(text._id, {
           title,
           author,
           publishedIn,

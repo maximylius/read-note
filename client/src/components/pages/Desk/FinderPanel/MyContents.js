@@ -4,8 +4,8 @@ import { useHistory } from 'react-router-dom';
 import ContentItem from './ContentItem';
 import { BsPlus } from 'react-icons/bs';
 import {
-  addNotebook,
-  openNotebook,
+  addNote,
+  openNote,
   openAddTextPanel,
   loadText,
   toggleKeepFinderOpen
@@ -14,16 +14,14 @@ import {
 function MyContents() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const { user, notebooks, texts, annotations, ui } = useSelector(
-    state => state
-  );
+  const { user, notes, texts, ui } = useSelector(s => s);
   const textsToDisplay = user.textIds.filter(id =>
-    Object.keys(texts.byId).includes(id)
+    Object.keys(texts).includes(id)
   );
-  const notebooksToDisplay = user.notebookIds.filter(id =>
-    Object.keys(notebooks.byId).includes(id)
+  const notesToDisplay = user.noteIds.filter(id =>
+    Object.keys(notes).includes(id)
   );
-  const addNotebookClickHandler = () => dispatch(addNotebook({ history }));
+  const addNoteClickHandler = () => dispatch(addNote({ history }));
   const addTextClickHandler = () => dispatch(openAddTextPanel());
   const keepFinderOpenClickHandler = () => dispatch(toggleKeepFinderOpen());
 
@@ -31,21 +29,19 @@ function MyContents() {
     <div className='row growContent'>
       <ul className='nav flex-column pl-4'>
         <div>
-          <p className='lead'>My Notebooks</p>
-          {notebooksToDisplay.map(id => (
+          <p className='lead'>My Notes</p>
+          {notesToDisplay.map(id => (
             <ContentItem
               key={id}
-              title={notebooks.byId[id].title}
-              onClickAction={() =>
-                dispatch(openNotebook({ notebookId: id, history }))
-              }
+              title={notes[id].title}
+              onClickAction={() => dispatch(openNote({ noteId: id, history }))}
             />
           ))}
           <button
             className='btn btn-secondary btn-block'
-            onClick={addNotebookClickHandler}
+            onClick={addNoteClickHandler}
           >
-            <BsPlus /> new notebook
+            <BsPlus /> new note
           </button>
           <hr style={{ backgroundColor: 'white' }} />
         </div>
@@ -55,7 +51,7 @@ function MyContents() {
           {textsToDisplay.map(id => (
             <ContentItem
               key={id}
-              title={texts.byId[id].title}
+              title={texts[id].title}
               onClickAction={() =>
                 dispatch(loadText({ textId: id, openText: true, history }))
               }
@@ -70,23 +66,6 @@ function MyContents() {
           <hr style={{ backgroundColor: 'white' }} />
         </div>
 
-        <div>
-          <p className='lead'>My Annotations</p>
-
-          {/* {user.annotationIds.map(
-            id =>
-              annotations.byId[id] &&
-              annotations.byId[id].textcontent && (
-                <ContentItem
-                  key={id}
-                  id={id}
-                  title={annotations.byId[id].textcontent}
-                  contentType='annotation'
-                />
-              )
-          )} */}
-          <hr style={{ backgroundColor: 'white' }} />
-        </div>
         <div>
           <div className='input-group mb-3'>
             <div className='input-group-prepend'>

@@ -98,7 +98,7 @@ export default (state = initialState, action) => {
     case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
     case types.ADD_AND_OPEN_TEXT:
     case types.OPEN_TEXT:
-    case types.GET_NOTEBOOKS:
+    case types.GET_NOTES:
       return state.isOpen ? { ...state, isOpen: false } : state;
     default:
       return state;

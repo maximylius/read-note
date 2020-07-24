@@ -5,21 +5,21 @@ import AddText from './AddText/';
 import Nav from './Nav';
 import {
   expandFinderPanel,
-  expandNotebooksPanel,
+  expandNotesPanel,
   collapseTextsPanel
 } from '../../../../store/actions';
 import SliderButton from '../../../Metapanel/SliderButton';
 
-function TextsPanel({ quillNotebookRefs }) {
+function TextsPanel({ quillNoteRefs }) {
   const dispatch = useDispatch();
   const {
     ui,
     textsPanel: { activeTextPanel }
-  } = useSelector(state => state);
+  } = useSelector(s => s);
   const onClickHandlerBtn1 = () => dispatch(expandFinderPanel());
   const onClickHandlerBtn2 = () => {
-    if (ui.mdNotebooksPanel === 0) {
-      return dispatch(expandNotebooksPanel());
+    if (ui.mdNotesPanel === 0) {
+      return dispatch(expandNotesPanel());
     } else {
       return dispatch(collapseTextsPanel());
     }
@@ -29,7 +29,7 @@ function TextsPanel({ quillNotebookRefs }) {
     <div
       className={`row grow flex-row mx-0 
       pl-${ui.mdFinderPanel === 0 ? '0' : '4'}
-      pr-${ui.mdNotebooksPanel === 0 ? '0' : '3'}`}
+      pr-${ui.mdNotesPanel === 0 ? '0' : '3'}`}
     >
       <SliderButton
         onClickHandler={onClickHandlerBtn1}
@@ -43,10 +43,7 @@ function TextsPanel({ quillNotebookRefs }) {
         {!activeTextPanel || activeTextPanel === 'addTextPanel' ? (
           <AddText key={activeTextPanel} />
         ) : (
-          <Textpage
-            key={activeTextPanel}
-            quillNotebookRefs={quillNotebookRefs}
-          />
+          <Textpage key={activeTextPanel} quillNoteRefs={quillNoteRefs} />
         )}
       </div>
 

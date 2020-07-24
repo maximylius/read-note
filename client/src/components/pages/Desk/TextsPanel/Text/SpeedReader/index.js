@@ -34,10 +34,9 @@ const customProgressFunctionUnread = (
 };
 function SpeedReader() {
   const dispatch = useDispatch();
-  const {
-    ui,
-    textsPanel: { speedReader, activeTextPanel }
-  } = useSelector(state => state);
+  const ui = useSelector(s => s.ui);
+  const speedReader = useSelector(s => s.textsPanel.speedReader);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const words = speedReader.words;
   const end = speedReader.byId[activeTextPanel].end;
   const endRef = useRef(speedReader.byId[activeTextPanel].end);

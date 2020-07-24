@@ -10,46 +10,41 @@ import {
   BsArrowRepeat
 } from 'react-icons/bs';
 import {
-  deleteAnnotation,
-  updateAnnotation,
-  syncAnnotationWith
+  deleteNote,
+  updateNote
+  // syncAnnotationWith
 } from '../../../../../../store/actions';
 import {
   // extractNumber,
-  // updateNotebookWithAnnotation,
+  // updateNoteWithAnnotation,
   committChangesToAnnotation
 } from '../../../../../../functions/main';
 
-const Annotation = ({ annotationId, quillNotebookRefs }) => {
+const Annotation = ({ annotationId, quillNoteRefs }) => {
   const dispatch = useDispatch();
   const quillAnnotationRef = useRef(null);
   const {
-    notebooks,
+    notes,
     annotations,
-    notebooksPanel: { activeNotebook }
-  } = useSelector(state => state);
+    notesPanel: { activeNote }
+  } = useSelector(s => s);
   const annotation = annotations.byId[annotationId];
-  const quillNotebookRef = React.useRef(null);
+  const quillNoteRef = React.useRef(null);
   const [changedEditorCounter, setChangedEditorCounter] = useState(-1);
   const [mouseoverAnnotation, setMouseoverAnnotation] = useState(false);
 
-  const deleteClickHandler = () => dispatch(deleteAnnotation(annotationId));
+  const deleteClickHandler = () => dispatch(deleteNote(annotationId));
   const toggleSyncWith = e => {
-    if (!annotation.syncWith.includes(activeNotebook)) {
-      dispatch(
-        syncAnnotationWith(annotationId, [
-          ...annotation.syncWith,
-          activeNotebook
-        ])
-      );
-      createCommittChangesToAnnotation({ to: activeNotebook });
+    if (!annotation.syncWith.includes(activeNote)) {
+      dispatch();
+      // syncAnnotationWith(annotationId, [...annotation.syncWith, activeNote])
+      createCommittChangesToAnnotation({ to: activeNote });
     } else {
-      dispatch(
-        syncAnnotationWith(
-          annotationId,
-          annotation.syncWith.filter(id => id !== activeNotebook)
-        )
-      );
+      dispatch();
+      // syncAnnotationWith(
+      //   annotationId,
+      //   annotation.syncWith.filter(id => id !== activeNote)
+      // )
     }
   };
   const mouseEnterHandler = () => setMouseoverAnnotation(true);
@@ -59,42 +54,40 @@ const Annotation = ({ annotationId, quillNotebookRefs }) => {
     setChangedEditorCounter(prevState => prevState + 1);
   };
   const createCommittChangesToAnnotation = forceUpdate => {
-    console.log(quillNotebookRef);
-    console.log(quillNotebookRefs);
+    console.log(quillNoteRef);
+    console.log(quillNoteRefs);
     committChangesToAnnotation(
       annotation,
       quillAnnotationRef,
-      quillNotebookRefs,
-      notebooks,
+      quillNoteRefs,
+      notes,
       [...annotation.syncWith, ...(forceUpdate ? [forceUpdate.to] : [])],
       dispatch,
-      updateAnnotation,
-      deleteAnnotation,
+      updateNote,
+      deleteNote,
       forceUpdate
     );
   };
 
-  // mount notebookRefs
+  // mount noteRefs
   useEffect(() => {
     if (
-      quillNotebookRef &&
-      quillNotebookRefs &&
-      quillNotebookRefs.current &&
-      Object.keys(quillNotebookRefs.current)
-        .map(id => !!quillNotebookRefs.current[id])
+      quillNoteRef &&
+      quillNoteRefs &&
+      quillNoteRefs.current &&
+      Object.keys(quillNoteRefs.current)
+        .map(id => !!quillNoteRefs.current[id])
         .some(el => !!el)
     ) {
-      quillNotebookRef.current =
-        quillNotebookRefs.current[
-          annotation.syncWith.length > 0
-            ? annotation.syncWith[0]
-            : activeNotebook
+      quillNoteRef.current =
+        quillNoteRefs.current[
+          annotation.syncWith.length > 0 ? annotation.syncWith[0] : activeNote
         ];
     }
     return () => {};
   }, [
-    Object.keys(quillNotebookRefs.current)
-      .map(id => !!quillNotebookRefs.current[id])
+    Object.keys(quillNoteRefs.current)
+      .map(id => !!quillNoteRefs.current[id])
       .some(el => !el)
   ]);
 
@@ -167,19 +160,19 @@ const Annotation = ({ annotationId, quillNotebookRefs }) => {
           <button
             style={{ height: '100%' }}
             className={`btn btn-sm btn-light ${
-              annotation.syncWith.includes(activeNotebook) ? 'active' : ''
+              annotation.syncWith.includes(activeNote) ? 'active' : ''
             }`}
             onClick={toggleSyncWith}
           >
             {(annotation.syncWith.length > 0
               ? annotation.syncWith
               : ['none']
-            ).map(notebookId => (
-              <div key={notebookId}>
+            ).map(noteId => (
+              <div key={noteId}>
                 <IconContext.Provider
                   value={{
                     size: '0.9rem',
-                    color: notebookId === 'none' ? '#aaa' : '#000'
+                    color: noteId === 'none' ? '#aaa' : '#000'
                   }}
                 >
                   <div>
@@ -200,4 +193,4 @@ export default Annotation;
 // 2do: observed weird behaviour:
 // auto delte notes doesnt work well...
 // focus newly created notes
-// save connection to notebook also
+// save connection to note also

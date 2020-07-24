@@ -72,10 +72,10 @@ p.flowchartInspectElToolbar {
   background-color: rgb(64, 87, 126) !important;
   color: #fff !important;
 }
-.react-flow__node-annotation {
+.react-flow__node-annotation-note {
   background-color: rgb(243, 165, 195) !important;
 }
-.react-flow__node-notebook {
+.react-flow__node-note {
   background-color: rgb(236, 133, 101) !important;
 }
 .react-flow__node.customOpacity {

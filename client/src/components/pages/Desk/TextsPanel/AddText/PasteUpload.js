@@ -9,14 +9,14 @@ import ReactQuill from 'react-quill';
 function PasteUpload() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const { spareIds } = useSelector(state => state);
+  const spareIds = useSelector(s => s.spareIds);
   const quillUploadRef = React.useRef(null);
   const [textcontent, setTextcontent] = useState('');
-  const [deltas, setDeltas] = useState(null);
+  const [delta, setDelta] = useState(null);
   const onChangeHandler = () => {
     if (!quillUploadRef || !quillUploadRef.current) return;
     setTextcontent(quillUploadRef.current.editor.getText());
-    setDeltas(quillUploadRef.current.editor.getContents());
+    setDelta(quillUploadRef.current.editor.getContents());
   };
   const onSubmit = () => {
     if (!quillUploadRef || !quillUploadRef.current) return;
@@ -24,7 +24,7 @@ function PasteUpload() {
       uploadTextcontent(
         {
           textcontent: textcontent,
-          deltas: deltas
+          delta: delta
         },
         true
       )
@@ -36,7 +36,7 @@ function PasteUpload() {
     }, 100);
   };
   return (
-    <div>
+    <div className='upload-paste'>
       <ReactQuill
         defaultValue=''
         ref={quillUploadRef}
@@ -58,7 +58,7 @@ function PasteUpload() {
 
       <div
         style={{
-          display: textcontent.length > 0 || deltas ? 'block' : 'none'
+          display: textcontent.length > 0 || delta ? 'block' : 'none'
         }}
       >
         <button

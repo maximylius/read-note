@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { regExpHistory } from '../../../../../functions/main';
 import InputWithPrepend from '../../../../Metapanel/InputWithPrepend';
 import {
   updateText,
@@ -12,10 +11,7 @@ import {
 function SecondStage() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const {
-    spareIds,
-    textsPanel: { addedId }
-  } = useSelector(state => state);
+  const addedId = useSelector(s => s.textsPanel.addedId);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [publishedIn, setPublishedIn] = useState('');

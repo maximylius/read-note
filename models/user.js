@@ -7,15 +7,10 @@ const schema = new Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  notebookIds: [{ type: Schema.Types.ObjectId, ref: 'Notebooks', default: [] }],
+  noteIds: [{ type: Schema.Types.ObjectId, ref: 'Notes', default: [] }],
   textIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
   sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section', default: [] }],
-  annotationIds: [
-    { type: Schema.Types.ObjectId, ref: 'Annotation', default: [] }
-  ],
-  accessedNotebookIds: [
-    { type: Schema.Types.ObjectId, ref: 'Notebook', default: [] }
-  ],
+  accessedNoteIds: [{ type: Schema.Types.ObjectId, ref: 'Note', default: [] }],
   accessedTextIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
   reputation: { type: Number, default: 0 }
 });

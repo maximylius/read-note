@@ -10,15 +10,10 @@ import { BsFilter } from 'react-icons/bs';
 
 const FilterOptions = () => {
   const dispatch = useDispatch();
-  const {
-    flowchart: {
-      displayNonMatches,
-      filterTypes,
-      filterAncestors,
-      filterDescendants
-    }
-  } = useSelector(state => state);
-
+  const displayNonMatches = useSelector(s => s.flowchart.displayNonMatches);
+  const filterTypes = useSelector(s => s.flowchart.filterTypes);
+  const filterAncestors = useSelector(s => s.flowchart.filterAncestors);
+  const filterDescendants = useSelector(s => s.flowchart.filterDescendants);
   return (
     <details>
       <summary>

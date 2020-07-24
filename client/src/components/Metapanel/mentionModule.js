@@ -25,19 +25,19 @@ export const mentionModuleCreator = (atValues, hashValues) => {
   return mentionModule;
 };
 
-export const atValuesCreator = (textsById, notebooksById, sectionsById) => {
+export const atValuesCreator = (notesById, textsById, sectionsById) => {
   const atValues = Object.keys(textsById)
     .map(id => {
       return {
-        id: `text=${id}`,
+        id: `text=${id}_isOpen=false`,
         value: textsById[id].title
       };
     })
     .concat(
-      Object.keys(notebooksById).map(id => {
+      Object.keys(notesById).map(id => {
         return {
-          id: `note=${id}`,
-          value: notebooksById[id].title
+          id: `note=${id}_isOpen=false`,
+          value: notesById[id].title
         };
       })
     )
@@ -53,7 +53,7 @@ export const atValuesCreator = (textsById, notebooksById, sectionsById) => {
           ' - ' +
           sectionTitle;
         return {
-          id: `section=${id}_text=${textId}`,
+          id: `section=${id}_text=${textId}_isOpen=false`,
           value
         };
       })
@@ -73,56 +73,28 @@ export const extractAtValueResType = mentionId => {
   return resType;
 };
 
-export const extractAtValueResId = mentionId => {
+export const extractAtValueResId = (mentionId, option) => {
   if (/^note\=/.test(mentionId)) {
-    return mentionId.match(/^note\=(.*)$/).pop();
+    return mentionId.match(/^note\=(.*)_isOpen/).pop();
   } else if (/^text=/.test(mentionId)) {
-    return mentionId.match(/^text\=(.*)$/).pop();
+    return mentionId.match(/^text\=(.*)_isOpen/).pop();
   } else if (/^section=/.test(mentionId)) {
-    return mentionId.match(/^note\=(.*)_/).pop();
+    if (option === 'textId') {
+      mentionId.match(/_text\=(.*)_isOpen/).pop();
+    } else {
+      return mentionId.match(/^section\=(.*)_text/).pop();
+    }
   }
 };
 
-export const atValuesCreator2 = (
-  pathIdentifier,
-  textsById,
-  notebooksById,
-  sectionsById
-) => {
-  const atValues = Object.keys(textsById)
-    .map(id => {
-      let nr = 0; // 2do check with while loop through notebook state
-      return {
-        id: `text=${id}`,
-        value: textsById[id].title
-      };
-    })
-    .concat(
-      Object.keys(notebooksById).map(id => {
-        let nr = 0; // 2do check with while loop through notebook state
-        return {
-          id: `notebook=${id}`,
-          value: notebooksById[id].title
-        };
-      })
-    )
-    .concat(
-      Object.keys(sectionsById).map(id => {
-        const textTitle = textsById[sectionsById[id].textId].title;
-        const sectionTitle = sectionsById[id].title;
+export const updateMentionIdOpenStatus = (mentionId, newVal) => {
+  return mentionId.replace(/_isOpen\=(.*)$/i, '_isOpen=' + newVal);
+};
 
-        let value =
-          textTitle +
-          // .slice(0, Math.max(6, 24 - sectionTitle.length))
-          ' - ' +
-          sectionTitle;
-        let nr = 0; // 2do check with while loop through notebook state
-        return {
-          id: `section=${id}_text=${sectionsById[id].textId}`,
-          value
-        };
-      })
-    );
+export const mentionIdIsOpen = mentionId =>
+  /_isOpen\=color_class-/.test(mentionId);
 
-  return atValues;
+export const mentionColorClass = mentionId => {
+  if (!/_isOpen\=color_class-/.test(mentionId)) return false;
+  return mentionId.match(/_isOpen\=(.*)$/).pop();
 };

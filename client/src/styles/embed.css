@@ -1,0 +1,480 @@
+/* .embedSeperator {
+  background-color: transparent;
+  border: none;
+  height: 50px;
+  padding: 0 0;
+  z-index: 0;
+}
+.embedSeperator.case-begin {
+  margin: 0 -25px -30px 0;
+}
+.embedSeperator.case-end {
+  margin: -0px -25px 0px 0;
+} */
+
+/* .embedSeperator.case-begin {
+  margin: 0 -0px 0px 0;
+}
+.embedSeperator.case-end {
+  margin: -0px -0px 0px 0;
+}
+.embedSeperator.case-begin.color_class-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0),
+    var(--ccc-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0),
+    var(--ccc-0)
+  );
+}
+.embedSeperator.case-begin.color_class-0-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0-0),
+    var(--ccc-0-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0-0),
+    var(--ccc-0-0)
+  );
+}
+.embedSeperator.case-begin.color_class-0-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0-1),
+    var(--ccc-0-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0-1),
+    var(--ccc-0-1)
+  );
+}
+.embedSeperator.case-begin.color_class-0-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0-2),
+    var(--ccc-0-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0-2),
+    var(--ccc-0-2)
+  );
+}
+.embedSeperator.case-begin.color_class-0-3 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0-3),
+    var(--ccc-0-3),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0-3 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0-3),
+    var(--ccc-0-3)
+  );
+}
+.embedSeperator.case-begin.color_class-0-4 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-0-4),
+    var(--ccc-0-4),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-0-4 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-0-4),
+    var(--ccc-0-4)
+  );
+}
+.embedSeperator.case-begin.color_class-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-1),
+    var(--ccc-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-1),
+    var(--ccc-1)
+  );
+}
+.embedSeperator.case-begin.color_class-1-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-1-0),
+    var(--ccc-1-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-1-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-1-0),
+    var(--ccc-1-0)
+  );
+}
+.embedSeperator.case-begin.color_class-1-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-1-1),
+    var(--ccc-1-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-1-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-1-1),
+    var(--ccc-1-1)
+  );
+}
+.embedSeperator.case-begin.color_class-1-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-1-2),
+    var(--ccc-1-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-1-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-1-2),
+    var(--ccc-1-2)
+  );
+}
+.embedSeperator.case-begin.color_class-1-3 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-1-3),
+    var(--ccc-1-3),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-1-3 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-1-3),
+    var(--ccc-1-3)
+  );
+}
+.embedSeperator.case-begin.color_class-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-2),
+    var(--ccc-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-2),
+    var(--ccc-2)
+  );
+}
+.embedSeperator.case-begin.color_class-2-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-2-0),
+    var(--ccc-2-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-2-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-2-0),
+    var(--ccc-2-0)
+  );
+}
+.embedSeperator.case-begin.color_class-2-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-2-1),
+    var(--ccc-2-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-2-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-2-1),
+    var(--ccc-2-1)
+  );
+}
+.embedSeperator.case-begin.color_class-2-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-2-2),
+    var(--ccc-2-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-2-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-2-2),
+    var(--ccc-2-2)
+  );
+}
+.embedSeperator.case-begin.color_class-3 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-3),
+    var(--ccc-3),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-3 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-3),
+    var(--ccc-3)
+  );
+}
+.embedSeperator.case-begin.color_class-3-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-3-0),
+    var(--ccc-3-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-3-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-3-0),
+    var(--ccc-3-0)
+  );
+}
+.embedSeperator.case-begin.color_class-3-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-3-1),
+    var(--ccc-3-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-3-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-3-1),
+    var(--ccc-3-1)
+  );
+}
+.embedSeperator.case-begin.color_class-3-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-3-2),
+    var(--ccc-3-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-3-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-3-2),
+    var(--ccc-3-2)
+  );
+}
+.embedSeperator.case-begin.color_class-4 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-4),
+    var(--ccc-4),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-4 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-4),
+    var(--ccc-4)
+  );
+}
+.embedSeperator.case-begin.color_class-4-0 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-4-0),
+    var(--ccc-4-0),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-4-0 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-4-0),
+    var(--ccc-4-0)
+  );
+}
+.embedSeperator.case-begin.color_class-4-1 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-4-1),
+    var(--ccc-4-1),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-4-1 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-4-1),
+    var(--ccc-4-1)
+  );
+}
+.embedSeperator.case-begin.color_class-4-2 {
+  background-image: linear-gradient(
+    -175deg,
+    var(--ccc-4-2),
+    var(--ccc-4-2),
+    transparent,
+    transparent,
+    transparent
+  );
+}
+.embedSeperator.case-end.color_class-4-2 {
+  background-image: linear-gradient(
+    175deg,
+    transparent,
+    transparent,
+    transparent,
+    var(--ccc-4-2),
+    var(--ccc-4-2)
+  );
+} */

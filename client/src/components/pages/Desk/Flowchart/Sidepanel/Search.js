@@ -5,8 +5,10 @@ import { BsSearch } from 'react-icons/bs';
 import ReactQuill from 'react-quill';
 import QuillMention from 'quill-mention';
 import {
-  atValuesCreator2,
-  mentionModuleCreator
+  atValuesCreator,
+  mentionModuleCreator,
+  extractAtValueResType,
+  extractAtValueResId
 } from '../../../../Metapanel/mentionModule';
 import { ObjectKeepKeys } from '../../../../../functions/main';
 import {
@@ -23,16 +25,17 @@ const searchPlaceholder =
 
 export const Search = () => {
   const dispatch = useDispatch();
-  const {
-    notebooks,
-    texts,
-    sections,
-    annotations,
-    flowchart: { searchWithinTextcontent, strictSearchResults }
-  } = useSelector(state => state);
+  const searchWithinTextcontent = useSelector(
+    s => s.flowchart.searchWithinTextcontent
+  );
+  const strictSearchResults = useSelector(s => s.flowchart.strictSearchResults);
+  const notes = useSelector(s => s.notes);
+  const texts = useSelector(s => s.texts);
+  const sections = useSelector(s => s.sections);
+
   const searchQuillRef = React.useRef();
   const [atValues, setAtValues] = React.useState(
-    atValuesCreator2('search', texts.byId, notebooks.byId, sections.byId)
+    atValuesCreator(notes, texts, sections)
   );
   const [changeCounter, setChangeCounter] = React.useState(-1);
   const [committedChangeCounter, setCommittedChangeCounter] = React.useState(0);
@@ -88,26 +91,25 @@ export const Search = () => {
       'searchTerms',
       searchTerms
     );
-    let filteredTextsById = { ...texts.byId };
-    let filteredSectionsById = { ...sections.byId };
-    let filteredAnnotationsById = { ...annotations.byId };
-    let filteredNotebooksById = { ...notebooks.byId };
+    let filteredTextsById = { ...texts };
+    let filteredSectionsById = { ...sections };
+    let filteredNotesById = { ...notes };
     mentionSearchTerms.forEach(mentionId => {
-      filteredAnnotationsById = {};
+      const resId = extractAtValueResId(mentionId);
+      const mentionType = extractAtValueResType(mentionId);
+
       filteredTextsById =
-        mentionId.startsWith('text') || mentionId.startsWith('section')
-          ? ObjectKeepKeys(filteredTextsById, [mentionId.split('text=')[1]])
+        mentionType === 'text' || mentionType === 'section'
+          ? ObjectKeepKeys(filteredTextsById, [resId])
           : {};
-      filteredSectionsById = mentionId.startsWith('section')
-        ? ObjectKeepKeys(filteredSectionsById, [
-            mentionId.match(/section\=(.*)_text/).pop()
-          ])
-        : {};
-      filteredNotebooksById = mentionId.startsWith('notebook')
-        ? ObjectKeepKeys(filteredNotebooksById, [
-            mentionId.split('notebook=')[1]
-          ])
-        : {};
+      filteredSectionsById =
+        mentionType === 'section'
+          ? ObjectKeepKeys(filteredSectionsById, [resId])
+          : {};
+      filteredNotesById =
+        mentionType === 'note'
+          ? ObjectKeepKeys(filteredNotesById, [resId])
+          : {};
     });
 
     searchTerms.forEach(searchTerm => {
@@ -141,42 +143,24 @@ export const Search = () => {
         );
         filteredSectionsById = ObjectKeepKeys(filteredSectionsById, keysToKeep);
       }
-      if (Object.keys(filteredAnnotationsById).length > 0) {
+      if (Object.keys(filteredNotesById).length > 0) {
         const keysToKeep = [];
-        Object.keys(filteredAnnotationsById).forEach(key =>
+        Object.keys(filteredNotesById).forEach(key =>
           keysToKeep.push(
-            ...(filteredAnnotationsById[key].plainText.includes(searchTerm)
+            ...(filteredNotesById[key].title.includes(searchTerm) ||
+            filteredNotesById[key].plainText.includes(searchTerm)
               ? [key]
               : [])
           )
         );
-        filteredAnnotationsById = ObjectKeepKeys(
-          filteredAnnotationsById,
-          keysToKeep
-        );
-      }
-      if (Object.keys(filteredNotebooksById).length > 0) {
-        const keysToKeep = [];
-        Object.keys(filteredNotebooksById).forEach(key =>
-          keysToKeep.push(
-            ...(filteredNotebooksById[key].title.includes(searchTerm) ||
-            filteredNotebooksById[key].plainText.includes(searchTerm)
-              ? [key]
-              : [])
-          )
-        );
-        filteredNotebooksById = ObjectKeepKeys(
-          filteredNotebooksById,
-          keysToKeep
-        );
+        filteredNotesById = ObjectKeepKeys(filteredNotesById, keysToKeep);
       }
     });
     dispatch(
       strictFlowchartSearchresults([
         ...Object.keys(filteredTextsById),
         ...Object.keys(filteredSectionsById),
-        ...Object.keys(filteredAnnotationsById),
-        ...Object.keys(filteredNotebooksById)
+        ...Object.keys(filteredNotesById)
       ])
     );
     return () => {};

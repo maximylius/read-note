@@ -8,7 +8,7 @@ import { closeFlowchartElement, loadText } from '../../../../../store/actions';
 const InspectText = ({ id, flowchartInstance }) => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const { texts } = useSelector(state => state);
+  const text = useSelector(s => s.texts[id]);
   const removeElementFromInspect = () => dispatch(closeFlowchartElement(id));
   const openClickHandler = () =>
     dispatch(
@@ -22,7 +22,7 @@ const InspectText = ({ id, flowchartInstance }) => {
   // onclick function that selections mindmap node also
   return (
     <div>
-      <h5>{texts.byId[id].title}</h5>
+      <h5>{text.title}</h5>
       <p className='flowchartInspectElToolbar'>
         <span className='flowchartInspectElToolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
@@ -39,11 +39,7 @@ const InspectText = ({ id, flowchartInstance }) => {
           </button>
         </span>
       </p>
-      <ReactQuill
-        defaultValue={texts.byId[id].deltas}
-        theme='bubble'
-        readOnly={true}
-      />
+      <ReactQuill defaultValue={text.delta} theme='bubble' readOnly={true} />
     </div>
   );
 };

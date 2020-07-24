@@ -4,9 +4,7 @@ import SecondStage from './SecondStage';
 import FirstStage from './FirstStage';
 
 function AddText() {
-  const {
-    textsPanel: { addedId }
-  } = useSelector(state => state);
+  const addedId = useSelector(s => s.textsPanel.addedId);
   return (
     <div
       className='row growContent flex-row card mr-4'

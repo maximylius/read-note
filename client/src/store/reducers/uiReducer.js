@@ -1,108 +1,108 @@
 import * as types from '../types';
 import _isEqual from 'lodash/isEqual';
 
-const mdResolver = (finderOpen, textsOpen, annotationsOpen, notebooksOpen) => {
+const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
   if (finderOpen) {
     if (textsOpen) {
       if (annotationsOpen) {
-        if (notebooksOpen) {
+        if (notesOpen) {
           return {
             mdFinderPanel: 2,
             mdTextsPanel: 6,
             mdAnnotationsPanel: 5,
-            mdNotebooksPanel: 4
+            mdNotesPanel: 4
           };
-        } else if (!notebooksOpen) {
+        } else if (!notesOpen) {
           return {
             mdFinderPanel: 3,
             mdTextsPanel: 9,
             mdAnnotationsPanel: 5,
-            mdNotebooksPanel: 0
+            mdNotesPanel: 0
           };
         }
       } else if (!annotationsOpen) {
-        if (notebooksOpen) {
+        if (notesOpen) {
           return {
             mdFinderPanel: 2,
             mdTextsPanel: 5,
             mdAnnotationsPanel: 0,
-            mdNotebooksPanel: 5
+            mdNotesPanel: 5
           };
-        } else if (!notebooksOpen) {
+        } else if (!notesOpen) {
           return {
             mdFinderPanel: 3,
             mdTextsPanel: 9,
             mdAnnotationsPanel: 0,
-            mdNotebooksPanel: 0
+            mdNotesPanel: 0
           };
         }
       }
     } else if (!textsOpen) {
-      if (notebooksOpen) {
+      if (notesOpen) {
         return {
           mdFinderPanel: 3,
           mdTextsPanel: 0,
           mdAnnotationsPanel: Number(annotationsOpen),
-          mdNotebooksPanel: 9
+          mdNotesPanel: 9
         };
-      } else if (!notebooksOpen) {
+      } else if (!notesOpen) {
         return {
           mdFinderPanel: 6,
           mdTextsPanel: 0,
           mdAnnotationsPanel: Number(annotationsOpen),
-          mdNotebooksPanel: 0
+          mdNotesPanel: 0
         };
       }
     }
   } else if (!finderOpen) {
     if (textsOpen) {
       if (annotationsOpen) {
-        if (notebooksOpen) {
+        if (notesOpen) {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 8,
             mdAnnotationsPanel: 5,
-            mdNotebooksPanel: 4
+            mdNotesPanel: 4
           };
-        } else if (!notebooksOpen) {
+        } else if (!notesOpen) {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 12,
             mdAnnotationsPanel: 5,
-            mdNotebooksPanel: 0
+            mdNotesPanel: 0
           };
         }
       } else if (!annotationsOpen) {
-        if (notebooksOpen) {
+        if (notesOpen) {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 7,
             mdAnnotationsPanel: 0,
-            mdNotebooksPanel: 5
+            mdNotesPanel: 5
           };
-        } else if (!notebooksOpen) {
+        } else if (!notesOpen) {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 12,
             mdAnnotationsPanel: 0,
-            mdNotebooksPanel: 0
+            mdNotesPanel: 0
           };
         }
       }
     } else if (!textsOpen) {
-      if (notebooksOpen) {
+      if (notesOpen) {
         return {
           mdFinderPanel: 0,
           mdTextsPanel: 0,
           mdAnnotationsPanel: Number(annotationsOpen),
-          mdNotebooksPanel: 12 // smaller for extra padding
+          mdNotesPanel: 12 // smaller for extra padding
         };
-      } else if (!notebooksOpen) {
+      } else if (!notesOpen) {
         return {
           mdFinderPanel: 6,
           mdTextsPanel: 0,
           mdAnnotationsPanel: Number(annotationsOpen),
-          mdNotebooksPanel: 0
+          mdNotesPanel: 0
         };
       }
     }
@@ -114,9 +114,15 @@ const initialState = {
   mdTextsPanel: 6,
   mdAnnotationsPanel: 4,
   mdAnnotationsPanelLast: 4,
-  mdNotebooksPanel: 4,
-  mdNotebooksPanelLast: 4,
+  mdNotesPanel: 4,
+  mdNotesPanelLast: 4,
+  welcomeOpen: false,
+  aboutOpen: false,
+  registerOpen: false,
+  signInOpen: false,
+  logoutOpen: false,
   keepFinderOpen: false,
+  lastDeskPathname: '/desk',
   loading: false,
   alerts: [],
   alertId: 0
@@ -132,14 +138,14 @@ export default (state = initialState, action) => {
           true,
           state.mdTextsPanel > 0,
           false,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         ),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
     // close finder...
-    case types.OPEN_NOTEBOOK:
-    case types.ADD_NOTEBOOK:
-    case types.UPDATE_NOTEBOOK:
+    case types.OPEN_NOTE:
+    case types.ADD_NOTE:
+    case types.UPDATE_NOTE:
     case types.UPDATE_TEXT:
     case types.OPEN_ADDTEXTPANEL:
     case types.UPLOADED_TEXT:
@@ -152,7 +158,7 @@ export default (state = initialState, action) => {
           false,
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanelLast > 0,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         )
       };
     case types.EXPAND_TEXTS_PANEL:
@@ -164,7 +170,7 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           true,
           state.mdAnnotationsPanel > 0,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         )
       };
     // OPEN TEXT AND COLLAPSE FINDER
@@ -178,7 +184,7 @@ export default (state = initialState, action) => {
           state.keepFinderOpen,
           true,
           state.mdAnnotationsPanel > 0,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         )
       };
 
@@ -189,7 +195,7 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           false,
           state.mdAnnotationsPanel > 0,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         ),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
@@ -203,11 +209,11 @@ export default (state = initialState, action) => {
             state.mdFinderPanel > 0,
             false,
             state.mdAnnotationsPanel > 0,
-            state.mdNotebooksPanel > 0
+            state.mdNotesPanel > 0
           )
         };
       }
-    case types.EXPAND_ANNOTATIONS_PANEL:
+    // case types.EXPAND_ANNOTATIONS_PANEL:
     case types.SET_COMMITTED_SECTIONS:
       return {
         ...state,
@@ -215,7 +221,7 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           true,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         ),
         mdAnnotationsPanelLast: 1
       };
@@ -223,15 +229,15 @@ export default (state = initialState, action) => {
     case types.ADD_SECTION:
     case types.UPDATE_SECTION:
     case types.DELETE_SECTION:
-    case types.ADD_ANNOTATION:
-    case types.DELETE_ANNOTATION:
+      // case types.ADD_ANNOTATION:
+      // case types.DELETE_ANNOTATION:
       return {
         ...state,
         ...mdResolver(
           state.keepFinderOpen,
           state.mdTextsPanel > 0,
           true,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         ),
         mdAnnotationsPanelLast: 1
       };
@@ -242,13 +248,13 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           false,
-          state.mdNotebooksPanel > 0
+          state.mdNotesPanel > 0
         ),
         mdAnnotationsPanelLast: 0
       };
-    case types.EXPAND_NOTEBOOKS_PANEL:
-    case types.ADD_NOTEBOOK:
-    case types.OPEN_NOTEBOOK:
+    case types.EXPAND_NOTES_PANEL:
+    case types.ADD_NOTE:
+    case types.OPEN_NOTE:
       return {
         ...state,
         ...mdResolver(
@@ -258,7 +264,7 @@ export default (state = initialState, action) => {
           true
         )
       };
-    case types.COLLAPSE_NOTEBOOKS_PANEL:
+    case types.COLLAPSE_NOTES_PANEL: //2do: why not exported?
       return {
         ...state,
         ...mdResolver(
@@ -267,9 +273,9 @@ export default (state = initialState, action) => {
           state.mdAnnotationsPanel > 0,
           false
         ),
-        mdNotebooksPanelLast: 0
+        mdNotesPanelLast: 0
       };
-    case types.CLOSE_NOTEBOOK:
+    case types.CLOSE_NOTE:
       if (!payload.last) {
         return state;
       } else {
@@ -281,7 +287,7 @@ export default (state = initialState, action) => {
             state.mdAnnotationsPanel > 0,
             false
           ),
-          mdNotebooksPanelLast: 0
+          mdNotesPanelLast: 0
         };
       }
     // case types.OPEN_SPEED_READER:
@@ -289,14 +295,14 @@ export default (state = initialState, action) => {
     //     ...state,
     //     ...mdResolver(false, true, false, false),
     //     mdAnnotationsPanelLast: state.mdAnnotationsPanel,
-    //     mdNotebooksPanelLast: state.mdNotebooksPanel
+    //     mdNotesPanelLast: state.mdNotesPanel
     //   };
     case types.PLAY_SPEED_READER:
       return {
         ...state,
         ...mdResolver(false, true, false, false),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel,
-        mdNotebooksPanelLast: state.mdNotebooksPanel
+        mdNotesPanelLast: state.mdNotesPanel
       };
     case types.PAUSE_SPEED_READER:
       return {
@@ -305,7 +311,7 @@ export default (state = initialState, action) => {
           false,
           true,
           state.mdAnnotationsPanelLast,
-          state.mdNotebooksPanelLast
+          state.mdNotesPanelLast
         )
       };
     case types.CLOSE_SPEED_READER:
@@ -315,9 +321,95 @@ export default (state = initialState, action) => {
           false,
           true,
           state.mdAnnotationsPanelLast,
-          state.mdNotebooksPanelLast
+          state.mdNotesPanelLast
         )
       };
+
+    case types.OPEN_WELCOME_MODAL:
+      return {
+        ...state,
+        welcomeOpen: true,
+        aboutOpen: false,
+        registerOpen: false,
+        signInOpen: false,
+        logoutOpen: false,
+        lastDeskPathname: payload.pathname || state.lastDeskPathname
+      };
+    case types.OPEN_ABOUT_MODAL:
+      return {
+        ...state,
+        welcomeOpen: false,
+        aboutOpen: true,
+        registerOpen: false,
+        signInOpen: false,
+        logoutOpen: false,
+        lastDeskPathname: payload.pathname || state.lastDeskPathname
+      };
+    case types.OPEN_REGISTER_MODAL:
+      return {
+        ...state,
+        welcomeOpen: false,
+        aboutOpen: false,
+        registerOpen: true,
+        signInOpen: false,
+        logoutOpen: false,
+        lastDeskPathname: payload.pathname || state.lastDeskPathname
+      };
+    case types.OPEN_SIGNIN_MODAL:
+      return {
+        ...state,
+        welcomeOpen: false,
+        aboutOpen: false,
+        registerOpen: false,
+        signInOpen: true,
+        logoutOpen: false,
+        lastDeskPathname: payload.pathname || state.lastDeskPathname
+      };
+    case types.OPEN_LOGOUT_MODAL:
+      return {
+        ...state,
+        welcomeOpen: false,
+        aboutOpen: false,
+        registerOpen: false,
+        signInOpen: false,
+        logoutOpen: true,
+        lastDeskPathname: payload.pathname || state.lastDeskPathname
+      };
+    case types.CLOSE_WELCOME_MODAL:
+      return {
+        ...state,
+        welcomeOpen: false
+      };
+    case types.CLOSE_ABOUT_MODAL:
+      return {
+        ...state,
+        aboutOpen: false
+      };
+    case types.CLOSE_REGISTER_MODAL:
+      return {
+        ...state,
+        registerOpen: false
+      };
+    case types.CLOSE_SIGNIN_MODAL:
+      return {
+        ...state,
+        signInOpen: false
+      };
+    case types.CLOSE_LOGOUT_MODAL:
+      return {
+        ...state,
+        logoutOpen: false
+      };
+    case types.CLOSE_ALL_MODALS:
+      return {
+        ...state,
+        welcomeOpen: false,
+        aboutOpen: false,
+        registerOpen: false,
+        signInOpen: false,
+        logoutOpen: false
+      };
+
     case types.TOGGLE_KEEP_FINDER_OPEN:
       return {
         ...state,

@@ -5,11 +5,11 @@ const initialState = {
   anonymousId: null,
   username: null,
   email: null,
-  notebookIds: [],
+  noteIds: [],
   textIds: [],
   sectionIds: [],
   annotationIds: [],
-  accessedNotebookIds: [],
+  accessedNoteIds: [],
   accessedTextIds: [],
   reputation: 0
 };
@@ -17,20 +17,17 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
-    case types.GET_NOTEBOOKS:
+    case types.GET_NOTES:
       return {
         ...state,
-        notebookIds: [
-          ...new Set([
-            ...state.notebookIds,
-            ...Object.keys(payload.notebooksById)
-          ])
+        noteIds: [
+          ...new Set([...state.noteIds, ...Object.keys(payload.notesById)])
         ]
       };
-    case types.ADD_NOTEBOOK:
+    case types.ADD_NOTE:
       return {
         ...state,
-        notebookIds: [...state.notebookIds, payload.notebook._id]
+        noteIds: [...state.noteIds, payload.note._id]
       };
     case types.UPLOADED_TEXT:
     case types.ADD_TEXT:
@@ -45,16 +42,11 @@ export default (state = initialState, action) => {
         ...state,
         sectionIds: [...state.sectionIds, payload.section.Id]
       };
-    case types.ADD_ANNOTATION:
-      return {
-        ...state,
-        annotationIds: [...state.annotationIds, payload.annotation._id]
-      };
 
-    case types.DELETE_NOTEBOOK:
+    case types.DELETE_NOTE:
       return {
         ...state,
-        notebookIds: state.notebookIds.filter(id => id !== payload.notebookId)
+        noteIds: state.noteIds.filter(id => id !== payload.noteId)
       };
     case types.DELETE_TEXT:
       return {
@@ -73,26 +65,18 @@ export default (state = initialState, action) => {
           id => !payload.sectionIds.includes(id)
         )
       };
-    case types.DELETE_ANNOTATION:
-      return {
-        ...state,
-        annotationIds: state.annotationIds.filter(
-          id => id !== payload.annotationId
-        )
-      };
-    case types.USER_LOADED:
+
     case types.LOGIN_SUCCESS:
     case types.REGISTER_SUCCESS:
       localStorage.setItem('token', action.payload.token);
+    case types.USER_LOADED:
       // merge with any previous user activity.
       console.log(payload);
       console.log(payload.user);
-      console.log(payload.user.notebookIds);
+      console.log(payload.user.noteIds);
       return {
         ...payload.user,
-        notebookIds: [
-          ...new Set([...payload.user.notebookIds, ...state.notebookIds])
-        ],
+        noteIds: [...new Set([...payload.user.noteIds, ...state.noteIds])],
         textIds: [...new Set([...payload.user.textIds, ...state.textIds])],
         sectionIds: [
           ...new Set([...payload.user.sectionIds, ...state.sectionIds])
@@ -100,10 +84,10 @@ export default (state = initialState, action) => {
         annotationIds: [
           ...new Set([...payload.user.annotationIds, ...state.annotationIds])
         ],
-        accessedNotebookIds: [
+        accessedNoteIds: [
           ...new Set([
-            ...payload.user.accessedNotebookIds,
-            ...state.accessedNotebookIds
+            ...payload.user.accessedNoteIds,
+            ...state.accessedNoteIds
           ])
         ],
         accessedTextIds: [

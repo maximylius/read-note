@@ -3,13 +3,13 @@ import { useSelector } from 'react-redux';
 import { BsSearch } from 'react-icons/bs';
 
 const FinderSearch = () => {
-  const notebooks = useSelector(state => state.notebooks);
+  const notes = useSelector(s => s.notes);
   const [searchString, setSearchString] = useState('');
   return (
     <div className='row static'>
       <form className='form-inline form-lg' style={{ display: 'block' }}>
         <div className='input-group mb-2'>
-          <div className='input-group-prepend' id='notebook-search'>
+          <div className='input-group-prepend' id='note-search'>
             <span className='input-group-text'>
               <BsSearch />
             </span>
@@ -17,8 +17,8 @@ const FinderSearch = () => {
           <input
             type='text'
             className='form-control'
-            aria-label='Search notebooks'
-            aria-describedby='notebook-search'
+            aria-label='Search notes'
+            aria-describedby='note-search'
             placeholder='Search...'
             value={searchString}
             onChange={e => setSearchString(e.target.value)}

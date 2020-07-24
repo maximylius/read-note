@@ -132,75 +132,68 @@ export const regExpHistory = (
   currentPath,
   id,
   action = 'open/close',
-  type = 'text/notebook'
+  type = 'text/note'
 ) => {
-  console.log(action, type);
-  let nextPath;
-  if (type === 'text') {
-    if (action === 'open') {
-      if (new RegExp(id).test(currentPath)) {
-        console.log(1);
-        nextPath = currentPath
-          .replace(/-1/, '-0')
-          .replace(`${id}-0`, `${id}-1`);
-      } else if (new RegExp('texts=').test(currentPath)) {
-        if (new RegExp('notebooks=').test(currentPath)) {
-          nextPath = currentPath
-            .replace(/-1/, '-0')
-            .replace(/\&notebooks/, `+${id}-1&notebooks`);
-        } else {
-          nextPath = currentPath.replace(/-1/, '-0').concat(`+${id}-1`);
+  let pathHasText = /texts\=/.test(currentPath);
+  let pathHasNote = /notes\=/.test(currentPath);
+  let splitPath = currentPath.split(
+    /^\/desk\/texts\=|^\/desk\/notes\=|&notes\=|^\/desk\//
+  );
+  const textsArr = pathHasText ? splitPath[1].split('+') : [];
+  const notesArr = pathHasNote ? splitPath[pathHasText + 1].split('+') : [];
+  const resArr = type === 'text' ? textsArr : notesArr;
+
+  if (action === 'open') {
+    let replaceIndex = resArr.findIndex(el => el.endsWith('-1'));
+    if (replaceIndex >= 0)
+      resArr[replaceIndex] = resArr[replaceIndex].replace(/-1$/, '-0');
+    let spliceIndex = resArr.findIndex(el => el.startsWith(id));
+    if (spliceIndex >= 0) {
+      resArr[spliceIndex] = resArr[spliceIndex].replace(/-0$/, '-1');
+    } else {
+      resArr.push(`${id}-1`);
+    }
+  } else {
+    //action==="close"
+    let spliceIndex = -1;
+    resArr.forEach((res, index) => {
+      if (res.startsWith(id)) {
+        spliceIndex = index;
+        if (
+          res.endsWith('-1') &&
+          resArr.length > 0 &&
+          index !== resArr.length - 1
+        ) {
+          resArr[index === 0 ? 1 : index - 1] = `${res.split('-')[0]}-1`;
         }
-      } else {
-        nextPath = currentPath.replace(/\/desk/, `/desk&texts=${id}-1`);
       }
-    } else if (action === 'close') {
-      console.log(currentPath);
-      nextPath = currentPath
-        .replace(new RegExp(`${id}-[01]`), '')
-        .replace(/=\+/g, '=') //clean seperators
-        .replace(/\+\+/g, '+') //clean seperators
-        .replace(/\+$/g, '') //clean seperators
-        .replace(/&texts=$/, '') // replace if nothing left
-        .replace(/&texts=&notebooks=/, '&notebooks='); // replace if no texts left
-      console.log(nextPath);
-    }
-  } else if (type === 'notebook') {
-    console.log('notebook');
-    if (action === 'open') {
-      console.log('open');
-      if (new RegExp(id).test(currentPath)) {
-        nextPath = currentPath
-          .replace(/-1(?![\s\S]*-1)/, '-0') // replace last occurence of -1 with -0
-          .replace(`${id}-0`, `${id}-1`);
-      } else if (new RegExp('notebooks=').test(currentPath)) {
-        nextPath = currentPath
-          .replace(/-1(?![\s\S]*-1)/, '-0')
-          .concat(`+${id}-1`);
-      } else {
-        nextPath = currentPath.concat(`&notebooks=${id}-1`);
-      }
-    } else if (action === 'close') {
-      console.log('close');
-      console.log(currentPath);
-      nextPath = currentPath
-        .replace(new RegExp(`${id}-[01]`), '')
-        .replace(/=\+/g, '=') //clean seperators
-        .replace(/\+\+/g, '+') //clean seperators
-        .replace(/\+$/g, '') //clean seperators
-        .replace(/&notebooks=$/, ''); // remove if nothing is left
-    }
-    console.log(nextPath);
+    });
+    if (spliceIndex >= 0) resArr.splice(spliceIndex, 1);
   }
-  if (['open', 'close'].includes(action) && ['text', 'notebook'].includes(type))
-    return nextPath;
+
+  let textsString = textsArr
+    .map((text, index) => `${index === 0 ? 'texts=' : ''}${text}`)
+    .join('+');
+  let seperator = textsArr.length > 0 && notesArr.length > 0 ? '&' : '';
+  let notesString = notesArr
+    .map((note, index) => `${index === 0 ? 'notes=' : ''}${note}`)
+    .join('+');
+
+  let nextPath = '/desk/' + textsString + seperator + notesString;
+  return nextPath;
 };
+
+export const regExpOpenTexts = url =>
+  url
+    .match(/texts\=(.*)&notes\=|texts\=(.*)$/)
+    .pop()
+    .split('+');
 
 export const committChangesToAnnotation = (
   annotation,
   quillAnnotationRef,
-  quillNotebookRefs,
-  notebooks,
+  quillNoteRefs,
+  notes,
   syncWith,
   dispatch,
   updateAnnotation,
@@ -210,16 +203,16 @@ export const committChangesToAnnotation = (
   console.log(quillAnnotationRef);
   const annotationId = annotation._id;
   const annotationInnerHTML = quillAnnotationRef.current.editor.root.innerHTML;
-  const annotationDeltas = quillAnnotationRef.current.editor.getContents();
-  console.log('annotationDeltas', annotationDeltas);
+  const annotationDelta = quillAnnotationRef.current.editor.getContents();
+  console.log('annotationDelta', annotationDelta);
   const annotationPlainText = quillAnnotationRef.current.editor.getText();
 
   if (
     !annotationInnerHTML ||
     annotationInnerHTML === '<p><br></p>' ||
-    annotationDeltas.length === 0
+    annotationDelta.length === 0
   ) {
-    // dispatch(deleteAnnotation(annotationId)); // 2do? // shall also delete from notebook?
+    // dispatch(deleteAnnotation(annotationId)); // 2do? // shall also delete from note?
     return;
   }
 
@@ -229,20 +222,18 @@ export const committChangesToAnnotation = (
     return;
   }
 
-  const notebookUpdates = [];
+  const noteUpdates = [];
 
-  syncWith.forEach(notebookId => {
-    let indexInNotebookAnnotations = null;
-    console.log(quillNotebookRefs);
-    const currentNotebookDeltas = quillNotebookRefs.current[
-      notebookId
-    ].editor.getContents();
+  syncWith.forEach(noteId => {
+    let indexInNoteAnnotations = null;
+    console.log(quillNoteRefs);
+    const currentNoteDelta = quillNoteRefs.current[noteId].editor.getContents();
 
-    const notebook = notebooks.byId[notebookId];
+    const note = notes[noteId];
 
-    console.log('adding note to', notebook.title);
+    console.log('adding note to', note.title);
 
-    let notebookAnnotations = [],
+    let noteAnnotations = [],
       retainIndex = 0,
       annotationVersions = {
         [annotationId]: {
@@ -261,18 +252,18 @@ export const committChangesToAnnotation = (
     // 2do severe problems when multiple instances are in place. solution needed.
     // updating a ref makes it disappear -why?
     // when no text follow then it seem to start bugging
-    currentNotebookDeltas.ops.forEach((op, deltaIndex) => {
+    currentNoteDelta.ops.forEach((op, deltaIndex) => {
       if (
         lastWasAnnotationDelta &&
         typeof op.insert === 'string' &&
         op.insert.replace(/\s+/g, '').length === 0
       ) {
-        let currentGroup = notebookAnnotations.pop();
+        let currentGroup = noteAnnotations.pop();
         currentGroup.end = deltaIndex;
         let deltaLength = op.insert.length || 1;
         currentGroup.length += deltaLength;
         deltaIndexOverview.push(retainIndex);
-        notebookAnnotations.push(currentGroup);
+        noteAnnotations.push(currentGroup);
         retainIndex += deltaLength;
         lastWasAnnotationDelta = false;
         return;
@@ -292,26 +283,26 @@ export const committChangesToAnnotation = (
           op.attributes.annotation &&
           op.attributes.annotation.annotationId &&
           op.attributes.annotation.version &&
-          notebook.annotationVersions[op.attributes.annotation.annotationId] &&
-          notebook.annotationVersions[op.attributes.annotation.annotationId][
+          note.annotationVersions[op.attributes.annotation.annotationId] &&
+          note.annotationVersions[op.attributes.annotation.annotationId][
             op.attributes.annotation.version.split('-')[0]
           ]
         ) {
           annotationVersions[op.attributes.annotation.annotationId] = {
             ...annotationVersions[op.attributes.annotation.annotationId],
             [op.attributes.annotation.version.split('-')[0]]:
-              notebook.annotationVersions[
-                op.attributes.annotation.annotationId
-              ][op.attributes.annotation.version.split('-')[0]]
+              note.annotationVersions[op.attributes.annotation.annotationId][
+                op.attributes.annotation.version.split('-')[0]
+              ]
           };
         }
         return;
       }
       let currentGroup =
-        notebookAnnotations.length > 0 &&
-        notebookAnnotations[notebookAnnotations.length - 1].version ===
+        noteAnnotations.length > 0 &&
+        noteAnnotations[noteAnnotations.length - 1].version ===
           op.attributes.annotation.version
-          ? notebookAnnotations.pop()
+          ? noteAnnotations.pop()
           : {
               begin: deltaIndex,
               version: op.attributes.annotation.version,
@@ -325,60 +316,57 @@ export const committChangesToAnnotation = (
       let deltaLength = op.insert.length || 1;
       currentGroup.length += deltaLength;
       deltaIndexOverview.push(retainIndex);
-      notebookAnnotations.push(currentGroup);
+      noteAnnotations.push(currentGroup);
       retainIndex += deltaLength;
       lastWasAnnotationDelta = true;
     });
-    console.log('notebookAnnotations', notebookAnnotations);
+    console.log('noteAnnotations', noteAnnotations);
 
-    notebookAnnotations.forEach((notebookAnnotation, index) => {
-      notebookAnnotations[index].plainText = currentNotebookDeltas.ops
-        .slice(notebookAnnotation.begin, notebookAnnotation.end + 1)
+    noteAnnotations.forEach((noteAnnotation, index) => {
+      noteAnnotations[index].plainText = currentNoteDelta.ops
+        .slice(noteAnnotation.begin, noteAnnotation.end + 1)
         .map(op => op.insert)
         .join('');
-      let version = notebookAnnotation.version.split('-')[0],
+      let version = noteAnnotation.version.split('-')[0],
         currentContainsSaved,
         savedContainsCurrent,
-        savedString = notebook.annotationVersions[annotationId][version],
+        savedString = note.annotationVersions[annotationId][version],
         escapedSavedString;
       if (!savedString) {
-        notebookAnnotations[index].update = false;
+        noteAnnotations[index].update = false;
       } else {
         escapedSavedString = savedString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
         console.log('savedString', savedString);
         savedContainsCurrent = !!savedString
           .replace(/\s+/g, '')
           .match(
-            notebookAnnotation.plainText
+            noteAnnotation.plainText
               .replace(/\s+/g, '')
               .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
           );
 
-        currentContainsSaved = !!notebookAnnotation.plainText
+        currentContainsSaved = !!noteAnnotation.plainText
           .replace(/\s+/g, '')
           .match(escapedSavedString.replace(/\s+/g, ''));
 
-        notebookAnnotations[index].update =
+        noteAnnotations[index].update =
           currentContainsSaved || savedContainsCurrent;
         console.log(
-          'notebookAnnotations[index].update',
+          'noteAnnotations[index].update',
           currentContainsSaved,
           savedContainsCurrent
         );
       }
-      if (notebookAnnotations[index].update) {
+      if (noteAnnotations[index].update) {
         if (currentContainsSaved) {
           // Handle start offsset
-          console.log(
-            'notebookAnnotation.plainText',
-            notebookAnnotation.plainText
-          );
+          console.log('noteAnnotation.plainText', noteAnnotation.plainText);
           console.log('escapedSavedString', escapedSavedString);
           let whiteSpaceSearchString = savedString.trimEnd(),
             startOffsetMatch,
             endOffsetMatch;
           while (!startOffsetMatch) {
-            startOffsetMatch = notebookAnnotation.plainText.match(
+            startOffsetMatch = noteAnnotation.plainText.match(
               whiteSpaceSearchString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
             );
             // improve (' ') to /\s+/
@@ -392,13 +380,10 @@ export const committChangesToAnnotation = (
           whiteSpaceSearchString = savedString.trimEnd();
           let endTrimCount = savedString.length - whiteSpaceSearchString.length;
           console.log('whiteSpaceSearchString', whiteSpaceSearchString);
-          console.log(
-            'notebookAnnotation.plainText',
-            notebookAnnotation.plainText
-          );
+          console.log('noteAnnotation.plainText', noteAnnotation.plainText);
 
           while (!endOffsetMatch) {
-            endOffsetMatch = notebookAnnotation.plainText.match(
+            endOffsetMatch = noteAnnotation.plainText.match(
               whiteSpaceSearchString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
             );
             if (endOffsetMatch) break;
@@ -412,7 +397,7 @@ export const committChangesToAnnotation = (
           console.log('endOffsetMatch', endOffsetMatch);
           let startOffsetIndex = startOffsetMatch.index;
           let endOffsetIndex = //check this //trim end ?
-            notebookAnnotation.plainText.trimEnd().length -
+            noteAnnotation.plainText.trimEnd().length -
             whiteSpaceSearchString.length -
             endOffsetMatch.index -
             endTrimCount +
@@ -420,214 +405,199 @@ export const committChangesToAnnotation = (
           // + endTrimCount;
 
           console.log(startOffsetIndex, '- + -', endOffsetIndex);
-          notebookAnnotations[index].startOffsetIndex = startOffsetIndex;
-          notebookAnnotations[index].endOffsetIndex = endOffsetIndex;
+          noteAnnotations[index].startOffsetIndex = startOffsetIndex;
+          noteAnnotations[index].endOffsetIndex = endOffsetIndex;
         }
-        notebookAnnotations[index].deleteNumber =
-          notebookAnnotations[index].plainText.length; //what if string is longer? //will be appended.
+        noteAnnotations[index].deleteNumber =
+          noteAnnotations[index].plainText.length; //what if string is longer? //will be appended.
       } else {
         if (
-          notebook.annotationVersions[annotationId][
-            notebookAnnotation.version.split('-')[0]
+          note.annotationVersions[annotationId][
+            noteAnnotation.version.split('-')[0]
           ]
         ) {
           annotationVersions[annotationId] = {
             ...annotationVersions[annotationId],
-            [notebookAnnotation.version.split('-')[0]]:
-              notebook.annotationVersions[annotationId][
-                notebookAnnotation.version.split('-')[0]
+            [noteAnnotation.version.split('-')[0]]:
+              note.annotationVersions[annotationId][
+                noteAnnotation.version.split('-')[0]
               ]
           };
         }
       }
     });
 
-    let notebookAnnotationsToUpdate = notebookAnnotations.filter(
-      el => el.update
-    );
+    let noteAnnotationsToUpdate = noteAnnotations.filter(el => el.update);
 
-    const length = quillNotebookRefs.current[notebookId].editor.getLength();
+    const length = quillNoteRefs.current[noteId].editor.getLength();
     console.log('length', length);
     let contentUpdate = { ops: null };
-    if (notebookAnnotationsToUpdate.length > 0) {
-      notebookAnnotationsToUpdate.sort((a, b) => a.retainIndex - b.retainIndex);
+    if (noteAnnotationsToUpdate.length > 0) {
+      noteAnnotationsToUpdate.sort((a, b) => a.retainIndex - b.retainIndex);
       // if first: retainNumber: retainIndex
       // if xth retainNumber: retainIndex-lastRetainIndex-lastDeleteNumber
-      let notebookAnnotationOps = notebookAnnotationsToUpdate.map(
-        (notebookAnnotation, index) => ({
-          ...notebookAnnotation,
+      let noteAnnotationOps = noteAnnotationsToUpdate.map(
+        (noteAnnotation, index) => ({
+          ...noteAnnotation,
           retainNumber:
             index === 0
-              ? notebookAnnotation.retainIndex
-              : notebookAnnotation.retainIndex -
-                notebookAnnotationsToUpdate[index - 1].retainIndex -
-                notebookAnnotationsToUpdate[index - 1].deleteNumber
+              ? noteAnnotation.retainIndex
+              : noteAnnotation.retainIndex -
+                noteAnnotationsToUpdate[index - 1].retainIndex -
+                noteAnnotationsToUpdate[index - 1].deleteNumber
         })
       );
-      console.log('notebookAnnotationOps', notebookAnnotationOps);
+      console.log('noteAnnotationOps', noteAnnotationOps);
 
-      contentUpdate.ops = notebookAnnotationOps.flatMap(
-        (notebookAnnotation, index) => {
-          console.log('notebookAnnotation', notebookAnnotation);
-          let preOps = [],
-            postOps = [];
-          if (notebookAnnotation.startOffsetIndex > 0) {
-            let firstDeltaIndex = deltaIndexOverview.findIndex(
-              deltaIndex => deltaIndex === notebookAnnotation.retainIndex
-            );
-            let lastDeltaIndex =
-              deltaIndexOverview.findIndex(
-                deltaIndex =>
-                  deltaIndex >
-                  notebookAnnotation.retainIndex +
-                    notebookAnnotation.startOffsetIndex
-              ) - 1;
-            lastDeltaIndex =
-              lastDeltaIndex === -1
-                ? currentNotebookDeltas.ops.length - 1
-                : lastDeltaIndex;
-            console.log(firstDeltaIndex, lastDeltaIndex + 1);
-            console.log(
-              currentNotebookDeltas.ops.slice(
-                firstDeltaIndex,
-                lastDeltaIndex + 1
-              )
-            );
-
-            let preIndex = 0;
-            preOps = currentNotebookDeltas.ops
-              .slice(firstDeltaIndex, lastDeltaIndex + 1)
-              .map((op, index) => {
-                preIndex =
-                  index === lastDeltaIndex - firstDeltaIndex
-                    ? preIndex
-                    : preIndex + (op.insert.length || 1);
-                return index === lastDeltaIndex - firstDeltaIndex
-                  ? {
-                      ...op,
-                      insert:
-                        typeof op.insert === 'string'
-                          ? op.insert.slice(
-                              0,
-                              notebookAnnotation.startOffsetIndex - preIndex
-                              // - the length of the previous deltas
-                            )
-                          : op.insert
-                    }
-                  : op;
-              });
-          }
-          if (notebookAnnotation.endOffsetIndex > 0) {
-            let firstDeltaIndex =
-              deltaIndexOverview.findIndex(
-                deltaIndex =>
-                  deltaIndex >
-                  notebookAnnotation.retainIndex +
-                    notebookAnnotation.length -
-                    notebookAnnotation.endOffsetIndex
-              ) - 1;
-            let lastDeltaIndex = deltaIndexOverview.findIndex(
+      contentUpdate.ops = noteAnnotationOps.flatMap((noteAnnotation, index) => {
+        console.log('noteAnnotation', noteAnnotation);
+        let preOps = [],
+          postOps = [];
+        if (noteAnnotation.startOffsetIndex > 0) {
+          let firstDeltaIndex = deltaIndexOverview.findIndex(
+            deltaIndex => deltaIndex === noteAnnotation.retainIndex
+          );
+          let lastDeltaIndex =
+            deltaIndexOverview.findIndex(
               deltaIndex =>
                 deltaIndex >
-                notebookAnnotation.retainIndex + notebookAnnotation.length
-            );
-            lastDeltaIndex =
-              lastDeltaIndex === -1
-                ? currentNotebookDeltas.ops.length - 1
-                : lastDeltaIndex;
-            console.log(firstDeltaIndex, lastDeltaIndex + 1);
-            console.log(
-              currentNotebookDeltas.ops
-                .slice(firstDeltaIndex, lastDeltaIndex + 1)
-                .filter(
-                  op =>
-                    op.attributes &&
-                    op.attributes.annotation &&
-                    op.attributes.annotation.annotationId === annotationId &&
-                    op.attributes.annotation.version ===
-                      notebookAnnotation.version
-                )
-            );
+                noteAnnotation.retainIndex + noteAnnotation.startOffsetIndex
+            ) - 1;
+          lastDeltaIndex =
+            lastDeltaIndex === -1
+              ? currentNoteDelta.ops.length - 1
+              : lastDeltaIndex;
+          console.log(firstDeltaIndex, lastDeltaIndex + 1);
+          console.log(
+            currentNoteDelta.ops.slice(firstDeltaIndex, lastDeltaIndex + 1)
+          );
 
-            postOps = currentNotebookDeltas.ops
+          let preIndex = 0;
+          preOps = currentNoteDelta.ops
+            .slice(firstDeltaIndex, lastDeltaIndex + 1)
+            .map((op, index) => {
+              preIndex =
+                index === lastDeltaIndex - firstDeltaIndex
+                  ? preIndex
+                  : preIndex + (op.insert.length || 1);
+              return index === lastDeltaIndex - firstDeltaIndex
+                ? {
+                    ...op,
+                    insert:
+                      typeof op.insert === 'string'
+                        ? op.insert.slice(
+                            0,
+                            noteAnnotation.startOffsetIndex - preIndex
+                            // - the length of the previous delta
+                          )
+                        : op.insert
+                  }
+                : op;
+            });
+        }
+        if (noteAnnotation.endOffsetIndex > 0) {
+          let firstDeltaIndex =
+            deltaIndexOverview.findIndex(
+              deltaIndex =>
+                deltaIndex >
+                noteAnnotation.retainIndex +
+                  noteAnnotation.length -
+                  noteAnnotation.endOffsetIndex
+            ) - 1;
+          let lastDeltaIndex = deltaIndexOverview.findIndex(
+            deltaIndex =>
+              deltaIndex > noteAnnotation.retainIndex + noteAnnotation.length
+          );
+          lastDeltaIndex =
+            lastDeltaIndex === -1
+              ? currentNoteDelta.ops.length - 1
+              : lastDeltaIndex;
+          console.log(firstDeltaIndex, lastDeltaIndex + 1);
+          console.log(
+            currentNoteDelta.ops
               .slice(firstDeltaIndex, lastDeltaIndex + 1)
               .filter(
                 op =>
                   op.attributes &&
                   op.attributes.annotation &&
                   op.attributes.annotation.annotationId === annotationId &&
-                  op.attributes.annotation.version ===
-                    notebookAnnotation.version
+                  op.attributes.annotation.version === noteAnnotation.version
               )
-              .map((op, index) =>
-                index === 0
-                  ? {
-                      ...op,
-                      insert:
-                        typeof op.insert === 'string'
-                          ? op.insert
-                              .slice(
-                                op.insert.length -
-                                  notebookAnnotation.endOffsetIndex
-                              )
-                              .trimStart()
-                          : op.insert
-                    }
-                  : index === lastDeltaIndex - firstDeltaIndex
-                  ? {
-                      ...op,
-                      insert:
-                        typeof op.insert === 'string'
-                          ? op.insert
-                              .slice(
-                                op.insert.length -
-                                  notebookAnnotation.endOffsetIndex
-                              )
-                              .trimEnd() + '\n'
-                          : op.insert
-                    }
-                  : op
-              );
-          }
-          console.log('preOps', preOps);
-          console.log('postOps', postOps);
-          return [
-            ...(notebookAnnotation.retainNumber > 0
-              ? [{ retain: notebookAnnotation.retainNumber }]
-              : []),
-            ...(notebookAnnotation.deleteNumber > 0
-              ? [{ delete: notebookAnnotation.deleteNumber }]
-              : []),
-            ...[
-              ...preOps,
-              ...annotationDeltas.ops.map((op, index) =>
-                index === annotationDeltas.ops.length - 1
-                  ? { ...op, insert: op.insert.trimEnd() }
-                  : op
-              ),
-              ...postOps
-            ].map(op => {
-              if (!op.attributes) op.attributes = {};
-              op.attributes.annotation = {
-                annotationId: annotationId,
-                sectionId: annotation.sectionId,
-                textId: annotation.textId,
-                version: `v${
-                  extractNumber(annotation.version, 0) + 1
-                }-${index}`,
-                backgroundColor: `rgba(200,250,242,0.3)`,
-                borderColor: `rgb(200,250,242)`
-              };
-              return op;
-            })
-          ];
+          );
+
+          postOps = currentNoteDelta.ops
+            .slice(firstDeltaIndex, lastDeltaIndex + 1)
+            .filter(
+              op =>
+                op.attributes &&
+                op.attributes.annotation &&
+                op.attributes.annotation.annotationId === annotationId &&
+                op.attributes.annotation.version === noteAnnotation.version
+            )
+            .map((op, index) =>
+              index === 0
+                ? {
+                    ...op,
+                    insert:
+                      typeof op.insert === 'string'
+                        ? op.insert
+                            .slice(
+                              op.insert.length - noteAnnotation.endOffsetIndex
+                            )
+                            .trimStart()
+                        : op.insert
+                  }
+                : index === lastDeltaIndex - firstDeltaIndex
+                ? {
+                    ...op,
+                    insert:
+                      typeof op.insert === 'string'
+                        ? op.insert
+                            .slice(
+                              op.insert.length - noteAnnotation.endOffsetIndex
+                            )
+                            .trimEnd() + '\n'
+                        : op.insert
+                  }
+                : op
+            );
         }
-      );
+        console.log('preOps', preOps);
+        console.log('postOps', postOps);
+        return [
+          ...(noteAnnotation.retainNumber > 0
+            ? [{ retain: noteAnnotation.retainNumber }]
+            : []),
+          ...(noteAnnotation.deleteNumber > 0
+            ? [{ delete: noteAnnotation.deleteNumber }]
+            : []),
+          ...[
+            ...preOps,
+            ...annotationDelta.ops.map((op, index) =>
+              index === annotationDelta.ops.length - 1
+                ? { ...op, insert: op.insert.trimEnd() }
+                : op
+            ),
+            ...postOps
+          ].map(op => {
+            if (!op.attributes) op.attributes = {};
+            op.attributes.annotation = {
+              annotationId: annotationId,
+              sectionId: annotation.sectionId,
+              textId: annotation.textId,
+              version: `v${extractNumber(annotation.version, 0) + 1}-${index}`,
+              backgroundColor: `rgba(200,250,242,0.3)`,
+              borderColor: `rgb(200,250,242)`
+            };
+            return op;
+          })
+        ];
+      });
     } else {
       contentUpdate.ops = [
         ...(length > 0 ? [{ retain: length }] : []),
         { insert: '\n' },
-        ...annotationDeltas.ops.map(op => {
+        ...annotationDelta.ops.map(op => {
           if (!op.attributes) op.attributes = {};
           op.attributes.annotation = {
             annotationId: annotationId,
@@ -644,11 +614,11 @@ export const committChangesToAnnotation = (
     }
     console.log(contentUpdate);
     // 2do: improve by merging contents instead of forcing update on top.
-    quillNotebookRefs.current[notebookId].editor.updateContents(contentUpdate);
-    console.log(quillNotebookRefs.current[notebookId].editor.getContents());
-    notebookUpdates.push({
-      notebookId: notebookId,
-      // add new notebook.annotationVersions state
+    quillNoteRefs.current[noteId].editor.updateContents(contentUpdate);
+    console.log(quillNoteRefs.current[noteId].editor.getContents());
+    noteUpdates.push({
+      noteId: noteId,
+      // add new note.annotationVersions state
       annotationVersions: annotationVersions
     }); //2do
   });
@@ -661,7 +631,7 @@ export const committChangesToAnnotation = (
       html: annotationInnerHTML,
       version: `v${extractNumber(annotation.version, 0) + 1}`,
       syncWith: syncWith,
-      notebookUpdates: notebookUpdates
+      noteUpdates: noteUpdates
     })
   );
 };

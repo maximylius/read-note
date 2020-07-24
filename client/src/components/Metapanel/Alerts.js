@@ -7,7 +7,7 @@ const maxStack = 5; // show maximum x last alerts
 
 const Alerts = () => {
   const dispatch = useDispatch();
-  const alerts = useSelector(state => state.ui.alerts);
+  const alerts = useSelector(s => s.ui.alerts);
 
   return (
     <div className='alertContainer'>

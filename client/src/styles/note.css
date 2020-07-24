@@ -1,74 +1,400 @@
+:root {
+  --ccc-0: rgb(131, 216, 255);
+  --ccc-0-0: rgb(68, 196, 255);
+  --ccc-0-1: rgb(95, 244, 255);
+  --ccc-0-2: rgb(81, 142, 255);
+  --ccc-1: rgb(131, 255, 137);
+  --ccc-1-0: rgb(79, 255, 88);
+  --ccc-1-1: rgb(36, 218, 75);
+  --ccc-1-2: rgb(159, 250, 56);
+  --ccc-2: rgb(255, 222, 131);
+  --ccc-2-0: rgb(255, 205, 67);
+  --ccc-2-1: rgb(255, 130, 72);
+  --ccc-2-2: rgb(255, 247, 131);
+  --ccc-3: rgb(255, 194, 194);
+  --ccc-3-0: rgb(255, 151, 151);
+  --ccc-3-1: rgb(224, 121, 121);
+  --ccc-3-2: rgb(228, 96, 166);
+  --ccc-3-3: rgb(248, 105, 217);
+}
+/* .notepanel-nav-container {
+} */
+.notepanel-card {
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  border-radius: 0.25rem;
+}
+.notepanel-container {
+  padding: 1.25rem 1.25rem 1.25rem 3rem;
+}
+
 .ql-editor {
   overflow-x: hidden;
 }
+.ql-container.ql-snow {
+  border: none !important;
+}
+.ql-toolbar.ql-snow {
+  border: none !important;
+  /* border-bottom: 4px solid green !important; */
+  background-color: rgba(188, 239, 255, 0.25);
+}
+.save-statusbar {
+  z-index: 0;
+  padding-right: 2rem;
+  text-align: right;
+  margin-top: 2rem;
+  color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(188, 239, 255, 0.25);
+}
 
+/* ADD BUBBLE */
+.add-bubble {
+  position: absolute;
+  z-index: 3000;
+  left: 0.25rem;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 1.25rem 1.25rem 1.25rem 1.25rem;
+  background-color: rgb(96, 218, 255);
+  cursor: pointer;
+}
+.add-bubble:hover {
+  background-color: rgb(72, 179, 211);
+}
+.add-bubble-line {
+  position: absolute;
+  z-index: 0;
+  top: calc(50% - 2px);
+  left: 100%;
+  width: 50%;
+  height: 4px;
+  background-color: rgba(53, 218, 255, 0.302);
+}
+.add-bubble-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 25%;
+  vertical-align: middle;
+  text-align: center;
+}
+/* BACKGROUND AND NAVLINE */
+.note-indent-container {
+  position: absolute;
+  top: 0;
+  left: -0px;
+  height: 100%;
+  width: 40px;
+}
+.note-indent {
+  position: absolute;
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.781);
+  /* background-color: rgba(255, 255, 255, 0); */
+}
+.note-bg-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: --height;
+  /* width: calc(100% - 20px); */
+}
+.note-bg-outer {
+  position: absolute;
+  height: 100%;
+  /* width: 100%; */
+  border-left: 1px solid rgba(0, 0, 0, 0.781);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.note-bg-inner {
+  height: 100%;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+div.main-navline-button-container {
+  position: absolute;
+  padding-left: 1px;
+  top: 5px;
+  z-index: 20;
+}
+div.navline-button-container {
+  position: absolute;
+  padding-left: 1px;
+  top: 10px;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 0.1s, opacity 0.1s linear;
+}
+div.navline-button-container.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.15s linear;
+}
+button.navline-button {
+  padding: 0;
+  position: relative;
+  margin-bottom: 5px;
+  border: none;
+  border-radius: 0rem;
+  color: rgba(0, 0, 0, 0.6);
+  background-color: transparent;
+}
+.mainNavline {
+  position: absolute;
+  z-index: 10;
+  right: 16px;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  border-radius: 0;
+  background-color: rgb(221, 236, 250);
+  cursor: default;
+}
+.navline {
+  position: absolute;
+  z-index: 20;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5rem 0 0 5rem;
+  width: 100%;
+  background-color: #f00;
+  cursor: zoom-out;
+}
+.navline-0 {
+  background-color: var(--ccc-0);
+}
+.navline-0-0 {
+  background-color: var(--ccc-0-0);
+}
+.navline-0-1 {
+  background-color: var(--ccc-0-1);
+}
+.navline-0-2 {
+  background-color: var(--ccc-0-2);
+}
+.navline-0-3 {
+  background-color: var(--ccc-0-3);
+}
+.navline-0-4 {
+  background-color: var(--ccc-0-4);
+}
+.navline-1 {
+  background-color: var(--ccc-1);
+}
+.navline-1-0 {
+  background-color: var(--ccc-1-0);
+}
+.navline-1-1 {
+  background-color: var(--ccc-1-1);
+}
+.navline-1-2 {
+  background-color: var(--ccc-1-2);
+}
+.navline-1-3 {
+  background-color: var(--ccc-1-3);
+}
+.navline-2 {
+  background-color: var(--ccc-2);
+}
+.navline-2-0 {
+  background-color: var(--ccc-2-0);
+}
+.navline-2-1 {
+  background-color: var(--ccc-2-1);
+}
+.navline-2-2 {
+  background-color: var(--ccc-2-2);
+}
+.navline-3 {
+  background-color: var(--ccc-3);
+}
+.navline-3-0 {
+  background-color: var(--ccc-3-0);
+}
+.navline-3-1 {
+  background-color: var(--ccc-3-1);
+}
+.navline-3-2 {
+  background-color: var(--ccc-3-2);
+}
+.navline-4 {
+  background-color: var(--ccc-4);
+}
+.navline-4-0 {
+  background-color: var(--ccc-4-0);
+}
+.navline-4-1 {
+  background-color: var(--ccc-4-1);
+}
+.navline-4-2 {
+  background-color: var(--ccc-4-2);
+}
 .embedSeperator {
   background-color: transparent;
   border: none;
-  height: 50px;
-  padding: 0 0;
-}
-.embedSeperator.case-begin {
-  background-image: linear-gradient(
-    -175deg,
-    rgb(131, 216, 255),
-    rgb(173, 228, 253),
-    transparent,
-    transparent,
-    transparent
-  );
-  margin: 0 -25px -30px 0;
-  border-top: 1px solid rgb(173, 228, 253);
-}
-.embedSeperator.case-end {
-  background-image: linear-gradient(
-    175deg,
-    transparent,
-    transparent,
-    transparent,
-    rgb(173, 228, 253),
-    rgb(131, 216, 255)
-  );
-  margin: -20px -25px 20px 0;
-  border-bottom: 1px solid rgb(173, 228, 253);
+  /* padding: 0;
+  margin: 0; */
+  z-index: 0;
 }
 
+/* EDITOR CONTENT */
+li.escape-tag::before {
+  color: transparent !important;
+}
 span.mention {
-  cursor: pointer;
+  padding: 0;
+  color: #000;
+  background-color: rgb(214, 245, 255);
+  border: 0.05px solid rgb(148, 148, 148);
+}
+span.mention[data-id^='note'] {
+  cursor: zoom-out;
+  font-size: 150%;
+  background-color: rgb(196, 241, 255);
+}
+span.mention[data-id^='note']:hover {
+  background-color: rgb(149, 225, 248);
+  border: 0.05px solid #000;
+}
+span.mention[data-id$='_isOpen=false'] {
+  font-size: unset;
+  cursor: zoom-in;
+}
+span.mention[data-id$='_isOpen=color_class-0'] {
+  background-color: var(--ccc-0);
+}
+span.mention[data-id$='_isOpen=color_class-0-0'] {
+  background-color: var(--ccc-0-0);
+}
+span.mention[data-id$='_isOpen=color_class-0-1'] {
+  background-color: var(--ccc-0-1);
+}
+span.mention[data-id$='_isOpen=color_class-0-2'] {
+  background-color: var(--ccc-0-2);
+}
+span.mention[data-id$='_isOpen=color_class-1'] {
+  background-color: var(--ccc-1);
+}
+span.mention[data-id$='_isOpen=color_class-1-0'] {
+  background-color: var(--ccc-1-0);
+}
+span.mention[data-id$='_isOpen=color_class-1-1'] {
+  background-color: var(--ccc-1-1);
+}
+span.mention[data-id$='_isOpen=color_class-1-2'] {
+  background-color: var(--ccc-1-2);
+}
+span.mention[data-id$='_isOpen=color_class-2'] {
+  background-color: var(--ccc-2);
+}
+span.mention[data-id$='_isOpen=color_class-2-0'] {
+  background-color: var(--ccc-2-0);
+}
+span.mention[data-id$='_isOpen=color_class-2-1'] {
+  background-color: var(--ccc-2-1);
+}
+span.mention[data-id$='_isOpen=color_class-2-2'] {
+  background-color: var(--ccc-2-2);
+}
+span.mention[data-id$='_isOpen=color_class-3'] {
+  background-color: var(--ccc-3);
+}
+span.mention[data-id$='_isOpen=color_class-3-0'] {
+  background-color: var(--ccc-3-0);
+}
+span.mention[data-id$='_isOpen=color_class-3-1'] {
+  background-color: var(--ccc-3-1);
+}
+span.mention[data-id$='_isOpen=color_class-3-2'] {
+  background-color: var(--ccc-3-2);
+}
+span.mention[data-id$='_isOpen=color_class-4'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-4-0'] {
+  background-color: var(--ccc-4-0);
+}
+span.mention[data-id$='_isOpen=color_class-4-1'] {
+  background-color: var(--ccc-4-1);
+}
+span.mention[data-id$='_isOpen=color_class-4-2'] {
+  background-color: var(--ccc-4-2);
+}
+span.mention[data-id^='text'] {
+  cursor: alias;
+  background-color: rgb(182, 202, 255);
+}
+span.mention[data-id^='section'] {
+  cursor: alias;
+  background-color: rgb(253, 207, 255);
 }
 span.ql-mention-denotation-char {
   cursor: alias;
+  color: transparent;
+}
+span.mention:hover .ql-mention-denotation-char {
+  color: #fff;
 }
 
-.navline {
-  cursor: zoom-out;
-  border-radius: 5rem 0 0 5rem;
-  width: 16px;
+/* note info */
+.note-info {
   position: absolute;
-  background-color: #f00;
+  z-index: 19;
+  right: 40px;
+  width: calc(100% - 40px);
+  padding: 3rem 1rem 0.5rem 1rem;
+  border-radius: 0.9rem 0rem 0rem 0.9rem;
+  color: #fff;
+  background-color: rgba(23, 36, 23, 0.95);
 }
-
-/* 2do how to best creat an ability for a nested color family strucure? */
-.navline-0 {
-  cursor: default;
-  border-radius: 0;
-  background-color: rgb(221, 236, 250);
+.note-info .note-info-toolbar {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
-.navline-1 {
-  background-color: rgb(165, 226, 245);
+.note-info-close {
+  position: relative;
+  margin: 10px;
+  border: none;
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  background-color: transparent;
 }
-.navline-2 {
-  background-color: rgb(99, 195, 240);
+.note-info-close:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
 }
-.navline-3 {
-  background-color: rgb(39, 197, 123);
+.note-info-is-saved {
+  cursor: default !important;
+  background-color: rgba(101, 255, 74, 0.315);
 }
-.navline-4 {
-  background-color: rgb(102, 238, 174);
+.note-info-needs-save {
+  background-color: rgba(91, 248, 63, 0.85);
 }
-.navline-5 {
-  background-color: rgb(201, 241, 125);
+.note-info-needs-save:hover {
+  background-color: rgba(91, 248, 63, 0.7);
 }
-.navline-6 {
-  background-color: rgb(243, 234, 104);
+.note-info-connection {
+  display: inline-block;
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  overflow-wrap: break-word;
+  cursor: pointer;
+}
+.direct-connection {
+  background-color: green;
+}
+.indirect-connection {
+  background-color: hotpink;
+}
+.note-info-subheading {
+  margin-top: 1rem;
+  margin-bottom: 0;
 }

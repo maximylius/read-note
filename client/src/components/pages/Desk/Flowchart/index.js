@@ -5,7 +5,7 @@ import dagre from 'dagre';
 import TextNode from './CustomNodes/TextNode';
 import SectionNode from './CustomNodes/SectionNode';
 import AnnotationNode from './CustomNodes/AnnotationNode';
-import NotebookNode from './CustomNodes/NotebookNode';
+import NoteNode from './CustomNodes/NoteNode';
 import FlowchartSidepanel from './Sidepanel/';
 import {
   toggleFlowchart,
@@ -28,12 +28,12 @@ const generateFlow = (elements, strictSearchResults) => {
     rankdir: 'TB',
     ranksep: 200,
     align: 'DR',
-    ranker: 'longest-path'
+    ranker: 'tight-tree'
   });
   g.setDefaultEdgeLabel(function () {
     return {};
   });
-
+  console.log('elements', elements);
   elements.forEach(e => {
     g.setNode(e.name, {
       label: e.label,
@@ -69,7 +69,7 @@ const generateFlow = (elements, strictSearchResults) => {
       }
     };
   });
-
+  console.log('g.edges()', g.edges());
   const edges = g.edges().map(e => ({
     id: `__${e.v}__${e.w}`,
     points: g.edge(e).points,
@@ -112,11 +112,11 @@ const miniMapSwitch = node => {
       return `rgba(64, 87, 126, ${
         node.className.includes('customOpacity') ? 0.3 : 1
       })`;
-    case 'annotation':
+    case 'annotation-note':
       return `rgba(243, 165, 195, ${
         node.className.includes('customOpacity') ? 0.3 : 1
       })`;
-    case 'notebook':
+    case 'note':
       return `rgba(236, 133, 101, ${
         node.className.includes('customOpacity') ? 0.2 : 1
       })`;
@@ -128,23 +128,19 @@ const miniMapSwitch = node => {
 // 2do allow scrolling
 const Flowchart = () => {
   const dispatch = useDispatch();
-  const {
-    sections,
-    annotations,
-    texts,
-    notebooks,
-    flowchart: {
-      isOpen,
-      sidepanelOpen,
-      elements,
-      nonLayoutedElements,
-      strictSearchResults,
-      displayNonMatches,
-      filterTypes,
-      filterAncestors,
-      filterDescendants
-    }
-  } = useSelector(state => state);
+
+  const sections = useSelector(s => s.sections);
+  const texts = useSelector(s => s.texts);
+  const notes = useSelector(s => s.notes);
+  const isOpen = useSelector(s => s.flowchart.isOpen);
+  const sidepanelOpen = useSelector(s => s.flowchart.sidepanelOpen);
+  const elements = useSelector(s => s.flowchart.elements);
+  const nonLayoutedElements = useSelector(s => s.flowchart.nonLayoutedElements);
+  const strictSearchResults = useSelector(s => s.flowchart.strictSearchResults);
+  const displayNonMatches = useSelector(s => s.flowchart.displayNonMatches);
+  const filterTypes = useSelector(s => s.flowchart.filterTypes);
+  const filterAncestors = useSelector(s => s.flowchart.filterAncestors);
+  const filterDescendants = useSelector(s => s.flowchart.filterDescendants);
 
   const openFlowchart = () => {
     dispatch(toggleFlowchart());
@@ -157,46 +153,42 @@ const Flowchart = () => {
     () => {
       // 2do: only trigger update when necessary
       // if (!isOpen) return;
-      const connectedTexts = Object.keys(texts.byId).map(id => ({
+      const connectedTexts = Object.keys(texts).map(id => ({
         name: id,
         type: 'text',
         className: 'flowchartText',
-        label: texts.byId[id].title,
-        links: texts.byId[id].sectionIds.map(id => ({ name: id }))
+        label: texts[id].title,
+        links: texts[id].sectionIds.map(id => ({ name: id }))
       }));
-      const connectedSections = Object.keys(sections.byId).map(id => ({
+      const connectedSections = Object.keys(sections).map(id => ({
         name: id,
         type: 'section',
         className: 'flowchartSection',
-        label: sections.byId[id].title,
-        links: sections.byId[id].annotationIds.map(id => ({ name: id }))
+        label: sections[id].title,
+        links: sections[id].noteIds.map(id => ({ name: id }))
       }));
-      const connectedAnnotations = Object.keys(annotations.byId).map(id => ({
-        name: id,
-        type: 'annotation',
-        className: 'flowchartAnnotation',
-        label: annotations.byId[id].plainText.slice(0, 20) + '...',
-        links: annotations.byId[id].connectedWith.map(id => ({ name: id }))
-      }));
-      const connectedNotebooks = Object.keys(notebooks.byId).map(id => ({
-        name: id,
-        type: 'notebook',
-        className: 'flowchartNotebook',
-        label: notebooks.byId[id].title,
-        links: []
-      }));
+      const connectedNotes = Object.keys(notes).map(id => {
+        const note = notes[id];
+        console.log('note', note);
+        return {
+          name: id,
+          type: note.isAnnotation ? 'annotation-note' : 'note',
+          className: 'flowchartNote',
+          label: note.title,
+          links: note.directConnections.map(id => ({ name: id }))
+        };
+      });
       dispatch(
         setNonLayoutedFlowchartElements([
           ...connectedTexts,
           ...connectedSections,
-          ...connectedAnnotations,
-          ...connectedNotebooks
+          ...connectedNotes
         ])
       );
       return () => {};
     },
     // [isOpen]
-    [sections, texts, notebooks, annotations]
+    [sections, texts, notes]
   );
 
   useEffect(() => {
@@ -208,6 +200,8 @@ const Flowchart = () => {
     // console.log('nonLayoutedElements', nonLayoutedElements);
     // console.log('strictSearchResults', strictSearchResults);
     // make sure no link is made to non existent
+    console.log('nonLayoutedElements', nonLayoutedElements);
+    console.log('strictSearchResults', strictSearchResults);
     let filteredElements;
     if (strictSearchResults.length > 0) {
       if (displayNonMatches) {
@@ -238,7 +232,7 @@ const Flowchart = () => {
         )
       }));
     }
-
+    console.log('filteredElements', filteredElements);
     dispatch(
       setFlowchartElements(
         generateFlow(
@@ -275,7 +269,7 @@ const Flowchart = () => {
             text: TextNode,
             annotation: AnnotationNode,
             section: SectionNode,
-            notebook: NotebookNode
+            note: NoteNode
           }}
           // onElementClick={e => console.log(e)}
           onSelectionChange={e => console.log(e)}

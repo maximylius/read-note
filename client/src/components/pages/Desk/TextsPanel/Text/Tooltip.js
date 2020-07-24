@@ -13,11 +13,8 @@ import {
 
 const Tooltip = ({ quillTextRef, selection }) => {
   const dispatch = useDispatch();
-  const {
-    categories,
-    spareIds,
-    textsPanel: { activeTextPanel, speedReader }
-  } = useSelector(state => state);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+  const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   // const bounds = quillTextRef.current.editor.getBounds();
   // console.log(bounds);

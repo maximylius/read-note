@@ -23,10 +23,9 @@ mongoose
 // use routes
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/users', require('./routes/api/users'));
-app.use('/api/notebooks', require('./routes/api/notebooks'));
+app.use('/api/notes', require('./routes/api/notes'));
 app.use('/api/texts', require('./routes/api/texts'));
 app.use('/api/sections', require('./routes/api/sections'));
-app.use('/api/annotations', require('./routes/api/annotations'));
 
 const port = process.env.PORT || 5000;
 

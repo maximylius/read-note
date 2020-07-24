@@ -7,7 +7,8 @@ import SliderButton from '../../../Metapanel/SliderButton';
 
 const FinderPanel = () => {
   const dispatch = useDispatch();
-  const { ui } = useSelector(state => state);
+  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
+  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
   const onClickHandler = () => dispatch(collapseFinderPanel());
   // 2do: position arrow
   return (
@@ -21,9 +22,7 @@ const FinderPanel = () => {
         onClickHandler={onClickHandler}
         direction='left'
         addClasses={'btn-secondary'}
-        display={
-          ui.mdTextsPanel === 0 && ui.mdNotebooksPanel === 0 ? 'none' : 'block'
-        }
+        display={mdTextsPanel === 0 && mdNotesPanel === 0 ? 'none' : 'block'}
       />
     </div>
   );

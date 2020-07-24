@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { addAlert, loginUser } from '../../../store/actions';
+import { addAlert, loginUser, closeAllModals } from '../../../store/actions';
+import { BsXCircle } from 'react-icons/bs';
 
-function Signup() {
+function SignIn() {
+  const history = useHistory();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,53 +29,63 @@ function Signup() {
   missingFields = missingFields.join(' and ');
 
   return (
-    <div className='row growContent w-100'>
-      <div className='container mt-3'>
-        <div className='card text-center'>
-          <h1 className='display-4'>Sign in</h1>
-          <div className='container'>
-            <div className='input-group mb-2'>
-              <div className='input-group-prepend' id='E-Mail'>
-                <span className='input-group-text'>E-Mail</span>
-              </div>
-              <input
-                type='text'
-                className='form-control'
-                aria-label='Email'
-                aria-describedby='Email'
-                placeholder='enter email address...'
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
+    <>
+      <div
+        className='page-modal-outer'
+        onClick={() => dispatch(closeAllModals(history))}
+      ></div>
+      <div className='page-modal-body'>
+        <div className='page-modal-toolbar'>
+          <button
+            className='page-modal-close'
+            onClick={() => dispatch(closeAllModals(history))}
+          >
+            <BsXCircle />
+          </button>
+        </div>
+        <h1 className='display-4'>Sign in</h1>
+        <div className='container'>
+          <div className='input-group mb-2'>
+            <div className='input-group-prepend' id='E-Mail'>
+              <span className='input-group-text'>E-Mail</span>
             </div>
-            <div className='input-group mb-2'>
-              <div className='input-group-prepend' id='Password'>
-                <span className='input-group-text'>Password</span>
-              </div>
-              <input
-                type='password'
-                className='form-control'
-                aria-label='Password'
-                aria-describedby='Password'
-                placeholder='enter password'
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-              />
-            </div>
-
-            <button
-              className='add-btn btn btn-secondary btn-block btn-xl mb-2'
-              onClick={onSubmit}
-            >
-              {missingFields
-                ? `Fill in ${missingFields} to sign in`
-                : 'Sign in'}
-            </button>
+            <input
+              id='sigin_email'
+              type='text'
+              className='form-control'
+              aria-label='Email'
+              aria-describedby='Email'
+              placeholder='enter email address...'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
           </div>
+          <div className='input-group mb-2'>
+            <div className='input-group-prepend' id='Password'>
+              <span className='input-group-text'>Password</span>
+            </div>
+            <input
+              id='sigin_pw'
+              type='password'
+              className='form-control'
+              aria-label='Password'
+              aria-describedby='Password'
+              placeholder='enter password'
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button
+            className='add-btn btn btn-secondary btn-block btn-lg mb-2'
+            onClick={onSubmit}
+          >
+            {missingFields ? `Fill in ${missingFields} to sign in` : 'Sign in'}
+          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-export default Signup;
+export default SignIn;

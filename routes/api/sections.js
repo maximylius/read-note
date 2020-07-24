@@ -11,6 +11,7 @@ const Section = require('../../models/section');
  */
 router.get('/', (req, res) => {
   Section.find()
+    .sort({ textId: -1 })
     .sort({ firstWordIndex: -1 })
     .sort({ lastWordIndex: -1 })
     .then(sections => res.json(sections));
@@ -33,17 +34,13 @@ router.get('/:id', (req, res) => {
  * @access  Public
  */
 router.post('/', (req, res) => {
-  const newSection = new Section({
-    title: req.body.title,
-    annotationIds: [],
-    categoryNum: req.body.categoryNum,
-    categoryText: req.body.categoryText,
-    firstWordIndex: req.body.firstWordIndex,
-    lastWordIndex: req.body.lastWordIndex,
-    fullWords: req.body.fullWords
+  const section = new Section({});
+
+  Object.keys(req.body).forEach(updateKey => {
+    section[updateKey] = req.body[updateKey];
   });
 
-  newSection
+  section
     .save()
     .then(section => {
       res.json({ _id: section._id });

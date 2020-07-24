@@ -12,7 +12,7 @@ import isEqual from 'lodash/isEqual';
 import { extractNumber, ObjectKeepKeys } from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
-const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
+const TextMain = ({ quillTextRef, quillNoteRefs }) => {
   const dispatch = useDispatch();
   const {
     textsPanel: {
@@ -24,10 +24,10 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
     texts,
     sections,
     categories
-  } = useSelector(state => state);
-  const text = texts.byId[activeTextPanel];
+  } = useSelector(s => s);
+  const text = texts[activeTextPanel];
   const textSectionsCategoryIds = text.sectionIds.flatMap(
-    id => sections.byId[id].categoryIds
+    id => sections[id].categoryIds
   );
   const [editorEditState, setEditorEditState] = useState(false);
   const [editorSelection, setEditorSelection] = useState(null);
@@ -39,7 +39,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
     setTextSectionsCategoryIdsState
   ] = useState(
     Object.fromEntries(
-      text.sectionIds.map(id => [id, sections.byId[id].categoryIds])
+      text.sectionIds.map(id => [id, sections[id].categoryIds])
     )
   );
   const [stateSectionsById, setStateSectionsById] = useState([]);
@@ -166,7 +166,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
       id => !Object.keys(stateSectionsById).includes(id)
     );
     paintSections(
-      newSectionIds.map(id => sections.byId[id]),
+      newSectionIds.map(id => sections[id]),
       tentativeSectionIds
     );
     const sectionIdsToRemove = Object.keys(stateSectionsById).filter(
@@ -175,7 +175,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
     removeSectionsFromQuill(
       sectionIdsToRemove.map(id => stateSectionsById[id])
     );
-    setStateSectionsById(ObjectKeepKeys(sections.byId, text.sectionIds));
+    setStateSectionsById(ObjectKeepKeys(sections, text.sectionIds));
     return () => {};
   }, [text.sectionIds]);
 
@@ -186,21 +186,21 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
       isEqual(
         textSectionsCategoryIdsState,
         Object.fromEntries(
-          text.sectionIds.map(id => [id, sections.byId[id].categoryIds])
+          text.sectionIds.map(id => [id, sections[id].categoryIds])
         )
       )
     )
       return;
     const sectionsChangedCategory = text.sectionIds.filter(
-      id => !isEqual(sections.byId[id], textSectionsCategoryIdsState[id])
+      id => !isEqual(sections[id], textSectionsCategoryIdsState[id])
     );
     paintSections(
-      sectionsChangedCategory.map(id => sections.byId[id]),
+      sectionsChangedCategory.map(id => sections[id]),
       tentativeSectionIds
     );
     setTextSectionsCategoryIdsState(
       Object.fromEntries(
-        text.sectionIds.map(id => [id, sections.byId[id].categoryIds])
+        text.sectionIds.map(id => [id, sections[id].categoryIds])
       )
     );
     return () => {};
@@ -218,7 +218,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
       )
     ];
     paintSections(
-      changedTentative.map(id => sections.byId[id]),
+      changedTentative.map(id => sections[id]),
       tentativeSectionIds
     );
     setTentativeSectionIdsState(tentativeSectionIds);
@@ -272,7 +272,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
 
     // parse text for textreader
     if (!quillTextRef.current) return;
-    const deltas = quillTextRef.current.editor.getContents();
+    const delta = quillTextRef.current.editor.getContents();
     const editorLength = quillTextRef.current.editor.getLength();
 
     let deltaIndex = 0,
@@ -282,10 +282,10 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
       concat = false;
 
     // if (speedReader.words.length !== 0) dispatch & return;
-    while (deltaIndex < deltas.ops.length) {
+    while (deltaIndex < delta.ops.length) {
       let innerText =
-        typeof deltas.ops[deltaIndex].insert === 'string'
-          ? deltas.ops[deltaIndex].insert
+        typeof delta.ops[deltaIndex].insert === 'string'
+          ? delta.ops[deltaIndex].insert
           : ' ';
       if (!previousEndsWithWhitespace) {
         previousEndsWithWhitespace = /^\s+/.test(innerText);
@@ -312,8 +312,8 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           words.push({
             index: cumulativeLength,
             plainText: plainText,
-            ...(deltas.ops[deltaIndex].attributes && {
-              attributes: deltas.ops[deltaIndex].attributes
+            ...(delta.ops[deltaIndex].attributes && {
+              attributes: delta.ops[deltaIndex].attributes
             })
           });
         } else {
@@ -321,11 +321,11 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           words.push({
             index: lastContent.index,
             plainText: lastContent.plainText + plainText,
-            ...((deltas.ops[deltaIndex].attributes ||
+            ...((delta.ops[deltaIndex].attributes ||
               lastContent.attributes) && {
               attributes: {
                 ...lastContent.attributes,
-                ...deltas.ops[deltaIndex].attributes
+                ...delta.ops[deltaIndex].attributes
               }
             })
           });
@@ -348,11 +348,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
   }, [quillTextRef, activeTextPanel]);
 
   return (
-    <div
-      className='card'
-      onMouseDown={() => (mouseIsDownRef.current = true)}
-      onMouseUp={() => (mouseIsDownRef.current = false)}
-    >
+    <>
       {!editorEditState && editorSelection && editorSelection.length > 0 && (
         <Tooltip quillTextRef={quillTextRef} selection={editorSelection} />
       )}
@@ -362,8 +358,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           ref={quillTextRef}
           theme='bubble'
           defaultValue={
-            texts.byId[activeTextPanel].formatDeltas ||
-            texts.byId[activeTextPanel].deltas
+            texts[activeTextPanel].formatDelta || texts[activeTextPanel].delta
           }
           modules={{
             toolbar: [
@@ -387,6 +382,8 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           {...((!editorEditState || editorEditState) && {
             onChangeSelection: onChangeSelectionHandler
           })}
+          onMouseDown={() => (mouseIsDownRef.current = true)}
+          onMouseUp={() => (mouseIsDownRef.current = false)}
         />
         <button onClick={toggleEditorEditState}>
           {editorEditState ? 'Disbable...' : 'Enable...'}
@@ -400,7 +397,7 @@ const TextMain = ({ quillTextRef, quillNotebookRefs }) => {
           get contents
         </button>
       </div>
-    </div>
+    </>
   );
 };
 

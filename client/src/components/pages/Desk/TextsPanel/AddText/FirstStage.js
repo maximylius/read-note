@@ -6,11 +6,11 @@ import SearchTexts from './SearchTexts';
 import ScrapeLink from './ScrapeLink';
 
 function FirstStage() {
-  const { user } = useSelector(state => state);
+  const textIds = useSelector(s => s.user.textIds);
   return (
     <div className='container'>
       <h1 className='display-4'>Open a text:</h1>
-      {user.textIds.length > 0 && (
+      {textIds.length > 0 && (
         <>
           <p className='lead'>from your saved texts,</p>
           <p className='lead'>find in your history</p>

@@ -152,16 +152,16 @@ export default (state = initialState, action) => {
         ...state,
         editState: [...state.editState.filter(id => id !== payload)]
       };
-    case types.ADD_ANNOTATION:
-      return {
-        ...state,
-        editAnnotationId: payload.annotation._id
-      };
-    case types.SET_ANNOTATION_EDIT_STATE:
-      return {
-        ...state,
-        editAnnotationId: payload.annotationIdOrNull
-      };
+    // case types.ADD_ANNOTATION:
+    //   return {
+    //     ...state,
+    //     editAnnotationId: payload.annotation._id
+    //   };
+    // case types.SET_ANNOTATION_EDIT_STATE:
+    //   return {
+    //     ...state,
+    //     editAnnotationId: payload.annotationIdOrNull
+    //   };
 
     case types.SET_VALID_SELECTION:
       return {

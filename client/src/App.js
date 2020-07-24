@@ -10,29 +10,25 @@ import 'quill-mention/dist/quill.mention.css';
 import './App.css';
 import './styles/flowchart.css';
 import './styles/note.css';
+import './styles/embed.css';
+import './styles/annotation.css';
 import Navbar from './components/Metapanel/Navbar';
 import Alerts from './components/Metapanel/Alerts';
 import Desk from './components/pages/Desk';
 import About from './components/pages/About/';
 import NotFound from './components/pages/NotFound/';
-import Signup from './components/pages/Signup';
-import Signin from './components/pages/Signin';
+import Register from './components/pages/Register';
+import SignIn from './components/pages/SignIn/';
 import Logout from './components/pages/Logout';
 import Welcome from './components/pages/Welcome';
 import Footer from './components/Metapanel/Footer';
+import MainPage from './components/pages';
 
 const App = () => {
   const dispatch = useDispatch();
-  const { spareIds } = useSelector(state => state.spareIds);
-  useEffect(() => {
-    dispatch(fillSpareIds());
-    return () => {
-      // dispatch(deleteSpareIds());
-    };
-    // eslint-disable-next-line
-  }, [spareIds]);
 
   useEffect(() => {
+    dispatch(fillSpareIds());
     dispatch(loadUser());
     return () => {};
     // eslint-disable-next-line
@@ -45,20 +41,20 @@ const App = () => {
           <Navbar />
           <Alerts />
           <Switch>
-            <Route exact path='/' component={Welcome} />
+            <Route exact path='/' component={MainPage} />
             <Route
               exact
-              path='/desk&texts=:textIds&notebooks=:notebookIds'
-              component={Desk}
+              path='/desk/texts=:textIds&notes=:noteIds'
+              component={MainPage}
             />
-            <Route exact path='/desk&texts=:textIds' component={Desk} />
-            <Route exact path='/desk&notebooks=:notebookIds' component={Desk} />
-            <Route path='/desk' component={Desk} />
-            <Route exact path='/about' component={About} />
-            <Route exact path='/signup' component={Signup} />
-            <Route exact path='/signin' component={Signin} />
-            <Route exact path='/logout' component={Logout} />
-            <Route component={NotFound} />
+            <Route exact path='/desk/texts=:textIds' component={MainPage} />
+            <Route exact path='/desk/notes=:noteIds' component={MainPage} />
+            <Route path='/desk' component={MainPage} />
+            <Route exact path='/about' component={MainPage} />
+            <Route exact path='/signup' component={MainPage} />
+            <Route exact path='/signin' component={MainPage} />
+            <Route exact path='/logout' component={MainPage} />
+            <Route component={MainPage} />
           </Switch>
           <Footer />
         </div>

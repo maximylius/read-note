@@ -1,8 +1,8 @@
 import React from 'react';
 
-function NotebooksToolbar() {
+function NotesToolbar() {
   return (
-    <div id='notebooksToolbar' className='ql-toolbar'>
+    <div id='notesToolbar' className='ql-toolbar'>
       <select className='ql-header'>
         <option value='1'></option>
         <option value='2'></option>
@@ -23,4 +23,4 @@ function NotebooksToolbar() {
   );
 }
 
-export default NotebooksToolbar;
+export default NotesToolbar;
