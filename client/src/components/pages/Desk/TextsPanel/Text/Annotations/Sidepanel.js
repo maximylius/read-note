@@ -1,24 +1,17 @@
 import React from 'react';
 import _isEqual from 'lodash/isEqual';
 import { useSelector, useDispatch } from 'react-redux';
-import SectionItem from './SectionItem';
 import { addSection } from '../../../../../../store/actions';
 import { BsInfoCircle, BsPlus } from 'react-icons/bs';
 import TextMeta from './TextMeta';
 import ButtonToolbar from './ButtonToolbar';
+import Sections from './Sections';
 
 const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
   const dispatch = useDispatch();
-  const {
-    sections,
-    texts,
-    textsPanel: { activeTextPanel, expandAll, displayTextMeta, speedReader }
-  } = useSelector(s => s);
-  const sectionsToDisplay = texts[activeTextPanel]
-    ? texts[activeTextPanel].sectionIds.filter(id =>
-        Object.keys(sections).includes(id)
-      )
-    : [];
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+  const displayTextMeta = useSelector(s => s.textsPanel.displayTextMeta);
+  const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   const addSectionClickHandler = () => {
     const words = speedReader.words;
@@ -48,23 +41,7 @@ const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
 
       {!displayTextMeta ? (
         <div className='list-group pt-2 annotation-container '>
-          {sectionsToDisplay.length > 0 ? (
-            sectionsToDisplay.map(id => (
-              <SectionItem
-                key={id}
-                sectionId={id}
-                quillTextRef={quillTextRef}
-                quillNoteRefs={quillNoteRefs}
-              />
-            ))
-          ) : (
-            <p>
-              <small>
-                <BsInfoCircle /> Add sections and annotations by selecting
-                text...
-              </small>{' '}
-            </p>
-          )}
+          <Sections quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />
           {speedReader.isOpenFor.includes(activeTextPanel) && (
             <button
               className='btn btn-light btn-block btn-lg'

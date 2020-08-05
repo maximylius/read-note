@@ -4,7 +4,9 @@
 // 2do color_class get out of sync
 // 2do re-apply color_class at first load of note
 // 2do optimize code / move outside of component / prevent rerenders
-// 2do ability to add note within other note
+// 2do: when having an embeded note open. you can go with the cursor below mention tag, which is were the embed seperator is. There you can enter contents which will not be saved anywhere. Best behaviour: if selection is at the embed seperator move selection forward / backward, depending on previous position of the cursor.
+// 2do: somehow notes do not get saved as soon as a mention tag is included. Or Rather embeds get removed from saved note.
+// 2do: focus is jumping between editors
 
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -47,7 +49,7 @@ import { AddBubble } from './AddBubble';
 
 ReactQuill.Quill.register(BlotEmbedSeperator);
 
-const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
+const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const notes = useSelector(s => s.notes);
@@ -77,6 +79,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
   const savedRef = React.useRef(Date.now());
   const cardBodyRef = React.useRef();
   const documentBodyRef = React.useRef();
+  const quillNoteRef = React.useRef(null);
 
   // when shall the numbers be updated? at best whenever a mention is used. how to notice?
   const mentionModule = React.useCallback(mentionModuleCreator(atValues, []), [
@@ -109,8 +112,8 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
         '<p><strong>Operation not allowed.</strong> <br />Emebed content cannot be removed partly. Collapse or remove completly. </p>';
       console.log('deltadeltadeltadeltadeltaINCONSISTENT_---', delta);
       //history not exposed for editor ref from change event
-      // quillNoteRefs.current[noteId].editor.history.undo();
-      const editor = quillNoteRefs.current[noteId].editor;
+      // quillNoteRef.editor.history.undo();
+      const editor = quillNoteRef.current.editor;
       const newOps = [{ delete: editor.getLength() }, ...deltaRef.current.ops];
       editor.updateContents({
         ops: newOps
@@ -125,6 +128,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
     }
     setChangedEditorCounter(prevState => prevState + 1);
     deltaRef.current = delta;
+    if (informParentAboutChange) informParentAboutChange();
   };
 
   // check which notes to update.
@@ -132,8 +136,9 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
   const handleEditorChange = () => {
     // external vars: 1.editorRef, 2.{mainNoteId, begin, end} (if not noteId, then begin and end index are necessary), 3.notes (redux), 4.dispatch, 5.updateNote
     console.log('handle change');
-    if (!quillNoteRefs.current[noteId]) return;
-    const editor = quillNoteRefs.current[noteId].editor;
+    if (!quillNoteRef) return;
+    console.log(quillNoteRef, quillNoteRef.current.editor);
+    const editor = quillNoteRef.current.editor;
     const delta = editor.getContents();
     const { notesConnectedWith, displayedNotes } = getNotesPath(delta, noteId);
     const noteUpdateArray = compareDisplayedNotesDelta(
@@ -153,7 +158,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
   // settimout handleEditorChange
   useEffect(() => {
     if (changedEditorCounter < 0) return;
-    if (!quillNoteRefs.current[noteId]) return;
+    if (!quillNoteRef) return;
     savedRef.current = null;
     const commitChangeTimer = setTimeout(() => {
       handleEditorChange();
@@ -203,7 +208,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
         [noteId]: { begin: 0, embeds: [], end: delta.ops.length }
       };
     // colorPath: 0-0, 0-1, 1-0, 2-0, 2-1,
-    const selection = quillNoteRefs.current[noteId].editor.getSelection();
+    const selection = quillNoteRef.current.editor.getSelection();
     let deltaPosition = 0,
       deltaIndex = 0,
       seperatorIndexes = null;
@@ -288,6 +293,10 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
       editor.updateContents({
         ops: [{ delete: editor.getLength() }, ...newOps]
       });
+
+      console.log('newSelectionIndex', selection.index + 1);
+      editor.setSelection(selection.index + 1);
+
       deltaRef.current = { ops: newOps };
       console.log('close.', seperatorIndexes);
       console.log(
@@ -353,8 +362,10 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
     }
 
     console.log('open! close:', closeIndexes);
+    const closeBefore = closeIndexes && closeIndexes.begin < deltaIndex;
+    const closeAfter = closeIndexes && closeIndexes.begin > deltaIndex;
     const newOps = [
-      ...(closeIndexes && closeIndexes.begin < deltaIndex
+      ...(closeBefore
         ? [
             ...delta.ops.slice(0, closeIndexes.begin),
             ...delta.ops.slice(closeIndexes.end + 1, deltaIndex + 1)
@@ -367,7 +378,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
             ...deltaToEmbed.ops,
             embedSeperatorCreator(resType, resId, resInfo, 'end')
           ]),
-      ...(closeIndexes && closeIndexes.begin > deltaIndex
+      ...(closeAfter
         ? [
             ...delta.ops.slice(deltaIndex + 1, closeIndexes.begin),
             ...delta.ops.slice(closeIndexes.end + 1, delta.ops.length)
@@ -437,6 +448,27 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
 
     console.log(newOps);
     editor.updateContents({ ops: [{ delete: editor.getLength() }, ...newOps] });
+
+    const newSelectionIndex =
+      selection.index +
+      3 -
+      (!!closeBefore &&
+        delta.ops
+          .slice(closeIndexes.begin, closeIndexes.end + 1)
+          .reduce((a, b) => a + (b.insert && b.insert.length) || 1, 0));
+
+    console.log(
+      'closeBefore',
+      closeBefore,
+      !!closeBefore &&
+        delta.ops
+          .slice(closeIndexes.begin, closeIndexes.end + 1)
+          .reduce((a, b) => a + (b.insert && b.insert.length) || 1, 0)
+    );
+    console.log('newSelectionIndex', newSelectionIndex);
+
+    editor.setSelection(newSelectionIndex);
+
     deltaRef.current = { ops: newOps };
     if (closeIndexes) {
       handleEditorChange();
@@ -486,7 +518,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
   // 2do include a paste sanitizer: should check embeds are included only partly.
   const clickHandler = e => {
     // vars 1.e, 2.editor 3.handleChange,
-    const editor = quillNoteRefs.current[noteId].editor;
+    const editor = quillNoteRef.current.editor;
     if (classNameIncludes(e.target.className, 'ql-mention-denotation-char')) {
       mentionCharClickHandler(
         e,
@@ -524,27 +556,59 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
     }
   };
 
-  const selectionChangeHandler = (range, source, editor) => {
+  const selectionChangeHandler = (range, source, editorInstance) => {
     console.log(range);
-    if (!range || !source || !editor) {
+    if (!range) return;
+    if (source !== 'user' || !editorInstance || !quillNoteRef) {
       if (addBubble) setAddBubble(null);
       return;
     }
+
+    const editor = quillNoteRef.current.editor;
+
     if (range.length === 0) {
-      if (!quillNoteRefs.current[noteId]) {
+      if (!quillNoteRef) {
         if (addBubble) setAddBubble(null);
         return;
       }
-      const scroll = quillNoteRefs.current[noteId].editor.scroll;
+
+      console.log(editor);
+      const scroll = editor.scroll;
       const scrollAtPos = scroll.path(range.index)[1][0];
+      const ops = editor.getContents().ops;
       if (!scrollAtPos.text && scrollAtPos.domNode.tagName === 'BR') {
         const boundingClientRect = scroll
           .path(range.index)[1][0]
           .domNode.getBoundingClientRect();
+
+        // search for last opening embedSeperator before range.index
+        // if any use this id, else use noteId
+        let parentNoteId = noteId,
+          charIndex = 0,
+          opBeginIndex = 0;
+        while (charIndex <= range.index && opBeginIndex < ops.length) {
+          const op = ops[opBeginIndex];
+          if (
+            op.attributes &&
+            op.attributes.embedSeperator &&
+            op.attributes.embedSeperator.case === 'begin'
+          ) {
+            parentNoteId = op.attributes.embedSeperator.resId;
+          }
+          charIndex += op.insert.length || 1;
+          opBeginIndex += 1;
+        }
+        opBeginIndex = Math.max(0, opBeginIndex - 1);
+        console.log('ops', ops, 'opBeginIndex', opBeginIndex);
+        console.log('editor', editor);
+
         setAddBubble({
-          top: boundingClientRect.top,
-          bottom: boundingClientRect.bottom,
+          range: range,
+          boundingClientRect: boundingClientRect,
           delta: null,
+          parentNoteId: parentNoteId,
+          opBeginIndex: opBeginIndex,
+          opEndIndex: null,
           allow: []
         });
         return;
@@ -587,7 +651,7 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
       if (allowNewNote) {
         //  setAddBubble({
         //  ...delta: {ops: selectedOps}
-        //  })
+        //  }) 2do
         opEnd = Math.max(0, opEnd - 1);
         let lastOp = ops[opEnd];
         if (lastOp.attributes && lastOp.attributes.embedSeperator) {
@@ -649,12 +713,19 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
   if (!note) return <></>;
   return (
     <div
-      className='notepanel-container'
+      className={`note-container ${containerType}`}
       ref={cardBodyRef}
       id={`noteCardBody${noteId}`}
     >
       {addBubble && (
-        <AddBubble addBubble={addBubble} cardBodyRef={cardBodyRef} />
+        <AddBubble
+          key={addBubble.range.index}
+          addBubble={addBubble}
+          setAddBubble={setAddBubble}
+          cardBodyRef={cardBodyRef}
+          noteRef={quillNoteRef}
+          containerType={containerType}
+        />
       )}
       {cardBodyRef.current && (
         <Navline
@@ -663,24 +734,43 @@ const NotePanel = ({ setNoteRef, quillNoteRefs, noteId }) => {
           changedEditorCounter={changedEditorCounter}
           embedClickCounter={embedClickCounter}
           mdNotesPanel={mdNotesPanel}
+          containerType={containerType}
         />
       )}
       <ReactQuill
-        ref={setNoteRef}
+        ref={quillNoteRef}
         onChange={onChangeHandler}
         onChangeSelection={selectionChangeHandler}
         defaultValue={quillValue}
+        onFocus={() => {
+          if (cardBodyRef && cardBodyRef.current)
+            cardBodyRef.current.classList.add('active-editor');
+        }}
+        onBlur={() => {
+          if (cardBodyRef && cardBodyRef.current)
+            cardBodyRef.current.classList.remove('active-editor');
+        }}
         theme={'snow' || 'bubble'}
         modules={{
           //'#notesToolbar'
           toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            // [{ size: ['small', false, 'large'] }],
+            [
+              { header: '1' },
+              { header: '2' },
+              // { header: '3' },
+              // { header: '4' }
+              { size: 'small' },
+              { size: 'large' }
+            ],
             ['bold', 'italic', 'underline'],
             [{ color: [] }, { background: [] }],
             [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ indent: '-1' }, { indent: '+1' }],
-            [{ align: [] }]
+            [
+              { indent: '-1' },
+              { indent: '+1' },
+              { align: 'center' },
+              { align: 'right' }
+            ]
           ],
           history: {
             delay: 1000,

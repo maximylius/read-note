@@ -12,6 +12,24 @@ body,
   color: auto;
 }
 
+.footer-version {
+  margin-left: 10%;
+}
+.footer-shared-toolbar-container {
+  background-color: rgb(200, 245, 200);
+}
+
+.section-item {
+  position: absolute;
+  width: 90%;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  z-index: 0;
+}
+.section-item.committed {
+  z-index: 500;
+}
+
 .page-modal-outer {
   position: absolute;
   z-index: 2999;
@@ -269,11 +287,11 @@ button.closeAlertElement {
   background-color: #add;
 }
 
-@media (max-height: 600px) {
+/* @media (max-height: 600px) {
   .box .row.footer {
     display: none;
   }
-}
+} */
 
 .draggable {
   cursor: move !important;

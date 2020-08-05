@@ -1,6 +1,9 @@
 :root {
   --ccc-0: rgb(131, 216, 255);
   --ccc-0-0: rgb(68, 196, 255);
+  /* --ccc-0-0-0: rgb(27, 228, 255);
+  --ccc-0-0-1: rgb(27, 107, 255);
+  --ccc-0-0-2: rgb(19, 115, 179); */
   --ccc-0-1: rgb(95, 244, 255);
   --ccc-0-2: rgb(81, 142, 255);
   --ccc-1: rgb(131, 255, 137);
@@ -17,17 +20,6 @@
   --ccc-3-2: rgb(228, 96, 166);
   --ccc-3-3: rgb(248, 105, 217);
 }
-/* .notepanel-nav-container {
-} */
-.notepanel-card {
-  margin: 0;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-top: none;
-  border-radius: 0.25rem;
-}
-.notepanel-container {
-  padding: 1.25rem 1.25rem 1.25rem 3rem;
-}
 
 .ql-editor {
   overflow-x: hidden;
@@ -35,18 +27,62 @@
 .ql-container.ql-snow {
   border: none !important;
 }
+
+/* TOOLBAR */
 .ql-toolbar.ql-snow {
-  border: none !important;
-  /* border-bottom: 4px solid green !important; */
-  background-color: rgba(188, 239, 255, 0.25);
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 600px;
+  background-color: rgb(222, 229, 239);
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 20px;
+  padding-right: 20px;
+  z-index: 20;
+}
+.active-editor .ql-toolbar.ql-snow {
+  background-color: rgb(251, 255, 252);
+  z-index: 500;
 }
 .save-statusbar {
-  z-index: 0;
-  padding-right: 2rem;
-  text-align: right;
-  margin-top: 2rem;
-  color: rgba(0, 0, 0, 0.7);
-  background-color: rgba(188, 239, 255, 0.25);
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding-bottom: 3px;
+  width: 80px;
+  color: rgba(0, 0, 0, 1);
+  z-index: 21;
+}
+.active-editor .save-statusbar {
+  z-index: 501;
+}
+/* .notepanel-nav-container {
+} */
+.notepanel-card {
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-top: none;
+  border-radius: 0.25rem;
+  background-color: rgb(230, 224, 194);
+}
+/* .note-container {
+  padding: 1.25rem 1.25rem 1.25rem 3rem;
+} */
+
+.note-container.note-panel {
+  padding: 1.25rem 1.25rem 1.25rem 3rem;
+  background-color: rgba(255, 255, 255, 0.705);
+  border-radius: 0.5rem;
+}
+.note-container.side-note {
+  min-height: 80px;
+  margin-left: -0.8rem;
+  padding: 0.1rem 1.25rem 0.2rem 2rem;
+  background-color: rgba(255, 255, 255, 0.705);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.8);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.8);
+  border-radius: 0.5rem;
 }
 
 /* ADD BUBBLE */
@@ -54,31 +90,40 @@
   position: absolute;
   z-index: 3000;
   left: 0.25rem;
-  height: 2.5rem;
-  width: 2.5rem;
-  border-radius: 1.25rem 1.25rem 1.25rem 1.25rem;
-  background-color: rgb(96, 218, 255);
+  height: 2rem;
+  width: 2rem;
+  border-radius: 1rem 1rem 1rem 1rem;
+  background-color: rgba(194, 241, 255, 0.603);
+  border: 1px solid rgba(73, 210, 252, 0.37);
   cursor: pointer;
-}
-.add-bubble:hover {
-  background-color: rgb(72, 179, 211);
 }
 .add-bubble-line {
   position: absolute;
   z-index: 0;
   top: calc(50% - 2px);
   left: 100%;
-  width: 50%;
+  width: 75%;
   height: 4px;
-  background-color: rgba(53, 218, 255, 0.302);
+  background-color: rgba(73, 210, 252, 0.37);
 }
-.add-bubble-svg {
+.add-bubble:hover,
+.add-bubble:hover .add-bubble-line {
+  background-color: rgb(72, 179, 211);
+}
+
+.add-bubble-svg svg {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  padding: 25%;
+  width: 80%;
+  height: 80%;
+  margin: 10%;
+  font-size: 20px;
   vertical-align: middle;
   text-align: center;
+  color: rgba(0, 0, 0, 0.418);
+}
+
+.add-bubble:hover .add-bubble-svg svg {
+  color: white;
 }
 /* BACKGROUND AND NAVLINE */
 .note-indent-container {
@@ -109,11 +154,13 @@
   border-left: 1px solid rgba(0, 0, 0, 0.781);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  /* border-radius: 0.5rem 0rem 0rem 0.5rem; */
 }
 .note-bg-inner {
   height: 100%;
   width: 100%;
   background-color: rgba(255, 255, 255, 0.85);
+  /* border-radius: 0.5rem 0rem 0rem 0.5rem; */
 }
 
 div.main-navline-button-container {
@@ -148,18 +195,25 @@ button.navline-button {
   position: absolute;
   z-index: 10;
   right: 16px;
-  top: 0;
-  bottom: 0;
   width: 20px;
   border-radius: 0;
   background-color: rgb(221, 236, 250);
   cursor: default;
 }
+.note-panel .mainNavline {
+  top: 0;
+  bottom: 0;
+  border-radius: 0.5rem;
+}
+.side-note .mainNavline {
+  border-radius: 0.5rem;
+}
 .navline {
   position: absolute;
   z-index: 20;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  /* border-top: 0.5px solid rgba(255, 255, 255, 0.9); */
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 5rem 0 0 5rem;
   width: 100%;
   background-color: #f00;

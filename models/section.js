@@ -14,10 +14,19 @@ const schema = new Schema({
   delta: { type: Object, default: { ops: [{ insert: '\n' }] } },
 
   // links
-  textId: { type: Schema.Types.ObjectId, ref: 'Text' },
-  noteIds: [{ type: Schema.Types.ObjectId, ref: 'Note' }],
-  directConnections: [{ type: Schema.Types.ObjectId }],
-  indirectConnections: [{ type: Schema.Types.ObjectId }],
+  textId: { type: Schema.Types.ObjectId, ref: 'Text' }, // 2do: will this be the only text in direct connections? Yes. But: it is an overhead to iterate of the direct connections to find the text. but you rarely need to do that.
+  directConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section // will include: parentText, those notes that shall be displayed, and connected sections.
+    }
+  ],
+  indirectConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
 
   // meta
   created: { type: Date, default: Date.now },

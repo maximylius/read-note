@@ -3,6 +3,8 @@ const router = express.Router();
 
 // Note Model
 const Note = require('../../models/note');
+const Section = require('../../models/section');
+const Text = require('../../models/text');
 
 /**
  * @route   GET api/notes
@@ -97,6 +99,79 @@ router.post('/spareids/:number', (req, res) => {
 
 /**
  * @route   PUT api/note/:id
+ * @desc    initialize a note
+ * @access  Public
+ */
+router.put('/init/:id', (req, res) => {
+  const cumulativeResponse = [];
+  Note.findById(req.params.id)
+    .then(note => {
+      Object.keys(req.body.note).forEach(updateKey => {
+        note[updateKey] = req.body.note[updateKey];
+      });
+      note.save().then(() => {
+        cumulativeResponse.push('note successfully initialized');
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(404).json({ success: false, err: err });
+    });
+
+  if (req.body.note.isAnnotation) {
+    Section.findById(req.body.note.isAnnotation.sectionId)
+      .then(section => {
+        section.directConnections.push({
+          resId: req.params.id,
+          resType: 'note'
+        });
+        console.log('section.directConnections', section.directConnections);
+        section.save().then(() => {
+          cumulativeResponse.push(
+            'section successfully informed about child note'
+          );
+        });
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+    Text.findById(req.body.note.isAnnotation.textId)
+      .then(text => {
+        text.directConnections.push({ resId: req.params.id, resType: 'note' });
+        text.save().then(() => {
+          cumulativeResponse.push(
+            'text successfully informed about child note'
+          );
+        });
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+  }
+
+  // if has parent node
+  if (req.body.note.indirectConnections.length === 1) {
+    Note.findById(req.body.note.indirectConnections[0].resId)
+      .then(note => {
+        note.directConnections = [
+          ...new Set(
+            ...note.directConnections.concat({
+              resId: req.params.id,
+              resType: 'note'
+            })
+          )
+        ];
+        note
+          .save()
+          .then(() =>
+            cumulativeResponse.push(
+              'parent note successfully informed about child note'
+            )
+          );
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+  }
+  res.json({ success: true, info: cumulativeResponse });
+});
+
+/**
+ * @route   PUT api/note/:id
  * @desc    update a note
  * @access  Public
  */
@@ -121,9 +196,17 @@ router.put('/:id', (req, res) => {
     req.body.connectionsToAdd.forEach(connectionId => {
       Note.findById(connectionId)
         .then(note => {
-          note.indirectConnections = [
-            ...new Set([...note.indirectConnections, req.params.id])
-          ];
+          if (
+            !note.indirectConnections.some(el => el.resId === req.params.id)
+          ) {
+            note.indirectConnections = [
+              ...note.indirectConnections,
+              {
+                resId: req.params.id,
+                resType: 'note' // is it always of type note?
+              }
+            ];
+          }
           note.save().then(() =>
             res.json({
               success: true
@@ -140,7 +223,7 @@ router.put('/:id', (req, res) => {
       Note.findById(connectionId)
         .then(note => {
           note.indirectConnections = note.indirectConnections.filter(
-            id => id !== req.params.id
+            el => el.resId !== req.params.id
           );
           note.save().then(() =>
             res.json({

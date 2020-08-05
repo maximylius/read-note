@@ -103,9 +103,8 @@
 4    moderate markup for text with multiple section layers.
 4    enable connection of sections
 4    mind map creator before start reading text
-4    scrape PDF & html, perserve formatting
+4    scrape PDF & html, perserve formatting OR use
 4    Enable user to ask questions with text. Questions can be answered and or connected to other questions.
-4    Formatting of annotations also? SO works because of nice formats. BUT keep it simple...
 4    Ability to make general annotations to the text without refering to any passage? No.
 0    encrypt private texts?
 4    resize displayed text, button to hide left empty pane & give more space to text.
@@ -113,22 +112,19 @@
 4
 
 2 Design -------------
-2    what is ReachUI?
-   get toasts & modals & tooltips
- npm install react-icons react-datepicker
  desing right click menu.
 2    design with controller with svg
 0    design category icons: citation: ,' argument ! question ? ~ # 3dCube, use colors
 2    design mind map of sections: custom icons, shapes, (border-)color, dots on the right to indicate type and amount of attributes in section. 2 category levels, maximum 3.
 2    scrollIntoView https://getbootstrap.com/docs/4.0/components/scrollspy/
-6    design navbar
 5    add loading spinners
-1    display (warning) messages as toasts
 1    change default color of selected text (blue) to fancy one
 2    night mode. Color links, list items / headings differently?
 2    original style format keep orignial font type
-2    create CSS
 2
+
+0 @FURTHER_IDEAS
+0     Luhmand Zettelkasten: hat nicht nur Querverbindungen sondern auch Hierarchie: 1.1, 1.2, 1.2.1
 
 2 @GIVE NAME
 1     text note
@@ -156,8 +152,9 @@
 1     lazy spider
 1     spider reader
 1     Weberknecht
-1
-1
+1     common mind
+1     gedanken palast
+1     
 
 @icons
 text: BsBook

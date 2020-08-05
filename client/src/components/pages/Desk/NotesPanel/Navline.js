@@ -62,10 +62,14 @@ const Navline = ({ noteId, cardBodyRef, mdNotesPanel }) => {
       id: extractAtValueResId(sep.dataset.resInfo)
     });
   });
+  console.log('NAVLINE: cardBodyRect.height', cardBodyRect.height);
   return (
     <>
       {noteInfo && <NoteInfo noteInfo={noteInfo} setNoteInfo={setNoteInfo} />}
-      <div className='mainNavline' style={{ heigth: cardBodyRect.height }}>
+      <div
+        className='mainNavline'
+        style={{ height: `${cardBodyRect.height - 5}px` }}
+      >
         <div className='main-navline-button-container'>
           <button
             className='navline-button'

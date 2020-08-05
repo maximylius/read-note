@@ -76,13 +76,13 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
         <span className='note-info-no-connections'>None</span>
       ) : (
         note.directConnections
-          .filter(id => Object.keys(notes).includes(id))
-          .map(connectionId => (
+          // .filter(el => Object.keys(notes).includes(el.resId))
+          .map(el => (
             <span
-              key={connectionId}
-              className='note-info-connection direct-connection'
+              key={el.resId}
+              className={`note-info-connection direct-connection connection-${el.resType}`}
             >
-              {notes[connectionId].title}
+              {notes[el.resId].title}
             </span>
           ))
       )}
@@ -91,13 +91,13 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
         <span className='note-info-no-connections'>None</span>
       ) : (
         note.indirectConnections
-          .filter(id => Object.keys(notes).includes(id))
-          .map(connectionId => (
+          // .filter(el => Object.keys(notes).includes(el.resId))
+          .map(el => (
             <div
-              key={connectionId}
-              className='note-info-connection indirect-connection'
+              key={el.resId}
+              className={`note-info-connection indirect-connection connection-${el.resType}`}
             >
-              {notes[connectionId].title}
+              {notes[el.resId].title}
             </div>
           ))
       )}

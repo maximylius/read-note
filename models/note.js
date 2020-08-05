@@ -10,8 +10,18 @@ const schema = new Schema({
   plainText: { type: String, default: '' },
 
   // link
-  directConnections: [{ type: Schema.Types.ObjectId }],
-  indirectConnections: [{ type: Schema.Types.ObjectId }],
+  directConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
+  indirectConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
   isAnnotation: {
     type: Object,
     textId: { type: Schema.Types.ObjectId, ref: 'text' },

@@ -165,7 +165,7 @@ const Flowchart = () => {
         type: 'section',
         className: 'flowchartSection',
         label: sections[id].title,
-        links: sections[id].noteIds.map(id => ({ name: id }))
+        links: sections[id].directConnections.map(el => ({ name: el.resId }))
       }));
       const connectedNotes = Object.keys(notes).map(id => {
         const note = notes[id];
@@ -175,7 +175,7 @@ const Flowchart = () => {
           type: note.isAnnotation ? 'annotation-note' : 'note',
           className: 'flowchartNote',
           label: note.title,
-          links: note.directConnections.map(id => ({ name: id }))
+          links: note.directConnections.map(el => ({ name: el.resId }))
         };
       });
       dispatch(

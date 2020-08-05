@@ -46,7 +46,7 @@ export default (state = initialState, action) => {
     case types.DELETE_NOTE:
       return {
         ...state,
-        noteIds: state.noteIds.filter(id => id !== payload.noteId)
+        noteIds: state.noteIds.filter(id => id !== payload.note._id)
       };
     case types.DELETE_TEXT:
       return {

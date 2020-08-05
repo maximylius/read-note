@@ -13,7 +13,6 @@ import { regExpOpenTexts } from '../../../functions/main';
 const Desk = () => {
   const dispatch = useDispatch();
   const params = useParams();
-  console.log('params:', params);
   const openTextPanels = useSelector(s => s.textsPanel.openTextPanels);
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const openNotes = useSelector(s => s.notesPanel.openNotes);
@@ -35,17 +34,11 @@ const Desk = () => {
   };
 
   useEffect(() => {
-    console.log(
-      '=======',
-      isEqual(quillNoteRefs, refRenderTrigger),
-      quillNoteRefs
-    );
     setRefRenderTrigger(quillNoteRefs);
     return () => {};
   }, [isEqual(quillNoteRefs, refRenderTrigger)]);
 
   useEffect(() => {
-    console.log('paramsparamsparamsparamsparamsparamsparamsparams', params);
     if (params.textIds) {
       const textParams = params.textIds.split('+');
       const textsParamsToLoad = textParams.filter(
@@ -69,7 +62,6 @@ const Desk = () => {
           })
         );
       });
-      console.log(textParams);
     }
     if (params.noteIds) {
       const noteParams = params.noteIds.split('+');
@@ -94,7 +86,6 @@ const Desk = () => {
           })
         );
       });
-      console.log(noteParams);
     }
     return () => {};
     // eslint-disable-next-line
@@ -102,7 +93,7 @@ const Desk = () => {
 
   return (
     <>
-      <Flowchart />
+      {/* <Flowchart /> */}
       <div className='row grow flex-row mx-0 px-0' ref={testRef}>
         <div
           className={`col-md-${mdFinderPanel} px-0 mt-0 pt-0 box`}

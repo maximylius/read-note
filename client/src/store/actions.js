@@ -236,7 +236,7 @@ export const expandNotesPanel = () => dispatch =>
 
 export const collapseNotesPanel = () => dispatch =>
   dispatch({
-    // type: types.COLLAPSE_NOTES_PANEL
+    type: types.COLLAPSE_NOTES_PANEL
   });
 
 export const expandTextsPanel = () => dispatch =>
@@ -702,6 +702,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
   getState
 ) => {
   const {
+    notes,
     texts,
     textsPanel: { activeTextPanel }
   } = getState();
@@ -733,6 +734,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
       return;
     }
     const sectionsById = {};
+    const notesById = {};
     if (text.sectionIds.length > 0) {
       const sectionsRes = await axios.get(
         `/api/sections/${text.sectionIds.join('+')}`
@@ -741,6 +743,20 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
       sectionsRes.data.forEach(
         section => (sectionsById[section._id] = section)
       );
+
+      const notesToGet = sectionsRes.data
+        .flatMap(section =>
+          section.directConnections.filter(
+            el =>
+              el.resType === 'note' && !Object.keys(notes).includes(el.resId)
+          )
+        )
+        .map(el => el.resId);
+      if (notesToGet.length > 0) {
+        const notesRes = await axios.get(`/api/notes/${notesToGet.join('+')}`);
+        console.log(notesRes);
+        notesRes.data.forEach(note => (notesById[note._id] = note));
+      }
     }
     console.log('openText?', openText);
     if (!openText) {
@@ -748,6 +764,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
         type: types.ADD_TEXT,
         payload: {
           sectionsById,
+          notesById,
           text
         }
       });
@@ -757,6 +774,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
         type: types.ADD_AND_OPEN_TEXT,
         payload: {
           sectionsById,
+          notesById,
           text,
           textId: text._id,
           setToActive: setToActive
@@ -836,14 +854,24 @@ export const addSection = ({ categoryId, begin, end }) => (
 
   const section = {
     _id: spareIds['sections'][0],
+
     title: null,
+    categoryIds: [categoryId],
     begin: begin,
     end: end,
-    categoryIds: [categoryId],
-    noteIds: [],
+
     fullWords: text.textcontent.slice(begin, end + 1),
+    html: '',
+    delta: null,
+
     textId: activeTextPanel,
-    editedBy: user._id ? [user._id] : []
+    directConnections: [],
+    indirectConnections: [],
+
+    created: Date.now(),
+    lastEdited: Date.now(),
+    editedBy: user._id ? [user._id] : [],
+    accessFor: user._id ? [user._id] : []
   };
   console.log(text.sectionIds);
   console.log(sections);
@@ -1107,8 +1135,15 @@ export const addNote = ({
     title: guessTitle || 'Note 1',
     delta: delta || { ops: [{ insert: '\n' }] },
     plainText: '',
-    directConnections: [],
-    indirectConnections: parentNoteId ? [parentNoteId] : [],
+    directConnections: isAnnotation
+      ? [
+          { resId: isAnnotation.textId, resType: 'text' },
+          { resId: isAnnotation.sectionId, resType: 'section' }
+        ]
+      : [],
+    indirectConnections: parentNoteId
+      ? [{ resId: parentNoteId, resType: 'note' }]
+      : [],
     isAnnotation: isAnnotation || null,
     created: Date.now(),
     lastEdited: Date.now(),
@@ -1128,42 +1163,40 @@ export const addNote = ({
   console.log(note);
   dispatch({
     type: types.ADD_NOTE,
-    payload: { note }
+    payload: { note, open: !!history }
   });
 
-  axios.put(`/api/notes/${note._id}`, { note: note });
+  axios.put(`/api/notes/init/${note._id}`, { note: note });
 
   fetchSpareIds('notes', 1, dispatch);
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     noteIds: [...user.noteIds, note._id]
   });
-  history.push(
-    regExpHistory(
-      history.location.pathname,
-      spareIds['notes'][0],
-      'open',
-      'note'
-    )
-  );
+  if (history)
+    history.push(
+      regExpHistory(
+        history.location.pathname,
+        spareIds['notes'][0],
+        'open',
+        'note'
+      )
+    );
 };
 
 export const updateNote = noteUpdate => (dispatch, getState) => {
   const { notes } = getState();
   const noteToUpdate = { ...notes[noteUpdate._id] };
+  // 2do allow for other types of connections than just notes
   const connectionsToAdd = !noteUpdate.directConnections
     ? []
     : noteUpdate.directConnections.filter(
-        connectionId =>
-          !noteToUpdate.directConnections.includes(connectionId) &&
-          Object.keys(notes).includes(connectionId)
+        el => !noteToUpdate.directConnections.includes(el.resId)
       );
   const connectionsToRemove = !noteUpdate.directConnections
     ? []
     : noteToUpdate.directConnections.filter(
-        connectionId =>
-          !noteUpdate.directConnections.includes(connectionId) &&
-          Object.keys(notes).includes(connectionId)
+        el => !noteUpdate.directConnections.includes(el.resId)
       );
   Object.keys(noteUpdate).forEach(updateKey => {
     if (Object.keys(noteToUpdate).includes(updateKey)) {
@@ -1173,7 +1206,7 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
 
   dispatch({
     type: types.UPDATE_NOTE,
-    payload: { note: noteToUpdate }
+    payload: { note: noteToUpdate, connectionsToAdd, connectionsToRemove }
   });
 
   axios.put(`/api/notes/${noteUpdate._id}`, {
@@ -1181,27 +1214,6 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
     connectionsToAdd,
     connectionsToRemove
   }); // 2do add route to handle update of added / removed connections in target notes
-
-  connectionsToAdd.forEach(targetNoteId => {
-    console.log('++++++++++++++++++++++ADDING NOTE CONNECTION', {
-      originNoteId: noteUpdate._id,
-      targetNoteId: targetNoteId
-    });
-    dispatch({
-      type: types.ADD_NOTE_TO_NOTE_CONNECTION,
-      payload: { originNoteId: noteUpdate._id, targetNoteId: targetNoteId }
-    });
-  });
-  connectionsToRemove.forEach(targetNoteId => {
-    console.log('---------------------REMOVING NOTE CONNECTION', {
-      originNoteId: noteUpdate._id,
-      targetNoteId: targetNoteId
-    });
-    dispatch({
-      type: types.REMOVE_NOTE_TO_NOTE_CONNECTION,
-      payload: { originNoteId: noteUpdate._id, targetNoteId: targetNoteId }
-    });
-  });
 
   console.log({
     note: ObjectRemoveKeys(noteUpdate, ['_id']),
@@ -1217,28 +1229,15 @@ export const deleteNote = noteId => (getState, dispatch) => {
     auth: { isAuthenticated }
   } = getState();
   const note = notes[noteId];
-  dispatch({
-    type: types.DELETE_NOTE,
-    payload: { noteId }
-  });
-
+  console.log('note', note);
   // update server
   axios.delete(`/api/notes/${noteId}`);
   putUserUpdateIfAuth(isAuthenticated, getState, {
     noteIds: user.noteIds.filter(id => id !== noteId)
   });
+
+  dispatch({
+    type: types.DELETE_NOTE,
+    payload: { note }
+  });
 };
-
-// export const setAddNotesToNote = ({ autoAddNotes, addNotesTo }) => (
-//   dispatch,
-//   getState
-// ) => {
-//   const { notesPanel } = getState();
-//   if (autoAddNotes === undefined) autoAddNotes = notesPanel.autoAddNotes;
-//   if (addNotesTo === undefined) addNotesTo = notesPanel.addNotesTo;
-
-//   dispatch({
-//     type: types.SET_AUTO_ADD_NOTES_TO,
-//     payload: { autoAddNotes, addNotesTo }
-//   });
-// };

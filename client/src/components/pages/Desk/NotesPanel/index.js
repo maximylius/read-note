@@ -68,11 +68,7 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
         <div className='row growContent card mx-0 notepanel-card'>
           {activeNote && notes[activeNote] && (
             <div key={activeNote}>
-              <NotePanel
-                quillNoteRefs={quillNoteRefs}
-                setNoteRef={createSetNoteRef(activeNote)}
-                noteId={activeNote}
-              />
+              <NotePanel noteId={activeNote} containerType='note-panel' />
             </div>
           )}
           {/* {notesToRender.map(noteId => (

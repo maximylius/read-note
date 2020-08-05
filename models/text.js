@@ -17,9 +17,19 @@ const schema = new Schema({
   delta: { type: Object },
 
   // links
-  sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section' }],
-  directConnections: [{ type: Schema.Types.ObjectId }],
-  indirectConnections: [{ type: Schema.Types.ObjectId }],
+  sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section' }], // 2do can i remove this? directConnections.filter(el => el.resType==="section")
+  directConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
+  indirectConnections: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
 
   // meta
   created: { type: Date },

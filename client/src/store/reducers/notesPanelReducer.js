@@ -30,8 +30,10 @@ export default (state = initialState, action) => {
     case types.ADD_NOTE:
       return {
         ...state,
-        activeNote: payload.note._id,
-        openNotes: [...new Set([...state.openNotes, payload.note._id])]
+        ...(payload.open && {
+          activeNote: payload.note._id,
+          openNotes: [...new Set([...state.openNotes, payload.note._id])]
+        })
       };
     case types.OPEN_NOTE:
       return {

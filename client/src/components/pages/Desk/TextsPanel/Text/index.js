@@ -127,7 +127,7 @@ function Textpage({ quillNoteRefs }) {
         )}
       </div>
       <div
-        className={`col-md-${ui.mdAnnotationsPanel} box`}
+        className={`col-md-${ui.mdAnnotationsPanel} box pl-0`}
         style={{ display: ui.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
       >
         <Sidepanel quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />

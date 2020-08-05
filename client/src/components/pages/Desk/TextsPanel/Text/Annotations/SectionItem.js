@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Annotations from './Annotation';
+import SideNote from './SideNote';
 import {
   changeSectionEditState,
   uncommitFromSection,
@@ -12,49 +12,69 @@ import {
 } from '../../../../../../store/actions';
 import annotationTypes from '../../../../../Metapanel/annotationTypes';
 import { BsDash, BsTrash, BsBookmark, BsPlus } from 'react-icons/bs';
-const sectionItemClassName =
-  'section-item list-group-item list-group-item-action';
+const sectionItemClassName = 'section-item';
 const sectionItemIdPrepend = 'sec_';
+const [low, std, high] = [0.3, 0.7, 1];
 
 const SectionItem = ({
   sectionId,
-  quillTextRef,
+  sectionIndex,
+  // quillTextRef,
   quillNoteRefs,
-  addAnnotationsTo
+  top,
+  triggerRemeasure
 }) => {
   const dispatch = useDispatch();
-  const {
-    sections,
-    annotations,
-    categories,
-    textsPanel: {
-      activeTextPanel,
-      expandAll,
-      committedSectionIds,
-      tentativeSectionIds,
-      holdControl
-    }
-  } = useSelector(s => s);
+  const sections = useSelector(s => s.sections);
+  const notes = useSelector(s => s.notes);
+  const categories = useSelector(s => s.categories);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+  const expandAll = useSelector(s => s.textsPanel.expandAll);
+  const committedSectionIds = useSelector(
+    s => s.textsPanel.committedSectionIds
+  );
+  const tentativeSectionIds = useSelector(
+    s => s.textsPanel.tentativeSectionIds
+  );
+  const holdControl = useSelector(s => s.textsPanel.holdControl);
+
   const section = sections[sectionId];
   const [selectedCategory, setSelectedCategory] = useState(
     section.categoryIds[0]
   );
-  const [low, std, high] = [0.3, 0.7, 1];
 
+  // conditional render
+  const committedToSection = committedSectionIds.includes(section._id)
+    ? true
+    : false;
+  const tentativeToSection = tentativeSectionIds.includes(section._id)
+    ? true
+    : false;
+
+  const notesToDisplay = section.directConnections.filter(
+    el => el.resType === 'note' && Object.keys(notes).includes(el.resId)
+  );
+  const occupancy = committedToSection || tentativeToSection ? high : std;
+  const backgroundColor =
+    'rgb(' +
+    categories.byId[section.categoryIds[0]].rgbColor +
+    `,${occupancy})`;
+
+  // event handlers
   const sectionItemClickHandler = e => {
     if (
       committedSectionIds.includes(sectionId) &&
       committedSectionIds.length === 1
     )
       return;
-    dispatch(setCommittedSections([section._id], holdControl));
+    dispatch(setCommittedSections([sectionId], holdControl));
   };
   const sectionItemOnMouseEnterHandler = () =>
     dispatch(setTentativeSections([sectionId], holdControl));
 
   const deleteClickHandler = e => {
     e.stopPropagation();
-    dispatch(deleteSection(section._id));
+    dispatch(deleteSection(sectionId));
     setTimeout(() => {
       const hoveredSecDiv = [...document.querySelectorAll(':hover')].filter(
         el => el.className === sectionItemClassName
@@ -65,10 +85,11 @@ const SectionItem = ({
       }
       console.log('deleted && new tentative');
     }, 20);
+    triggerRemeasure();
   };
   const mininmizeClickHandler = e => {
     e.stopPropagation();
-    dispatch(uncommitFromSection([section._id]));
+    dispatch(uncommitFromSection([sectionId]));
   };
 
   const onCategoryChangeHandler = e => {
@@ -93,29 +114,20 @@ const SectionItem = ({
         }
       })
     );
+    triggerRemeasure();
   };
-  // conditional render
-  const committedToSection = committedSectionIds.includes(section._id)
-    ? true
-    : false;
-  const tentativeToSection = tentativeSectionIds.includes(section._id)
-    ? true
-    : false;
-
-  // const annotationsToDisplay = section.annotationIds.filter(id =>
-  //   Object.keys(annotations.byId).includes(id)
-  // );
-  const occupancy = committedToSection || tentativeToSection ? high : std;
-  const backgroundColor =
-    'rgb(' +
-    categories.byId[section.categoryIds[0]].rgbColor +
-    `,${occupancy})`;
 
   return (
-    <li
-      className={sectionItemClassName}
+    <div
+      className={`${sectionItemClassName} ${
+        committedToSection
+          ? 'committed'
+          : tentativeToSection
+          ? 'tentative'
+          : 'not-active'
+      }`}
       id={`${sectionItemIdPrepend}${section._id}`}
-      style={{ backgroundColor: backgroundColor }}
+      style={{ backgroundColor: backgroundColor, top: top }}
       onClick={sectionItemClickHandler}
       onMouseEnter={sectionItemOnMouseEnterHandler}
     >
@@ -166,15 +178,15 @@ const SectionItem = ({
             </select>
           </div>
 
-          {/* {annotationsToDisplay.map(id => (
-            <Annotations
-              key={id}
+          {notesToDisplay.map(el => (
+            <SideNote
+              key={el.resId}
               sectionId={sectionId}
-              annotationId={id}
-              addAnnotationsTo={addAnnotationsTo}
-              quillNoteRefs={quillNoteRefs}
+              noteId={el.resId}
+              triggerRemeasure={triggerRemeasure}
             />
-          ))} */}
+          ))}
+
           <button
             className='btn btn-light btn-block btn-sm'
             onClick={newNoteClickhandler}
@@ -183,8 +195,8 @@ const SectionItem = ({
           </button>
         </>
       )}
-    </li>
+    </div>
   );
 };
 
-export default SectionItem;
+export default React.memo(SectionItem);
