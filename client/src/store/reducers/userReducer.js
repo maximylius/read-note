@@ -11,6 +11,7 @@ const initialState = {
   annotationIds: [],
   accessedNoteIds: [],
   accessedTextIds: [],
+  favourites: [],
   reputation: 0
 };
 
@@ -64,6 +65,17 @@ export default (state = initialState, action) => {
         sectionIds: state.sectionIds.filter(
           id => !payload.sectionIds.includes(id)
         )
+      };
+
+    case types.TOGGLE_USER_FAVOURITE:
+      return {
+        ...state,
+        favourites: state.favourites.some(fav => fav.resId === payload.resId)
+          ? state.favourites.filter(fav => fav.resId !== payload.resId)
+          : state.favourites.concat({
+              resId: payload.resId,
+              resType: payload.resType
+            })
       };
 
     case types.LOGIN_SUCCESS:

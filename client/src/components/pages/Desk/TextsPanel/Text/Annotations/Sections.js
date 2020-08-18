@@ -82,38 +82,42 @@ const calcAllFinalPositions = (sectionsToDisplay, bestPositions) => {
   return finalPositions;
 };
 
-const calcSpecificFinalPositions = (
-  sectionIndex,
-  sectionsToDisplay,
-  bestPositions,
-  finalPositions
-) => {
-  let i = sectionIndex + 1;
-  console.log('statz while loop');
-  while (i < sectionsToDisplay.length) {
-    const id = sectionsToDisplay[i];
-    let positionTop = bestPositions[id].top;
-    const lastId = sectionsToDisplay[i - 1];
-    finalPositions[lastId].freeSpaceBottom =
-      finalPositions[lastId].top - positionTop - marginBottom;
-    if (finalPositions[lastId].freeSpaceBottom > 0) break; //you can break here as it is pushed down no further.
-    const positionBottomAbove =
-      finalPositions[lastId].top + bestPositions[lastId].height;
+// 2do: specific positions doesnt work yet: stops one after the intial: doesnt push other down further if needed. also doesnt pull back up when space is available. // is this performance boost even necessary?...
+// const calcSpecificFinalPositions = (
+//   sectionIndex,
+//   sectionsToDisplay,
+//   bestPositions,
+//   finalPositions
+// ) => {
+//   let i = sectionIndex + 0;
+//   // let i = sectionIndex + 1;
+//   console.log('statz while loop');
+//   while (i < sectionsToDisplay.length) {
+//     const id = sectionsToDisplay[i];
+//     let positionTop = bestPositions[id].top;
+//     if (i > 0) {
+//       const lastId = sectionsToDisplay[i - 1];
+//       finalPositions[lastId].freeSpaceBottom =
+//         finalPositions[lastId].top - positionTop - marginBottom;
+//       if (finalPositions[lastId].freeSpaceBottom > 0) break; //you can break here as it is pushed down no further.
+//       const positionBottomAbove =
+//         finalPositions[lastId].top + bestPositions[lastId].height;
 
-    if (positionBottomAbove >= positionTop) {
-      positionTop = positionBottomAbove + marginBottom;
-    }
+//       if (positionBottomAbove >= positionTop) {
+//         positionTop = positionBottomAbove + marginBottom;
+//       }
+//     }
 
-    finalPositions[id] = {
-      top: positionTop,
-      freeSpaceBottom: 10000
-    };
-    i++;
-  }
-  console.log('end while loop');
+//     finalPositions[id] = {
+//       top: positionTop,
+//       freeSpaceBottom: 10000
+//     };
+//     i++;
+//   }
+//   console.log('end while loop');
 
-  return finalPositions;
-};
+//   return finalPositions;
+// };
 
 const Sections = ({ quillTextRef, quillNoteRefs }) => {
   const sections = useSelector(s => s.sections);
@@ -172,12 +176,13 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
     bestPositionsRef.current[updateDimensions.sectionId].height =
       updateDimensions.currentHeight;
     setFinalPositions(
-      calcSpecificFinalPositions(
-        updateDimensions.sectionIndex,
-        sectionsToDisplayRef.current,
-        bestPositionsRef.current,
-        { ...finalPositions }
-      )
+      calcAllFinalPositions(sectionsToDisplay, bestPositionsRef.current)
+      // calcSpecificFinalPositions(
+      //   updateDimensions.sectionIndex,
+      //   sectionsToDisplayRef.current,
+      //   bestPositionsRef.current,
+      //   { ...finalPositions }
+      // )
     );
     console.log('DONE SPECIFIC POSITION-REF UPDATE');
     return () => {};

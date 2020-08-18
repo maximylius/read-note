@@ -979,6 +979,85 @@ export const updateSection = update => (dispatch, getState) => {
   axios.put(`/api/sections/${update._id}`, request);
 };
 
+export const addSectionConnection = (
+  sectionId,
+  connectionId,
+  connectionType
+) => dispatch => {
+  dispatch({
+    type: types.ADD_SECTION_CONNECTION,
+    payload: { sectionId, connectionId, connectionType }
+  });
+  axios.put(`/api/sections/connections/${sectionId}`, {
+    add: { sectionId, connectionId, connectionType }
+  });
+};
+
+export const changeSectionConnection = () => () => {};
+
+export const removeSectionConnection = (
+  sectionId,
+  connectionId
+) => dispatch => {
+  dispatch({
+    type: types.REMOVE_SECTION_CONNECTION,
+    payload: { sectionId, connectionId }
+  });
+  axios.put(`/api/sections/connections/${sectionId}`, {
+    remove: { sectionId, connectionId }
+  });
+};
+
+export const addSectionCategory = (sectionId, categoryId) => (
+  dispatch,
+  getState
+) => {
+  const { sections } = getState();
+  const categoryIds = sections[sectionId].categoryIds;
+  if (categoryIds.includes(categoryId)) return;
+
+  dispatch({
+    type: types.ADD_SECTION_CATEGORY,
+    payload: { sectionId, categoryId }
+  });
+  axios.put(`/api/sections/${sectionId}`, {
+    categoryIds: [...categoryIds, categoryId]
+  });
+};
+
+export const removeSectionCategory = (sectionId, categoryId) => (
+  dispatch,
+  getState
+) => {
+  const { sections } = getState();
+  const categoryIds = sections[sectionId].categoryIds;
+  if (!categoryIds.includes(categoryId)) return;
+
+  dispatch({
+    type: types.REMOVE_SECTION_CATEGORY,
+    payload: { sectionId, categoryId }
+  });
+
+  axios.put(`/api/sections/${sectionId}`, {
+    categoryIds: categoryIds.filter(id => id !== categoryId)
+  });
+};
+
+export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
+  const { sections, user } = getState();
+  const importance = { ...sections[sectionId] }.importance
+    .filter(el => el.userId !== user._id)
+    .concat({ userId: user._id, score: score });
+
+  dispatch({
+    type: types.SET_SECTION_WEIGHT,
+    payload: { sectionId, importance }
+  });
+  axios.put(`/api/sections/${sectionId}`, {
+    importance
+  });
+};
+
 export const deleteSection = sectionId => (dispatch, getState) => {
   const {
     auth: { isAuthenticated },
@@ -1121,6 +1200,7 @@ export const addNote = ({
   parentNoteId,
   guessTitle,
   isAnnotation,
+  isReply,
   delta
 }) => (dispatch, getState) => {
   const {
@@ -1144,7 +1224,10 @@ export const addNote = ({
     indirectConnections: parentNoteId
       ? [{ resId: parentNoteId, resType: 'note' }]
       : [],
+    replies: [],
+    isReply: isReply || null,
     isAnnotation: isAnnotation || null,
+    votes: [],
     created: Date.now(),
     lastEdited: Date.now(),
     editedBy: user._id ? [user._id] : [],
@@ -1222,7 +1305,7 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
   });
 };
 
-export const deleteNote = noteId => (getState, dispatch) => {
+export const deleteNote = noteId => (dispatch, getState) => {
   const {
     user,
     notes,
@@ -1231,7 +1314,6 @@ export const deleteNote = noteId => (getState, dispatch) => {
   const note = notes[noteId];
   console.log('note', note);
   // update server
-  axios.delete(`/api/notes/${noteId}`);
   putUserUpdateIfAuth(isAuthenticated, getState, {
     noteIds: user.noteIds.filter(id => id !== noteId)
   });
@@ -1240,4 +1322,29 @@ export const deleteNote = noteId => (getState, dispatch) => {
     type: types.DELETE_NOTE,
     payload: { note }
   });
+
+  axios.delete(`/api/notes/${noteId}`);
+};
+
+export const toggleUserFavourite = (resId, resType) => dispatch => {
+  dispatch({ type: types.TOGGLE_USER_FAVOURITE, payload: { resId, resType } });
+};
+
+export const submitNoteVote = (noteId, bill) => (dispatch, getState) => {
+  const userId = getState().user._id;
+  const userReputation = getState().user.reputation;
+  const vote = {
+    userId,
+    userReputation,
+    bill
+  };
+  dispatch({
+    type: types.SUBMIT_NOTE_VOTE,
+    payload: {
+      noteId,
+      vote
+    }
+  });
+
+  axios.put(`/api/notes/vote/${noteId}`, { vote });
 };

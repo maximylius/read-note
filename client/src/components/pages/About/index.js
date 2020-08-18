@@ -1,12 +1,15 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { closeAllModals } from '../../../store/actions';
 import { BsXCircle } from 'react-icons/bs';
+import SideNote from '../Desk/TextsPanel/Text/Annotations/SideNote';
 
 function About() {
   const history = useHistory();
   const dispatch = useDispatch();
+  const notes = useSelector(s => s.notes);
+
   return (
     <>
       <div
@@ -30,11 +33,15 @@ function About() {
           notes in an organized manner.
         </p>
         <p className='lead'>
-          This App has been created by a very slow reader, to help him and
-          others to work with their literature. The tool aims to provide
-          assistance for reading and understanding texts quicker and to take
-          notes in an organized manner.
+          You've ideas how this app could be improved? Share them with us and
+          give your opinion on the ideas of others. 2do: implement feedback Main
+          note where thread shall be available.
         </p>
+        <div className='feedback-container'>
+          {[].map(noteId => (
+            <SideNote noteId={noteId} />
+          ))}
+        </div>
       </div>
     </>
   );

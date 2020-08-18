@@ -89,6 +89,108 @@ export default (state = initialState, action) => {
               )
             )
           };
+
+    case types.ADD_SECTION_CONNECTION:
+      return {
+        ...state,
+        [payload.sectionId]: {
+          ...state[payload.sectionId],
+          directConnections: state[payload.sectionId].directConnections.concat(
+            ...[
+              ['two-way', 'outgoing'].includes(payload.connectionType)
+                ? [{ resId: payload.connectionId, resType: 'section' }]
+                : []
+            ]
+          ),
+          indirectConnections: state[
+            payload.sectionId
+          ].indirectConnections.concat(
+            ...[
+              ['two-way', 'incoming'].includes(payload.connectionType)
+                ? [{ resId: payload.connectionId, resType: 'section' }]
+                : []
+            ]
+          )
+        },
+        [payload.connectionId]: {
+          ...state[payload.connectionId],
+          directConnections: state[
+            payload.connectionId
+          ].directConnections.concat(
+            ...[
+              ['two-way', 'incoming'].includes(payload.connectionType)
+                ? [{ resId: payload.sectionId, resType: 'section' }]
+                : []
+            ]
+          ),
+          indirectConnections: state[
+            payload.connectionId
+          ].indirectConnections.concat(
+            ...[
+              ['two-way', 'outgoing'].includes(payload.connectionType)
+                ? [{ resId: payload.sectionId, resType: 'section' }]
+                : []
+            ]
+          )
+        }
+      };
+    case types.REMOVE_SECTION_CONNECTION:
+      return {
+        ...state,
+        [payload.sectionId]: {
+          ...state[payload.sectionId],
+          directConnections: state[payload.sectionId].directConnections.filter(
+            connection => connection.resId !== payload.connectionId
+          ),
+          indirectConnections: state[
+            payload.sectionId
+          ].indirectConnections.filter(
+            connection => connection.resId !== payload.connectionId
+          )
+        },
+        [payload.connectionId]: {
+          ...state[payload.connectionId],
+          directConnections: state[
+            payload.connectionId
+          ].directConnections.filter(
+            connection => connection.resId !== payload.sectionId
+          ),
+          indirectConnections: state[
+            payload.connectionId
+          ].indirectConnections.filter(
+            connection => connection.resId !== payload.sectionId
+          )
+        }
+      };
+    case types.ADD_SECTION_CATEGORY:
+      return {
+        ...state,
+        [payload.sectionId]: {
+          ...state[payload.sectionId],
+          categoryIds: state[payload.sectionId].categoryIds.concat(
+            payload.categoryId
+          )
+        }
+      };
+    case types.REMOVE_SECTION_CATEGORY:
+      return {
+        ...state,
+        [payload.sectionId]: {
+          ...state[payload.sectionId],
+          categoryIds: state[payload.sectionId].categoryIds.filter(
+            id => id !== payload.categoryId
+          )
+        }
+      };
+    case types.SET_SECTION_WEIGHT:
+      return {
+        ...state,
+        [payload.sectionId]: {
+          ...state[payload.sectionId],
+          importance: payload.importance
+        }
+      };
+
     case types.DELETE_NOTE:
       return payload.note.directConnections.some(el => el.resType === 'section')
         ? {

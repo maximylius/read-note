@@ -134,10 +134,10 @@ export const regExpHistory = (
   action = 'open/close',
   type = 'text/note'
 ) => {
-  let pathHasText = /texts\=/.test(currentPath);
-  let pathHasNote = /notes\=/.test(currentPath);
+  let pathHasText = /texts=/.test(currentPath);
+  let pathHasNote = /notes=/.test(currentPath);
   let splitPath = currentPath.split(
-    /^\/desk\/texts\=|^\/desk\/notes\=|&notes\=|^\/desk\//
+    /^\/desk\/texts=|^\/desk\/notes\=|&notes=|^\/desk\//
   );
   const textsArr = pathHasText ? splitPath[1].split('+') : [];
   const notesArr = pathHasNote ? splitPath[pathHasText + 1].split('+') : [];
@@ -185,7 +185,7 @@ export const regExpHistory = (
 
 export const regExpOpenTexts = url =>
   url
-    .match(/texts\=(.*)&notes\=|texts\=(.*)$/)
+    .match(/texts=(.*)&notes=|texts=(.*)$/)
     .pop()
     .split('+');
 

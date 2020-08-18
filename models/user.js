@@ -12,6 +12,12 @@ const schema = new Schema({
   sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section', default: [] }],
   accessedNoteIds: [{ type: Schema.Types.ObjectId, ref: 'Note', default: [] }],
   accessedTextIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
+  favourites: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
   reputation: { type: Number, default: 0 }
 });
 

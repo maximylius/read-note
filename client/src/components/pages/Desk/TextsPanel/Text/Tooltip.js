@@ -1,15 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSection, openSpeedReader } from '../../../../../store/actions';
-import {
-  BsBookmark,
-  BsChat,
-  BsDash,
-  BsPlus,
-  BsChatSquareQuoteFill,
-  BsChatSquareQuote,
-  BsPlay
-} from 'react-icons/bs';
+import { BsPlus, BsChatSquareQuote, BsPlay } from 'react-icons/bs';
 
 const Tooltip = ({ quillTextRef, selection }) => {
   const dispatch = useDispatch();

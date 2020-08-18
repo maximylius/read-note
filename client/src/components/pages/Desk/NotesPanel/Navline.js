@@ -17,9 +17,10 @@ const Navline = ({ noteId, cardBodyRef, mdNotesPanel }) => {
   const cardBodyRect = cardBody.getBoundingClientRect();
   let maxIndentLevel = 4;
   const [hoveredResInfo, setHoveredResInfo] = useState([]);
-  if (mdNotesPanel !== mdNotesPanelRef.current)
+  if (mdNotesPanel !== mdNotesPanelRef.current) {
     setTimeout(() => setForceRenderCounter(prevS => prevS + 1), 30);
-
+    mdNotesPanelRef.current = mdNotesPanel;
+  }
   const embedSeperatorsDOM = Array.from(
       cardBody.querySelectorAll('.embedSeperator')
     ),

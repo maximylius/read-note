@@ -7,6 +7,12 @@ const schema = new Schema({
   categoryIds: [{ type: String }],
   begin: { type: Number },
   end: { type: Number },
+  importance: [
+    {
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
+      score: { type: Number }
+    }
+  ],
 
   // contents
   fullWords: { type: String },

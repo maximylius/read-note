@@ -167,7 +167,28 @@ router.put('/init/:id', (req, res) => {
       })
       .catch(err => res.status(404).json({ success: false, err: err }));
   }
-  res.json({ success: true, info: cumulativeResponse });
+
+  if (req.body.note.isReply) {
+    Note.findById(req.body.note.isReply.noteId)
+      .then(note => {
+        note.replies = note.replies
+          .filter(reply => reply.resId !== req.params.id)
+          .concat({
+            resId: req.params.id,
+            resType: 'note'
+          });
+        note
+          .save()
+          .then(() =>
+            cumulativeResponse.push(
+              'note successfully informed about its reply'
+            )
+          );
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+  }
+
+  res.json({ success: true, info: cumulativeResponse }); //2do make this work
 });
 
 /**
@@ -234,6 +255,30 @@ router.put('/:id', (req, res) => {
         .catch(err => res.status(404).json({ success: false, err: err }));
     });
   }
+});
+
+/**
+ * @route   PUT api/note/vote/:id
+ * @desc    update a note with a vote
+ * @access  Public
+ */
+router.put('/vote/:id', (req, res) => {
+  Note.findById(req.params.id)
+    .then(note => {
+      const prevIndex = note.votes.findIndex(
+        vote => vote.userId === req.body.vote.userId
+      );
+      if (prevIndex >= 0) {
+        if (note.votes[prevIndex].bill !== req.body.vote.bill) {
+          note.votes.concat(req.body.vote);
+        }
+        note.votes.splice(prevIndex, 1);
+      } else {
+        note.votes.concat(req.body.vote);
+      }
+      note.save().then(() => res.json({ success: true }));
+    })
+    .catch(err => res.status(404).json({ success: false, err: err }));
 });
 
 /**

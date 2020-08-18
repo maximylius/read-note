@@ -12,9 +12,45 @@ import {
 } from '../../../../../../store/actions';
 import annotationTypes from '../../../../../Metapanel/annotationTypes';
 import { BsDash, BsTrash, BsBookmark, BsPlus } from 'react-icons/bs';
+import SectionAttributes from './SectionAttributes';
+import AddNoteButton from './AddNoteButton';
+
 const sectionItemClassName = 'section-item';
 const sectionItemIdPrepend = 'sec_';
 const [low, std, high] = [0.3, 0.7, 1];
+
+/**
+
+think about UI to categorize section 
+  allow selection of multiple
+  allow links to custom categories and creation of new
+  remember hierarchical categorization.
+
+think about UI to connect section to others unidirectionally 
+bidirectonally. 
+    3 link types: 
+      bidirectional / incoming / outgoing.
+      when other section is selected offer three options: a->b; a<-b, a<->b
+    chose connection from
+      dropdown or
+      drag and drop => click to connect, click elsewhere to stop
+
+connected notes with the sections may also be included in the connection graph. shall notes be included?
+
+shall the section have a title? Yes. 
+
+section shall be expandable / collapsable
+  very short, when uncommitted: show section-title only?
+  short form of just including categories and links
+  long from including seperate sections: link types, categories etc
+
+section shall be filterable. Dont display filtered sections at all vs. decrease their opacity and expand only when directly targeted.
+
+also: include mode for flow chart overview. 
+
+make notes only preview notes if they exceed certain height. only when they are focussed they shall expand (and be editable)
+
+ */
 
 const SectionItem = ({
   sectionId,
@@ -39,9 +75,6 @@ const SectionItem = ({
   const holdControl = useSelector(s => s.textsPanel.holdControl);
 
   const section = sections[sectionId];
-  const [selectedCategory, setSelectedCategory] = useState(
-    section.categoryIds[0]
-  );
 
   // conditional render
   const committedToSection = committedSectionIds.includes(section._id)
@@ -58,7 +91,8 @@ const SectionItem = ({
   const backgroundColor =
     'rgb(' +
     categories.byId[section.categoryIds[0]].rgbColor +
-    `,${occupancy})`;
+    `,${occupancy})`; //2do blend colors? // or make outline dashed?
+  //2do include section importance in visual weigth
 
   // event handlers
   const sectionItemClickHandler = e => {
@@ -90,31 +124,6 @@ const SectionItem = ({
   const mininmizeClickHandler = e => {
     e.stopPropagation();
     dispatch(uncommitFromSection([sectionId]));
-  };
-
-  const onCategoryChangeHandler = e => {
-    console.log(e.target.value);
-    if (e.target.value === selectedCategory) return;
-    setSelectedCategory(e.target.value);
-    dispatch(
-      updateSection({
-        _id: sectionId,
-        categoryIds: [e.target.value]
-      })
-    );
-  };
-  const newNoteClickhandler = e => {
-    e.stopPropagation();
-    console.log('newNoteClick---------New sectionId-----', sectionId);
-    dispatch(
-      addNote({
-        isAnnotation: {
-          textId: activeTextPanel,
-          sectionId: sectionId
-        }
-      })
-    );
-    triggerRemeasure();
   };
 
   return (
@@ -156,43 +165,24 @@ const SectionItem = ({
       </span>
       {(committedToSection || expandAll) && (
         <>
-          <div className='input-group input-group-sm mb-2'>
-            <div
-              className='input-group-prepend'
-              id={`${sectionId}_secCatSelect`}
-            >
-              <span className='input-group-text'>
-                <BsBookmark />
-              </span>
-            </div>
-            <select
-              className='form-control custom-select white-opacity-50'
-              value={selectedCategory}
-              onChange={onCategoryChangeHandler}
-            >
-              {Object.keys(categories.byId).map(id => (
-                <option key={id} value={id}>
-                  {categories.byId[id].title}
-                </option>
-              ))}
-            </select>
+          <SectionAttributes
+            sectionId={sectionId}
+            triggerRemeasure={triggerRemeasure}
+          />
+          <div className='side-notes-container'>
+            {notesToDisplay.map(el => (
+              <SideNote
+                key={el.resId}
+                sectionId={sectionId}
+                noteId={el.resId}
+                triggerRemeasure={triggerRemeasure}
+              />
+            ))}
           </div>
-
-          {notesToDisplay.map(el => (
-            <SideNote
-              key={el.resId}
-              sectionId={sectionId}
-              noteId={el.resId}
-              triggerRemeasure={triggerRemeasure}
-            />
-          ))}
-
-          <button
-            className='btn btn-light btn-block btn-sm'
-            onClick={newNoteClickhandler}
-          >
-            <BsPlus /> new note
-          </button>
+          <AddNoteButton
+            sectionId={sectionId}
+            triggerRemeasure={triggerRemeasure}
+          />
         </>
       )}
     </div>

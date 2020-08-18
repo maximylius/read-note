@@ -22,12 +22,30 @@ const schema = new Schema({
       resType: { type: String } //note | text | section
     }
   ],
-  isAnnotation: {
+  replies: [
+    {
+      resId: { type: Schema.Types.ObjectId },
+      resType: { type: String } //note | text | section
+    }
+  ],
+  isReply: {
     type: Object,
-    textId: { type: Schema.Types.ObjectId, ref: 'text' },
-    sectionId: { type: Schema.Types.ObjectId, ref: 'text' },
+    noteId: { type: Schema.Types.ObjectId, ref: 'Note' },
     default: null
   },
+  isAnnotation: {
+    type: Object,
+    textId: { type: Schema.Types.ObjectId, ref: 'Text' },
+    sectionId: { type: Schema.Types.ObjectId, ref: 'Section' },
+    default: null
+  },
+  votes: [
+    {
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
+      userReputation: { type: Number },
+      bill: { type: Number }
+    }
+  ], //maybe this should be a server thing, thats just transimitting the plain result to the client
 
   // meta
   created: { type: Date, default: Date.now },

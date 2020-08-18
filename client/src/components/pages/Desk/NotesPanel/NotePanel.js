@@ -32,7 +32,6 @@ import {
   loadNotes,
   addAlert
 } from '../../../../store/actions';
-import { getAllKeys } from '../../../../functions/main';
 import Navline from './Navline';
 import { Error } from 'mongoose';
 import {
@@ -50,10 +49,12 @@ import { AddBubble } from './AddBubble';
 ReactQuill.Quill.register(BlotEmbedSeperator);
 
 const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
+  console.log('NOTEPANEL RENDER. NOTEPANEL RENDER. NOTEPANEL RENDER. ');
   const history = useHistory();
   const dispatch = useDispatch();
   const notes = useSelector(s => s.notes);
   const notesRef = React.useRef(notes);
+  const functionsRef = React.useRef({});
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
@@ -197,6 +198,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     const resId = extractAtValueResId(resInfo);
     console.log('resId', resId, 'notes', notes, 'notes[resId]', notes[resId]);
     let deltaToEmbed = notes[resId] && notes[resId].delta;
+    // 2do: if the note is not fetched, request it first, then continue!
     const delta = editor.getContents();
     console.log(
       'delta------------------------------------------------------------------------------------\n',
@@ -209,6 +211,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       };
     // colorPath: 0-0, 0-1, 1-0, 2-0, 2-1,
     const selection = quillNoteRef.current.editor.getSelection();
+    if (!selection) return; // 2do check whether this early return is okay:
     let deltaPosition = 0,
       deltaIndex = 0,
       seperatorIndexes = null;
@@ -674,20 +677,58 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       notes[noteId].title
     );
     documentBodyRef.current = document.getElementById(`root`);
-    document
-      .getElementById(`noteCardBody${noteId}`)
-      .addEventListener('click', clickHandler);
+    const cardBody = document.getElementById(`noteCardBody${noteId}`);
+
+    cardBody.addEventListener('click', clickHandler);
+
+    functionsRef.current.focusIn = () => {
+      if (cardBodyRef && cardBodyRef.current)
+        cardBodyRef.current.classList.add('active-editor');
+    };
+    functionsRef.current.focusOut = () => {
+      if (cardBodyRef && cardBodyRef.current)
+        cardBodyRef.current.classList.remove('active-editor');
+    };
+    cardBody.addEventListener('focusin', functionsRef.current.focusIn);
+    cardBody.addEventListener('focusout', functionsRef.current.focusOut);
 
     return () => {
-      document
-        .getElementById(`noteCardBody${noteId}`)
-        .removeEventListener('click', clickHandler);
+      const cardBody = document.getElementById(`noteCardBody${noteId}`);
+      cardBody.removeEventListener('click', clickHandler);
+      cardBody.removeEventListener('focusin', functionsRef.current.focusIn);
+      cardBody.removeEventListener('focusout', functionsRef.current.focusOut);
       console.log(
         'DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_\n',
         notes[noteId].title
       );
     };
   }, []);
+
+  // useEffect(() => {
+  //   // history.clear() is somehow not effective as it gets overwritten with previous history
+  //   // same with enabling previously disabled editor
+  //   // same with setting userOnly from true to false to prevent recording loading change.
+  //   console.log(
+  //     'CLEAR_HISTORY after changed',
+  //     !!quillNoteRef.current,
+  //     quillNoteRef.current
+  //   );
+  //   if (changedEditorCounter < 0 && quillNoteRef.current) {
+  //     console.log(
+  //       'CLEAR_HISTORY',
+  //       quillNoteRef.current.editor.options.readOnly
+  //     );
+
+  //     console.log('_HISTORYenable fun ', quillNoteRef.current.editor.enable);
+  //     quillNoteRef.current.editor.disable(); // clear history as loading content will count as first action
+  //     console.log(
+  //       'CLEARED_HISTORY',
+  //       quillNoteRef.current.editor.options.readOnly
+  //     );
+  //   }
+
+  //   return () => {};
+  // }, [quillNoteRef.current]);
 
   // update atValues // possibly more efficient to integrate in redux store
   useEffect(() => {
@@ -742,14 +783,6 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
         onChange={onChangeHandler}
         onChangeSelection={selectionChangeHandler}
         defaultValue={quillValue}
-        onFocus={() => {
-          if (cardBodyRef && cardBodyRef.current)
-            cardBodyRef.current.classList.add('active-editor');
-        }}
-        onBlur={() => {
-          if (cardBodyRef && cardBodyRef.current)
-            cardBodyRef.current.classList.remove('active-editor');
-        }}
         theme={'snow' || 'bubble'}
         modules={{
           //'#notesToolbar'
@@ -774,11 +807,11 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
           ],
           history: {
             delay: 1000,
-            maxStack: 100
+            maxStack: 50
           },
           mention: mentionModule
         }}
-        placeholder='Add your notes...'
+        placeholder='Take a note...'
         sanitize='true'
       />
       <SaveStatus current={savedRef.current} />
@@ -786,4 +819,4 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   );
 };
 
-export default NotePanel;
+export default React.memo(NotePanel);

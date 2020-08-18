@@ -89,6 +89,89 @@ router.put('/:id', (req, res) => {
 });
 
 /**
+ * @route   PUT api/sections/connections/:id
+ * @desc    update a section
+ * @access  Public
+ */
+router.put('/connections/:id', (req, res) => {
+  if (req.params.add) {
+    Section.findById(req.params.id)
+      .then(section => {
+        section.directConnections = section.directConnections.concat(
+          ...[
+            ['two-way', 'outgoing'].includes(req.body.add.connectionType)
+              ? [{ resId: req.body.add.connectionId, resType: 'section' }]
+              : []
+          ]
+        );
+        section.indirectConnections = section.indirectConnections.concat(
+          ...[
+            ['two-way', 'incoming'].includes(req.body.add.connectionType)
+              ? [{ resId: req.body.add.connectionId, resType: 'section' }]
+              : []
+          ]
+        );
+
+        section.save().then(() =>
+          Section.findById(req.body.add.connectionId).then(section => {
+            section.directConnections = section.directConnections.concat(
+              ...[
+                ['two-way', 'incoming'].includes(req.body.add.connectionType)
+                  ? [{ resId: req.body.add.sectionId, resType: 'section' }]
+                  : []
+              ]
+            );
+            section.indirectConnections = section.indirectConnections.concat(
+              ...[
+                ['two-way', 'outgoing'].includes(req.body.add.connectionType)
+                  ? [{ resId: req.body.add.sectionId, resType: 'section' }]
+                  : []
+              ]
+            );
+
+            section.save().then(() =>
+              res.json({
+                success: true
+              })
+            );
+          })
+        );
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+  }
+
+  if (req.params.remove) {
+    Section.findById(req.params.id)
+      .then(section => {
+        section.directConnections = section.directConnections.filter(
+          connection => connection.resId !== req.body.remove.connectionId
+        );
+        section.indirectConnections = section.indirectConnections.filter(
+          connection => connection.resId !== req.body.remove.connectionId
+        );
+
+        section.save().then(() =>
+          Section.findById(req.body.remove.connectionId).then(section => {
+            section.directConnections = section.directConnections.filter(
+              connection => connection.resId !== req.body.remove.sectionId
+            );
+            section.indirectConnections = section.indirectConnections.filter(
+              connection => connection.resId !== req.body.remove.sectionId
+            );
+
+            section.save().then(() =>
+              res.json({
+                success: true
+              })
+            );
+          })
+        );
+      })
+      .catch(err => res.status(404).json({ success: false, err: err }));
+  }
+});
+
+/**
  * @route   DELETE api/sections/:id
  * @desc    delete one section or many sections
  * @access  Public

@@ -74,27 +74,27 @@ export const extractAtValueResType = mentionId => {
 };
 
 export const extractAtValueResId = (mentionId, option) => {
-  if (/^note\=/.test(mentionId)) {
-    return mentionId.match(/^note\=(.*)_isOpen/).pop();
+  if (/^note=/.test(mentionId)) {
+    return mentionId.match(/^note=(.*)_isOpen/).pop();
   } else if (/^text=/.test(mentionId)) {
-    return mentionId.match(/^text\=(.*)_isOpen/).pop();
+    return mentionId.match(/^text=(.*)_isOpen/).pop();
   } else if (/^section=/.test(mentionId)) {
     if (option === 'textId') {
-      mentionId.match(/_text\=(.*)_isOpen/).pop();
+      mentionId.match(/_text=(.*)_isOpen/).pop();
     } else {
-      return mentionId.match(/^section\=(.*)_text/).pop();
+      return mentionId.match(/^section=(.*)_text/).pop();
     }
   }
 };
 
 export const updateMentionIdOpenStatus = (mentionId, newVal) => {
-  return mentionId.replace(/_isOpen\=(.*)$/i, '_isOpen=' + newVal);
+  return mentionId.replace(/_isOpen=(.*)$/i, '_isOpen=' + newVal);
 };
 
 export const mentionIdIsOpen = mentionId =>
-  /_isOpen\=color_class-/.test(mentionId);
+  /_isOpen=color_class-/.test(mentionId);
 
 export const mentionColorClass = mentionId => {
-  if (!/_isOpen\=color_class-/.test(mentionId)) return false;
-  return mentionId.match(/_isOpen\=(.*)$/).pop();
+  if (!/_isOpen=color_class-/.test(mentionId)) return false;
+  return mentionId.match(/_isOpen=(.*)$/).pop();
 };

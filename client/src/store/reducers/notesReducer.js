@@ -61,6 +61,28 @@ export default (state = initialState, action) => {
           )
         )
       };
+    case types.SUBMIT_NOTE_VOTE:
+      // remove it that same vote has been already given
+      const lastVote = state[payload.noteId].votes.filter(
+        vote => vote.userId === payload.vote.userId
+      )[0];
+
+      return {
+        ...state,
+        [payload.noteId]: {
+          ...state[payload.noteId],
+          votes: lastVote
+            ? lastVote.bill === payload.vote.bill
+              ? state[payload.noteId].votes.filter(
+                  vote => vote.userId !== payload.vote.userId
+                )
+              : state[payload.noteId].votes
+                  .filter(vote => vote.userId !== payload.vote.userId)
+                  .concat(payload.vote)
+            : state[payload.noteId].votes.concat(...[payload.vote])
+        }
+      };
+
     case types.ADD_NOTE:
       return {
         ...state,
@@ -72,6 +94,16 @@ export default (state = initialState, action) => {
             directConnections: state[
               payload.note.indirectConnections[0].resId
             ].directConnections.concat({
+              resId: payload.note._id,
+              resType: 'note'
+            })
+          }
+        }),
+        // if note is created as a reply
+        ...(payload.note.isReply && {
+          [payload.note.isReply.noteId]: {
+            ...state[payload.note.isReply.noteId],
+            replies: state[payload.note.isReply.noteId].replies.concat({
               resId: payload.note._id,
               resType: 'note'
             })

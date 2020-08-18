@@ -227,7 +227,10 @@ export const compareDisplayedNotesDelta = (
           _id: resId,
           delta: { ops: noteOps },
           plainText: notePlainText,
-          directConnections: notesConnectedWith[resId] || []
+          directConnections: (notesConnectedWith[resId] || []).map(resId => ({
+            resId,
+            resType: 'note'
+          })) //2do resType could be other than note right? Consider restructuring notesConnectedWith from string array to object array
         }
       ];
     } else {
