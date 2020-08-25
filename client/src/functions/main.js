@@ -647,3 +647,45 @@ export const getAllKeys = obj => {
   keyIterator(obj);
   return allKeys;
 };
+
+// sectionSpanColorGenerator
+export const colorGenerator = (
+  categoriesBySection,
+  activeSections,
+  categories
+) => {
+  let r = [],
+    g = [],
+    b = [];
+  let denominator = 0;
+
+  Object.keys(categoriesBySection).forEach(key => {
+    let mult = activeSections.includes(key) ? 3 : 1;
+    denominator += mult;
+    mult = mult / categoriesBySection[key].length;
+
+    categoriesBySection[key].forEach(categoryId => {
+      const rgb = categories.byId[categoryId].rgbColor;
+      r.push(extractNumber(rgb, 0) * mult);
+      g.push(extractNumber(rgb, 1) * mult);
+      b.push(extractNumber(rgb, 2) * mult);
+    });
+  });
+  if (!r.length) return '195,238,255'; //default color for not categorized
+
+  let rgbArr = [r, g, b].map(el => el.reduce((a, b) => a + b, 0) / denominator);
+  if (r.length > 1) {
+    const bench = 140;
+    let lightenFactor = Math.max(
+      1,
+      (3 * bench) / rgbArr.reduce((a, b) => a + b, 0)
+    );
+    if (lightenFactor > 1) {
+      rgbArr = rgbArr.map(el =>
+        Math.round(el + Math.max(el - bench, 2) * lightenFactor * lightenFactor)
+      );
+    }
+  }
+  let rgbString = rgbArr.join(',');
+  return rgbString;
+};

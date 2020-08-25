@@ -4,10 +4,9 @@ import NoteInfo from './NoteInfo';
 import _isEqual from 'lodash/isEqual';
 import { extractAtValueResId } from '../../../Metapanel/mentionModule';
 
-const parentPadding = 16 * 1.25,
-  extendTop = 14,
+const extendTop = 14,
   extendBottom = 14,
-  adjustToTop = 16;
+  adjust = 18; //16 * 2; //16;
 
 const Navline = ({ noteId, cardBodyRef, mdNotesPanel }) => {
   const mdNotesPanelRef = React.useRef(mdNotesPanel);
@@ -53,8 +52,8 @@ const Navline = ({ noteId, cardBodyRef, mdNotesPanel }) => {
     const pixelIndent = (indentLevel / maxIndentLevel) * 40; //css
     const bgWidth = cardBodyRect.width - pixelIndent - 20; //css
     lines.push({
-      top: top - cardBodyRect.top - adjustToTop,
-      height: bottom - top + adjustToTop,
+      top: top - cardBodyRect.top - adjust,
+      height: bottom - top + adjust * 1.5, //
       color_class,
       indentLevel,
       pixelIndent,

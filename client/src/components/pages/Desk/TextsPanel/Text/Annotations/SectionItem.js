@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SideNote from './SideNote';
+import SectionTitle from './SectionTitle';
 import {
-  changeSectionEditState,
   uncommitFromSection,
   setTentativeSections,
   setCommittedSections,
-  deleteSection,
-  updateSection,
-  addNote
+  deleteSection
 } from '../../../../../../store/actions';
-import annotationTypes from '../../../../../Metapanel/annotationTypes';
-import { BsDash, BsTrash, BsBookmark, BsPlus } from 'react-icons/bs';
 import SectionAttributes from './SectionAttributes';
 import AddNoteButton from './AddNoteButton';
+import { colorGenerator } from '../../../../../../functions/main';
+import SectionPreview from './SectionPreview';
+import SectionOutsideBtn from './SectionOutsideBtn';
 
 const sectionItemClassName = 'section-item';
 const sectionItemIdPrepend = 'sec_';
@@ -88,10 +87,12 @@ const SectionItem = ({
     el => el.resType === 'note' && Object.keys(notes).includes(el.resId)
   );
   const occupancy = committedToSection || tentativeToSection ? high : std;
-  const backgroundColor =
-    'rgb(' +
-    categories.byId[section.categoryIds[0]].rgbColor +
-    `,${occupancy})`; //2do blend colors? // or make outline dashed?
+  const rgbColor = colorGenerator(
+    { [sectionId]: section.categoryIds },
+    [...committedSectionIds, ...tentativeSectionIds],
+    categories
+  );
+  const color = 'rgb(' + rgbColor + `,${occupancy})`; //2do blend colors? // or make outline dashed?
   //2do include section importance in visual weigth
 
   // event handlers
@@ -106,26 +107,6 @@ const SectionItem = ({
   const sectionItemOnMouseEnterHandler = () =>
     dispatch(setTentativeSections([sectionId], holdControl));
 
-  const deleteClickHandler = e => {
-    e.stopPropagation();
-    dispatch(deleteSection(sectionId));
-    setTimeout(() => {
-      const hoveredSecDiv = [...document.querySelectorAll(':hover')].filter(
-        el => el.className === sectionItemClassName
-      );
-      if (hoveredSecDiv.length > 0) {
-        const hoveredId = hoveredSecDiv[0].id.replace(sectionItemIdPrepend, '');
-        dispatch(setTentativeSections([hoveredId], holdControl));
-      }
-      console.log('deleted && new tentative');
-    }, 20);
-    triggerRemeasure();
-  };
-  const mininmizeClickHandler = e => {
-    e.stopPropagation();
-    dispatch(uncommitFromSection([sectionId]));
-  };
-
   return (
     <div
       className={`${sectionItemClassName} ${
@@ -136,55 +117,45 @@ const SectionItem = ({
           : 'not-active'
       }`}
       id={`${sectionItemIdPrepend}${section._id}`}
-      style={{ backgroundColor: backgroundColor, top: top }}
+      style={{ border: `5px solid ${color}`, top: top }}
       onClick={sectionItemClickHandler}
       onMouseEnter={sectionItemOnMouseEnterHandler}
     >
-      <strong> {section.title} </strong>
-      <span style={{ float: 'right' }}>
-        <a
-          href='#!'
-          className='minimize-item'
-          onClick={mininmizeClickHandler}
-          style={{ visibility: committedToSection ? 'visible' : 'hidden' }}
-        >
-          <span style={{ visibility: 'hidden' }}>--</span>
-          <BsDash />
-          <span style={{ visibility: 'hidden' }}>--</span>
-        </a>
-
-        <a
-          href='#!'
-          className='delete-item'
-          onClick={deleteClickHandler}
-          style={{ visibility: tentativeToSection ? 'visible' : 'hidden' }}
-        >
-          {'  '}
-          <BsTrash />
-        </a>
-      </span>
-      {(committedToSection || expandAll) && (
-        <>
-          <SectionAttributes
-            sectionId={sectionId}
-            triggerRemeasure={triggerRemeasure}
-          />
-          <div className='side-notes-container'>
-            {notesToDisplay.map(el => (
-              <SideNote
-                key={el.resId}
-                sectionId={sectionId}
-                noteId={el.resId}
-                triggerRemeasure={triggerRemeasure}
-              />
-            ))}
-          </div>
-          <AddNoteButton
-            sectionId={sectionId}
-            triggerRemeasure={triggerRemeasure}
-          />
-        </>
-      )}
+      <SectionOutsideBtn
+        sectionId={sectionId}
+        triggerRemeasure={triggerRemeasure}
+        isExpanded={committedToSection || expandAll}
+        tentativeToSection={tentativeToSection}
+        holdControl={holdControl}
+        color={color}
+      />
+      <SectionTitle sectionId={sectionId} triggerRemeasure={triggerRemeasure} />
+      <div className='section-scroll'>
+        {committedToSection || expandAll ? (
+          <>
+            <SectionAttributes
+              sectionId={sectionId}
+              triggerRemeasure={triggerRemeasure}
+            />
+            <div className='side-notes-container'>
+              {notesToDisplay.map(el => (
+                <SideNote
+                  key={el.resId}
+                  sectionId={sectionId}
+                  noteId={el.resId}
+                  triggerRemeasure={triggerRemeasure}
+                />
+              ))}
+            </div>
+            <AddNoteButton
+              sectionId={sectionId}
+              triggerRemeasure={triggerRemeasure}
+            />
+          </>
+        ) : (
+          <SectionPreview sectionId={sectionId} />
+        )}
+      </div>
     </div>
   );
 };

@@ -14,7 +14,6 @@ export const AddBubble = ({
   const spareIds = useSelector(s => s.spareIds);
   const editor = noteRef.current.editor;
   const cardBodyRect = cardBodyRef.current.getBoundingClientRect();
-  const adjustTop = cardBodyRect.top - 4;
   const addClickHandler = () => {
     console.log('update contents of this editor', editor);
     const retain = { retain: range.index };
@@ -67,14 +66,23 @@ export const AddBubble = ({
     setAddBubble(null);
   };
 
+  const isSideNote = [...(cardBodyRef.current.classList || [])].includes(
+    'side-note'
+  );
+  const adjustTop = cardBodyRect.top + 16;
+  let top =
+    boundingClientRect.top +
+    (boundingClientRect.bottom - boundingClientRect.top) / 2 -
+    adjustTop; //+
+  // 16 * 2 +
+  // sideNoteAdjust;
+  console.log('addBubble', top);
   return (
     <div
       className='add-bubble fade-in'
       style={{
-        top:
-          boundingClientRect.top +
-          (boundingClientRect.bottom - boundingClientRect.top - 3 * 16) / 2 -
-          adjustTop
+        top: top,
+        ...(isSideNote && { left: '-8px' })
       }}
       onClick={addClickHandler}
       // onMouseDown={addClickHandler}

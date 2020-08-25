@@ -67,7 +67,7 @@ function Textpage({ quillNoteRefs }) {
   return (
     <div
       id='textContentFlexGrow'
-      className='row flex-row growContent'
+      className='row flex-row growContent text-and-side-panel-container'
       {...(ui.mdAnnotationsPanel === 0 && {
         onMouseMove: mouseMoveHandler
       })}
@@ -118,7 +118,7 @@ function Textpage({ quillNoteRefs }) {
           // <></> //
           <SpeedReader key={activeTextPanel} />
         ) : (
-          <div className='card'>
+          <div id='textMainCard' className='card'>
             <TextMain
               quillTextRef={quillTextRef}
               quillNoteRefs={quillNoteRefs}
@@ -127,7 +127,7 @@ function Textpage({ quillNoteRefs }) {
         )}
       </div>
       <div
-        className={`col-md-${ui.mdAnnotationsPanel} box pl-0`}
+        className={`col-md-${ui.mdAnnotationsPanel} box pl-0 side-panel-container`}
         style={{ display: ui.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
       >
         <Sidepanel quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />

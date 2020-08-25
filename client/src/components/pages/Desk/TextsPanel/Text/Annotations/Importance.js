@@ -45,7 +45,8 @@ const Importance = ({ sectionId, preview }) => {
     )
   );
 
-  if (preview)
+  if (preview) {
+    if (!personalImportance) return <></>;
     return (
       <span
         className={`section-attribute importance-rating-preview ${
@@ -65,6 +66,7 @@ const Importance = ({ sectionId, preview }) => {
         )}
       </span>
     );
+  }
 
   return (
     <>

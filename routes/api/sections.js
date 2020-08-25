@@ -33,6 +33,7 @@ router.get('/:id', (req, res) => {
  * @desc    create a section
  * @access  Public
  */
+
 router.post('/', (req, res) => {
   const section = new Section({});
 

@@ -856,9 +856,10 @@ export const addSection = ({ categoryId, begin, end }) => (
     _id: spareIds['sections'][0],
 
     title: null,
-    categoryIds: [categoryId],
+    categoryIds: categoryId ? [categoryId] : [],
     begin: begin,
     end: end,
+    importance: [],
 
     fullWords: text.textcontent.slice(begin, end + 1),
     html: '',
@@ -879,16 +880,15 @@ export const addSection = ({ categoryId, begin, end }) => (
   console.log(categories);
 
   // add a placeholder title
+  const guessTitle = categoryId
+    ? categories.byId[section.categoryIds[0]].title
+    : 'not categorized';
   const allSectionTitles = [...text.sectionIds.map(id => sections[id].title)];
   let i = 0;
   do {
     i++;
-    section.title = `${categories.byId[section.categoryIds[0]].title} ${i}`;
-  } while (
-    allSectionTitles.includes(
-      `${categories.byId[section.categoryIds[0]].title} ${i}`
-    )
-  );
+    section.title = `${guessTitle} ${i}`;
+  } while (allSectionTitles.includes(`${guessTitle} ${i}`));
 
   const textSections = {
     ...ObjectKeepKeys(sections, text.sectionIds),
@@ -923,6 +923,16 @@ export const addSection = ({ categoryId, begin, end }) => (
   fetchSpareIds('sections', 1, dispatch);
 };
 
+const addPlaceholderTitle = (guessTitle, takenTitles = []) => {
+  let outputTitle;
+  let i = 0;
+  do {
+    i++;
+    outputTitle = `${guessTitle} ${i}`;
+  } while (takenTitles.includes(`${guessTitle} ${i}`));
+  return outputTitle;
+};
+
 export const updateSection = update => (dispatch, getState) => {
   const {
     sections,
@@ -939,20 +949,17 @@ export const updateSection = update => (dispatch, getState) => {
     !update.title &&
     Object.keys(categories.byId)
       .map(id => categories.byId[id].title)
+      .concat('not categorized')
       .some(title => {
         const titleRegExp = new RegExp(`${title} \\d+$`);
         if (titleRegExp.test(section.title)) return true;
       })
   ) {
-    const allSectionTitles = [...text.sectionIds.map(id => sections[id].title)];
-    let i = 0;
-    do {
-      i++;
-      section.title = `${categories.byId[update.categoryIds[0]].title} ${i}`;
-    } while (
-      allSectionTitles.includes(
-        `${categories.byId[update.categoryIds[0]].title} ${i}`
-      )
+    section.title = addPlaceholderTitle(
+      update.categoryIds[0]
+        ? categories.byId[update.categoryIds[0]].title
+        : 'not categorized',
+      [...text.sectionIds.map(id => sections[id].title)]
     );
     request.title = section.title;
   }
@@ -1012,46 +1019,85 @@ export const addSectionCategory = (sectionId, categoryId) => (
   dispatch,
   getState
 ) => {
-  const { sections } = getState();
-  const categoryIds = sections[sectionId].categoryIds;
+  const { sections, categories, texts } = getState();
+  const section = sections[sectionId];
+  const categoryIds = section.categoryIds;
   if (categoryIds.includes(categoryId)) return;
 
+  let newTitle;
+  if (
+    section.categoryIds.length === 0 &&
+    new RegExp(`not categorized \\d+$`).test(section.title)
+  ) {
+    newTitle = addPlaceholderTitle(categories.byId[categoryId].title, [
+      ...texts[section.textId].sectionIds.map(id => sections[id].title)
+    ]);
+  }
+
+  const update = {
+    _id: sectionId,
+    categoryIds: [...section.categoryIds, categoryId],
+    ...(newTitle && { title: newTitle })
+  };
   dispatch({
-    type: types.ADD_SECTION_CATEGORY,
-    payload: { sectionId, categoryId }
+    type: types.UPDATE_SECTION,
+    payload: {
+      section: update
+    }
   });
-  axios.put(`/api/sections/${sectionId}`, {
-    categoryIds: [...categoryIds, categoryId]
-  });
+
+  axios.put(`/api/sections/${sectionId}`, update);
 };
 
 export const removeSectionCategory = (sectionId, categoryId) => (
   dispatch,
   getState
 ) => {
-  const { sections } = getState();
-  const categoryIds = sections[sectionId].categoryIds;
+  const { sections, categories, texts } = getState();
+  const section = sections[sectionId];
+  const categoryIds = section.categoryIds;
+
   if (!categoryIds.includes(categoryId)) return;
 
+  let newTitle;
+  if (
+    new RegExp(`${categories.byId[categoryId].title} \\d+$`).test(section.title)
+  ) {
+    newTitle = addPlaceholderTitle(
+      section.categoryIds.filter(id => id !== categoryId)[0]
+        ? categories.byId[
+            section.categoryIds.filter(id => id !== categoryId)[0]
+          ].title
+        : 'not categorized',
+      [...texts[section.textId].sectionIds.map(id => sections[id].title)]
+    );
+  }
+
+  const update = {
+    _id: sectionId,
+    categoryIds: section.categoryIds.filter(id => id !== categoryId),
+    ...(newTitle && { title: newTitle })
+  };
   dispatch({
-    type: types.REMOVE_SECTION_CATEGORY,
-    payload: { sectionId, categoryId }
+    type: types.UPDATE_SECTION,
+    payload: {
+      section: update
+    }
   });
 
-  axios.put(`/api/sections/${sectionId}`, {
-    categoryIds: categoryIds.filter(id => id !== categoryId)
-  });
+  axios.put(`/api/sections/${sectionId}`, update);
 };
 
 export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
   const { sections, user } = getState();
-  const importance = { ...sections[sectionId] }.importance
+  const section = sections[sectionId];
+  const importance = section.importance
     .filter(el => el.userId !== user._id)
     .concat({ userId: user._id, score: score });
 
   dispatch({
-    type: types.SET_SECTION_WEIGHT,
-    payload: { sectionId, importance }
+    type: types.UPDATE_SECTION,
+    payload: { section: { id: sectionId, importance } }
   });
   axios.put(`/api/sections/${sectionId}`, {
     importance
@@ -1305,6 +1351,7 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
   });
 };
 
+// 2do: add history
 export const deleteNote = noteId => (dispatch, getState) => {
   const {
     user,

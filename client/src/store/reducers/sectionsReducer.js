@@ -20,7 +20,10 @@ export default (state = initialState, action) => {
     case types.UPDATE_SECTION:
       return {
         ...state,
-        [payload.section._id]: payload.section
+        [payload.section._id]: {
+          ...state[payload.section._id],
+          ...payload.section
+        }
       };
     case types.DELETE_SECTION:
       return ObjectRemoveKeys(state, [payload.sectionId]);
@@ -160,34 +163,6 @@ export default (state = initialState, action) => {
           ].indirectConnections.filter(
             connection => connection.resId !== payload.sectionId
           )
-        }
-      };
-    case types.ADD_SECTION_CATEGORY:
-      return {
-        ...state,
-        [payload.sectionId]: {
-          ...state[payload.sectionId],
-          categoryIds: state[payload.sectionId].categoryIds.concat(
-            payload.categoryId
-          )
-        }
-      };
-    case types.REMOVE_SECTION_CATEGORY:
-      return {
-        ...state,
-        [payload.sectionId]: {
-          ...state[payload.sectionId],
-          categoryIds: state[payload.sectionId].categoryIds.filter(
-            id => id !== payload.categoryId
-          )
-        }
-      };
-    case types.SET_SECTION_WEIGHT:
-      return {
-        ...state,
-        [payload.sectionId]: {
-          ...state[payload.sectionId],
-          importance: payload.importance
         }
       };
 

@@ -23,6 +23,8 @@
 
 .ql-editor {
   overflow-x: hidden;
+  padding-bottom: 4px;
+  border-bottom: 0.2px solid rgba(0, 0, 0, 0.125);
 }
 .ql-container.ql-snow {
   border: none !important;
@@ -59,35 +61,43 @@
 }
 /* .notepanel-nav-container {
 } */
-.side-notes-container {
-  margin-bottom: 8px;
-}
-.notepanel-card {
+.notepanel-background {
   margin: 0;
-  border: 1px solid rgba(0, 0, 0, 0.125);
   border-top: none;
   border-radius: 0.25rem;
-  background-color: rgb(245, 244, 237);
+  background-color: var(--light);
 }
 /* .note-container {
   padding: 1.25rem 1.25rem 1.25rem 3rem;
 } */
 .note-container {
+  position: relative;
   background-color: rgba(255, 255, 255, 0.75);
   border-radius: 0.5rem;
 }
 .note-container.note-panel {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
   padding: 1.25rem 1.25rem 1.25rem 3rem;
 }
 .note-container.side-note {
   min-height: 100px;
   margin-left: -0.8rem;
   padding: 0.1rem 1.25rem 0.2rem 2rem;
+  border-left: 0.5px solid transparent;
+  border-right: 0.5px solid transparent;
   border-top: 0.5px solid rgba(0, 0, 0, 0.8);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.8);
+  margin-bottom: 4px;
+}
+.note-container.side-note .ql-editor {
+  padding-right: 8px;
+  padding-left: 8px;
 }
 .note-container.active-editor {
   background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgb(0, 217, 255);
+  z-index: 20;
 }
 
 /* ADD BUBBLE */
@@ -168,45 +178,6 @@
   /* border-radius: 0.5rem 0rem 0rem 0.5rem; */
 }
 
-div.side-note-reaction-container {
-  position: absolute;
-  margin-left: -0.5rem;
-  margin-top: 3px;
-  padding-bottom: 8px;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-  z-index: 60;
-  text-align: center;
-}
-.side-note-reaction {
-  padding: 0px 0px 0px 0px;
-  margin-bottom: -7px;
-  display: block;
-  background-color: transparent;
-  border: none;
-  border-radius: 0.25rem;
-  color: rgba(0, 0, 0, 0.4);
-}
-.side-note-reaction.active-reaction {
-  color: rgb(0, 0, 0);
-}
-button.side-note-reaction:hover {
-  color: rgb(0, 0, 0);
-}
-button.side-note-replies-toggle-display {
-  display: block;
-  width: 100%;
-  background-color: white;
-  border: none;
-  border-radius: 0.5rem;
-  margin-bottom: 4px;
-}
-.side-note-reply-container {
-  display: block;
-  border-left: 1px solid black;
-  padding-left: 1rem;
-}
-
 div.main-navline-button-container {
   position: absolute;
   padding-left: 1px;
@@ -241,7 +212,6 @@ button.navline-button:hover {
 .mainNavline {
   position: absolute;
   z-index: 10;
-  right: 16px;
   width: 20px;
   background-color: rgba(0, 0, 0, 0.1);
   cursor: default;
@@ -249,9 +219,11 @@ button.navline-button:hover {
 .note-panel .mainNavline {
   top: 0;
   bottom: 0;
+  right: 16px;
   border-radius: 0.5rem;
 }
 .side-note .mainNavline {
+  right: 0px;
   border-radius: 0.5rem;
 }
 .navline {
@@ -336,7 +308,7 @@ button.navline-button:hover {
 }
 .embedSeperator {
   background-color: transparent;
-  border: none;
+  /* border: none; */
   /* padding: 0;
   margin: 0; */
   z-index: 0;
@@ -350,7 +322,7 @@ span.mention {
   padding: 0;
   color: #000;
   background-color: rgb(214, 245, 255);
-  border: 0.05px solid rgb(148, 148, 148);
+  /* border: 0.05px solid rgb(148, 148, 148); */
 }
 span.mention[data-id^='note'] {
   cursor: zoom-out;

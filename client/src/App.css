@@ -19,17 +19,6 @@ body,
   background-color: rgb(200, 245, 200);
 }
 
-.section-item {
-  position: absolute;
-  width: 90%;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  z-index: 0;
-}
-.section-item.committed {
-  z-index: 500;
-}
-
 .page-modal-outer {
   position: absolute;
   z-index: 2999;
@@ -67,6 +56,10 @@ body,
 }
 .page-modal-close:hover {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.text-and-side-panel-container {
+  position: relative;
 }
 
 .upload-paste {
@@ -255,9 +248,10 @@ button.closeAlertElement {
 .QuillEditorAnnotation {
   cursor: pointer;
 }
+ */
 .TextPanelSectionBlot {
-  cursor: pointer;
-} */
+  cursor: alias;
+}
 /* 
 .TextPanelSectionBlot:hover {
   background-color: #27edff42 !important;

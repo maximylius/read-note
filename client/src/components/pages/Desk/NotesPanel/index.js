@@ -65,7 +65,7 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
 
       <div className='col px-0 box pr-4'>
         <Nav />
-        <div className='row growContent card mx-0 notepanel-card'>
+        <div className='row growContent mx-0 notepanel-background'>
           {activeNote && notes[activeNote] && (
             <div key={activeNote}>
               <NotePanel noteId={activeNote} containerType='note-panel' />

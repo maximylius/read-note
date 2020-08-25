@@ -1,5 +1,4 @@
 // 2do how to handle when opening a note before the changes to it (from an open place elsewhere are committed?) // use a pending / loading state?
-// 2do finish note-info.
 // 2do "op not allowed" appears to often
 // 2do color_class get out of sync
 // 2do re-apply color_class at first load of note
@@ -33,7 +32,6 @@ import {
   addAlert
 } from '../../../../store/actions';
 import Navline from './Navline';
-import { Error } from 'mongoose';
 import {
   classNameIncludes,
   embedSeperatorCreator,
@@ -81,8 +79,8 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const cardBodyRef = React.useRef();
   const documentBodyRef = React.useRef();
   const quillNoteRef = React.useRef(null);
+  const selectionIndexRef = React.useRef(-1);
 
-  // when shall the numbers be updated? at best whenever a mention is used. how to notice?
   const mentionModule = React.useCallback(mentionModuleCreator(atValues, []), [
     atValues
   ]);
@@ -190,12 +188,31 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     console.log(resInfo);
     let dontOpen, closeIndexes;
     const resType = extractAtValueResType(resInfo);
-    if (!resType || resType !== 'note') {
-      // 2do make "open res" function that calls res specific open function
-      // dont embed resource. 2do: open instead!
+    const resId = extractAtValueResId(resInfo);
+    if (resType !== 'note') {
+      if (resType === 'section') {
+        dispatch(
+          loadText({
+            textId: sections[resId].textId,
+            openText: true,
+            setToActive: true,
+            history: history
+          })
+        );
+        dispatch(setCommittedSections([resId], false));
+        dispatch(setTentativeSections([resId], false));
+      } else if (resType === 'text') {
+        dispatch(
+          loadText({
+            textId: resId,
+            openText: true,
+            setToActive: true,
+            history: history
+          })
+        );
+      }
       return;
     }
-    const resId = extractAtValueResId(resInfo);
     console.log('resId', resId, 'notes', notes, 'notes[resId]', notes[resId]);
     let deltaToEmbed = notes[resId] && notes[resId].delta;
     // 2do: if the note is not fetched, request it first, then continue!
@@ -268,8 +285,10 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       !delta.ops[deltaIndex].insert ||
       !delta.ops[deltaIndex].insert.mention ||
       delta.ops[deltaIndex].insert.mention.id !== resInfo
-    )
+    ) {
+      // 2do handle this case: if uncertain where clicked at, then just look for resId_isOpen and close this.
       throw 'selection is not at clicked position. returned out of function';
+    }
 
     // CLOSE and not open if followed by opening tag
     if (
@@ -538,6 +557,10 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       setTimeout(() => {
         setEmbedClickCounter(prevState => prevState + 1);
       }, 10);
+      if (informParentAboutChange)
+        setTimeout(() => {
+          informParentAboutChange();
+        }, 200);
     } else if (
       classNameIncludes(e.target.className, 'mention') ||
       classNameIncludes(e.target.parentElement.className, 'mention') ||
@@ -556,11 +579,17 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       setTimeout(() => {
         setEmbedClickCounter(prevState => prevState + 1);
       }, 10);
+      if (informParentAboutChange)
+        setTimeout(() => {
+          informParentAboutChange();
+        }, 200);
     }
   };
 
   const selectionChangeHandler = (range, source, editorInstance) => {
     console.log(range);
+    const selectionIncreased = range && range.index > selectionIndexRef.current;
+    selectionIndexRef.current = range && range.index;
     if (!range) return;
     if (source !== 'user' || !editorInstance || !quillNoteRef) {
       if (addBubble) setAddBubble(null);
@@ -579,6 +608,38 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       const scroll = editor.scroll;
       const scrollAtPos = scroll.path(range.index)[1][0];
       const ops = editor.getContents().ops;
+      console.log('scrollAtPos', scrollAtPos);
+      const offsetSelection = (pos, neg) => {
+        const newIndex = range.index + (selectionIncreased ? pos : -neg);
+        const newLength =
+          range.length && range.length + (selectionIncreased ? -pos : neg);
+        editor.setSelection(newIndex, newLength);
+      };
+      const scrollClassList = [...(scrollAtPos.domNode.classList || [])];
+      const anchorOffset = window.getSelection().anchorOffset;
+      if (
+        // if directly after mention tag push away
+        scrollAtPos.domNode.tagName === 'SPAN' &&
+        scrollClassList.includes('mention') &&
+        anchorOffset === 1
+      ) {
+        offsetSelection(2, 1);
+        return;
+      }
+      if (
+        // if directly at embed seperator push away
+        scrollAtPos.domNode.tagName === 'HR' &&
+        scrollClassList.includes('embedSeperator')
+      ) {
+        if (scrollClassList.includes('case-begin')) {
+          offsetSelection(1, 2);
+        } else if (scrollClassList.includes('case-end')) {
+          offsetSelection(1 + 1 - anchorOffset, 1 + anchorOffset);
+        }
+        return;
+      }
+
+      // if at BR consider allowing new note embed
       if (!scrollAtPos.text && scrollAtPos.domNode.tagName === 'BR') {
         const boundingClientRect = scroll
           .path(range.index)[1][0]
@@ -619,6 +680,9 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       setAddBubble(null);
       return;
     }
+
+    // runs if range.length > 0
+    // check whether selection could be transformed into new note.
     let allowNewNote = true,
       opBegin = 0,
       charIndex = 0;
@@ -689,14 +753,36 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       if (cardBodyRef && cardBodyRef.current)
         cardBodyRef.current.classList.remove('active-editor');
     };
+    functionsRef.current.setCursorToQuillEnd = e => {
+      if (
+        cardBodyRef &&
+        cardBodyRef.current &&
+        quillNoteRef &&
+        quillNoteRef.current &&
+        e.target === cardBodyRef.current &&
+        containerType === 'side-note' // could possibly compare click height with quill rect. then add to all container types.
+      )
+        quillNoteRef.current.editor.setSelection(
+          quillNoteRef.current.editor.getLength(),
+          0
+        );
+    };
     cardBody.addEventListener('focusin', functionsRef.current.focusIn);
     cardBody.addEventListener('focusout', functionsRef.current.focusOut);
+    cardBody.addEventListener(
+      'click',
+      functionsRef.current.setCursorToQuillEnd
+    );
 
     return () => {
       const cardBody = document.getElementById(`noteCardBody${noteId}`);
       cardBody.removeEventListener('click', clickHandler);
       cardBody.removeEventListener('focusin', functionsRef.current.focusIn);
       cardBody.removeEventListener('focusout', functionsRef.current.focusOut);
+      cardBody.removeEventListener(
+        'click',
+        functionsRef.current.setCursorToQuillEnd
+      );
       console.log(
         'DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_\n',
         notes[noteId].title

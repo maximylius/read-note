@@ -139,10 +139,14 @@ export const getNotesPath = (delta, mainNoteId) => {
   delta.ops.forEach((op, opIndex) => {
     if (op.insert && op.insert.mention) {
       const resId = extractAtValueResId(op.insert.mention.id);
-      if (!notesConnectedWith[nestPath[nestPath.length - 1]]) {
+      const resType = extractAtValueResType(op.insert.mention.id);
+      if (!notesConnectedWith[nestPath[nestPath.length - 1]])
         notesConnectedWith[nestPath[nestPath.length - 1]] = [];
-      }
-      notesConnectedWith[nestPath[nestPath.length - 1]].push(resId);
+
+      notesConnectedWith[nestPath[nestPath.length - 1]].push({
+        resId,
+        resType
+      });
       return;
     }
     if (!op.attributes || !op.attributes.embedSeperator) return;
@@ -227,10 +231,7 @@ export const compareDisplayedNotesDelta = (
           _id: resId,
           delta: { ops: noteOps },
           plainText: notePlainText,
-          directConnections: (notesConnectedWith[resId] || []).map(resId => ({
-            resId,
-            resType: 'note'
-          })) //2do resType could be other than note right? Consider restructuring notesConnectedWith from string array to object array
+          directConnections: notesConnectedWith[resId] || []
         }
       ];
     } else {
@@ -266,7 +267,7 @@ export const mentionCharClickHandler = (
       })
     );
   } else if (resType === 'note') {
-    console.log('load notebokk');
+    console.log('load note');
     dispatch(
       loadNotes({
         noteIds: [resId],

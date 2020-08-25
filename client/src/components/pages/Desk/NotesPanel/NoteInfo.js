@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { BsXCircle, BsCheck, BsQuestion } from 'react-icons/bs';
 import InputWithPrepend from '../../../Metapanel/InputWithPrepend';
-import { updateNote, addAlert } from '../../../../store/actions';
-import { connection } from 'mongoose';
+import {
+  updateNote,
+  addAlert,
+  openNote,
+  deleteNote,
+  toggleFlowchart
+} from '../../../../store/actions';
+import { useCallback } from 'react';
 const titlePlaceholderArr = [
   'Give this note distinguishable title',
   'e.g. project - topic - content'
@@ -12,10 +19,12 @@ const titlePlaceholder =
   titlePlaceholderArr[Math.floor(Math.random(titlePlaceholderArr.length))];
 
 const NoteInfo = ({ noteInfo, setNoteInfo }) => {
+  const history = useHistory();
   const dispatch = useDispatch();
   const notes = useSelector(s => s.notes);
   const [title, setTitle] = useState(notes[noteInfo.id].title);
   const note = notes[noteInfo.id];
+  const noteInfoRef = useRef();
   const closeInfo = () => setNoteInfo(null);
   const updateNoteTitle = () => {
     if (
@@ -37,8 +46,34 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
     }
   };
 
+  const openNoteGraphClick = () => {
+    dispatch(toggleFlowchart()); //2do filter flowchart to display only the note
+  };
+  const openNoteClick = () => {
+    closeInfo();
+    dispatch(openNote({ noteId: noteInfo.id, history }));
+  };
+  const deleteNoteClick = () => {
+    dispatch(deleteNote(noteInfo.id));
+  };
+
+  const trackClick = useCallback(e => {
+    if (noteInfoRef && !noteInfoRef.current.contains(e.target)) closeInfo();
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('click', trackClick);
+    return () => {
+      document.removeEventListener('click', trackClick);
+    };
+  }, []);
+
   return (
-    <div className='note-info' style={{ top: noteInfo.top + 'px' }}>
+    <div
+      className='note-info'
+      style={{ top: noteInfo.top + 'px' }}
+      ref={noteInfoRef}
+    >
       <div className='note-info-toolbar'>
         {!title.trim() || title.trim() === note.title ? (
           <button className='btn note-info-is-saved'>
@@ -105,12 +140,19 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
         meta category: isAnnotation: show full words / go to text project
       </p>
       <br />
-      <button className='btn btn-block btn-secondary'>
+      <button
+        className='btn btn-block btn-secondary'
+        onClick={openNoteGraphClick}
+      >
         open network graph for note
       </button>
-      <button className='btn btn-block btn-secondary'>open note</button>
-      <button className='btn btn-block btn-danger'>
-        permantly delete this note
+      <button className='btn btn-block btn-secondary' onClick={openNoteClick}>
+        open note
+      </button>
+      <button className='btn btn-block btn-danger' onClick={deleteNoteClick}>
+        <span>
+          <strong>permantly delete</strong> this note
+        </span>
       </button>
     </div>
   );

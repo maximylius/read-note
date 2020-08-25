@@ -40,7 +40,7 @@ const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
       <ButtonToolbar />
 
       {!displayTextMeta ? (
-        <div className='list-group pt-2'>
+        <>
           {/* // 2do: or display FlowSections */}
           <Sections quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />
           {speedReader.isOpenFor.includes(activeTextPanel) && (
@@ -51,7 +51,7 @@ const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
               <BsPlus /> section
             </button>
           )}
-        </div>
+        </>
       ) : (
         <TextMeta />
       )}

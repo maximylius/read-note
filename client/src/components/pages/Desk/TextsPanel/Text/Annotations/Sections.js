@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { BsInfoCircle } from 'react-icons/bs';
 import _isEqual from 'lodash/isEqual';
 import MeasureSection from './MeasureSection';
+import SectionArcs from './SectionArcs';
 
 const marginBottom = 5;
 const calcBestPositions = sectionsToDisplay => {
@@ -53,6 +54,9 @@ const calcBestPositions = sectionsToDisplay => {
     bestPositions[id].height = !!sectionNode
       ? sectionNode.getBoundingClientRect().height
       : 40;
+    bestPositions[id].right = !!sectionNode
+      ? sectionNode.getBoundingClientRect().right
+      : 800;
 
     console.log('bestPositions[id].height', bestPositions[id].height);
   });
@@ -76,6 +80,7 @@ const calcAllFinalPositions = (sectionsToDisplay, bestPositions) => {
     }
     finalPositions[id] = {
       top: positionTop,
+      right: bestPositions[id].right,
       freeSpaceBottom: 10000
     };
   });
@@ -128,6 +133,14 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
         Object.keys(sections).includes(id)
       )
     : [];
+  const arcsToDisplay = sectionsToDisplay.flatMap(id => {
+    const arcsFromSection = sections[id].directConnections.filter(connection =>
+      sectionsToDisplay.includes(connection.resId)
+    );
+    return arcsFromSection.length > 0
+      ? arcsFromSection.map(to => ({ from: id, to: to.resId }))
+      : [];
+  });
   //   const sectionsToDisplay = useSelector(s => s.texts[s.textsPanel.activeTextPanel]  ? s.texts[s.textsPanel.activeTextPanel].sectionIds.filter(id => Object.keys( s.sections).includes(id) ) : [] ); //2do use this instead of the above to prevent unnecessary rerenders. add custom hook that performs deep equal check whether sections to display have changed.
 
   const expandAll = useSelector(s => s.textsPanel.expandAll);
@@ -213,23 +226,29 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
   return (
     <>
       {sectionsToDisplay.length > 0 ? (
-        <div id='sectionsContainer'>
-          {sectionsToDisplay.map((id, index) => (
-            <MeasureSection
-              key={`side-note-${id}`}
-              sectionId={id}
-              sectionIndex={index}
-              // quillTextRef={quillTextRef}
-              // quillNoteRefs={quillNoteRefs}
-              top={finalPositions[id] && finalPositions[id].top}
-              freeSpaceBottom={
-                finalPositions[id] && finalPositions[id].freeSpaceBottom
-              }
-              setUpdateDimensions={setUpdateDimensions}
-              isExpanded={expandAll || committedSectionIds.includes(id)}
-            />
-          ))}
-        </div>
+        <>
+          <div id='sectionsContainer'>
+            {sectionsToDisplay.map((id, index) => (
+              <MeasureSection
+                key={`side-note-${id}`}
+                sectionId={id}
+                sectionIndex={index}
+                // quillTextRef={quillTextRef}
+                // quillNoteRefs={quillNoteRefs}
+                top={finalPositions[id] && finalPositions[id].top}
+                freeSpaceBottom={
+                  finalPositions[id] && finalPositions[id].freeSpaceBottom
+                }
+                setUpdateDimensions={setUpdateDimensions}
+                isExpanded={expandAll || committedSectionIds.includes(id)}
+              />
+            ))}
+          </div>
+          <SectionArcs
+            arcsToDisplay={arcsToDisplay}
+            finalPositions={finalPositions}
+          />
+        </>
       ) : (
         <p>
           <small>
@@ -241,4 +260,4 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
   );
 };
 
-export default Sections;
+export default React.memo(Sections);

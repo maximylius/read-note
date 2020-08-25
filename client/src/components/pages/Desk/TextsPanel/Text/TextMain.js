@@ -9,22 +9,28 @@ import {
 } from '../../../../../store/actions';
 import SectionBlot from '../../../../Metapanel/SectionBlot';
 import isEqual from 'lodash/isEqual';
-import { extractNumber, ObjectKeepKeys } from '../../../../../functions/main';
+import {
+  extractNumber,
+  ObjectKeepKeys,
+  colorGenerator
+} from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
+// it does not push section updates into view.
 const TextMain = ({ quillTextRef, quillNoteRefs }) => {
   const dispatch = useDispatch();
-  const {
-    textsPanel: {
-      activeTextPanel,
-      committedSectionIds,
-      tentativeSectionIds,
-      holdControl
-    },
-    texts,
-    sections,
-    categories
-  } = useSelector(s => s);
+  const texts = useSelector(s => s.texts);
+  const sections = useSelector(s => s.sections);
+  const categories = useSelector(s => s.categories);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+  const committedSectionIds = useSelector(
+    s => s.textsPanel.committedSectionIds
+  );
+  const tentativeSectionIds = useSelector(
+    s => s.textsPanel.tentativeSectionIds
+  );
+  const holdControl = useSelector(s => s.textsPanel.holdControl);
+
   const text = texts[activeTextPanel];
   const textSectionsCategoryIds = text.sectionIds.flatMap(
     id => sections[id].categoryIds
@@ -52,32 +58,8 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
   const tentativeSectionIdsRef = React.useRef(tentativeSectionIds);
   const mouseIsDownRef = React.useRef(false);
 
-  // sectionSpanColorGenerator
-  const colorGenerator = useCallback((categoryIds, activeIndex) => {
-    if (categoryIds.length === 1)
-      return categories.byId[categoryIds[0]].rgbColor;
-
-    let r = [],
-      g = [],
-      b = [];
-    categoryIds.forEach(id => {
-      const rgb = categories.byId[id].rgbColor;
-      r.push(extractNumber(rgb, 0));
-      g.push(extractNumber(rgb, 1));
-      b.push(extractNumber(rgb, 2));
-    });
-
-    return [(r, g, b)]
-      .map(el =>
-        activeIndex
-          ? 0.5 * el[activeIndex] +
-            (0.5 * el.reduce((a, b) => a + b)) / el.length
-          : el.reduce((a, b) => a + b) / el.length
-      )
-      .join(',');
-  }, []);
-
-  const removeSectionsFromQuill = useCallback(sections => {
+  //useCallback(
+  const removeSectionsFromQuill = sections => {
     sections.forEach(section => {
       const begin = section.begin;
       const length = section.end - section.begin;
@@ -95,13 +77,24 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
           sectionIds.splice(removeIndex, 1);
           const categoryIds = op.attributes.section.categoryIds.split(',');
           categoryIds.splice(removeIndex, 1);
+          const colorObject = Object.fromEntries(
+            sectionIds.map(id => [id, sections[id].categoryIds])
+          );
 
           op.attributes.section = {
             ...op.attributes.section,
             sectionIds,
             categoryIds,
-            borderColor: `rgb(${colorGenerator(categoryIds)})`,
-            backgroundColor: `rgba(${colorGenerator(categoryIds)},${0.1})`
+            borderColor: `rgb(${colorGenerator(
+              colorObject,
+              [...committedSectionIds, ...tentativeSectionIds],
+              categories
+            )})`,
+            backgroundColor: `rgba(${colorGenerator(
+              colorObject,
+              [...committedSectionIds, ...tentativeSectionIds],
+              categories
+            )},${0.1})`
           };
         }
       });
@@ -114,9 +107,12 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
       };
       quillTextRef.current.editor.updateContents(updatedContents);
     });
-  }, []);
+  };
+  //   ,[sections]
+  // );
 
-  const paintSections = useCallback((sectionsToUpdate, activeSectionIds) => {
+  // useCallback(
+  const paintSections = (sectionsToUpdate, activeSectionIds) => {
     sectionsToUpdate.forEach(section => {
       const begin = section.begin;
       const length = section.end - section.begin;
@@ -125,6 +121,9 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
         length
       );
       quillTextRef.current.editor.deleteText(begin, length);
+      const colorObject = Object.fromEntries(
+        [section._id].map(id => [id, sections[id].categoryIds])
+      ); // PROBLEM only one section is updated at the time!
       const updatedContents = {
         ops: [
           ...(begin > 0 ? [{ retain: begin }] : []),
@@ -134,10 +133,16 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
               textId: activeTextPanel,
               sectionIds: [section._id],
               categoryIds: section.categoryIds,
-              borderColor: `rgb(${colorGenerator(section.categoryIds)})`,
-              backgroundColor: `rgba(${colorGenerator(section.categoryIds)},${
-                activeSectionIds.includes(section._id) ? 0.8 : 0.1
-              })`,
+              borderColor: `rgb(${colorGenerator(
+                colorObject,
+                [...committedSectionIds, ...tentativeSectionIds],
+                categories
+              )})`,
+              backgroundColor: `rgba(${colorGenerator(
+                colorObject,
+                [...committedSectionIds, ...tentativeSectionIds],
+                categories
+              )},${activeSectionIds.includes(section._id) ? 0.8 : 0.1})`,
               ...(index === 0 && { first: true }),
               ...(index === updatingContents.ops.length - 1 && { last: true })
             };
@@ -147,7 +152,8 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
       };
       quillTextRef.current.editor.updateContents(updatedContents);
     });
-  }, []);
+  };
+  // , []);
 
   const toggleEditorEditState = () => {
     if (!quillTextRef.current) return;
