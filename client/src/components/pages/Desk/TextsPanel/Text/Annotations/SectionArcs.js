@@ -13,7 +13,7 @@ import SectionArc from './SectionArc';
 const SectionArcs = ({ arcsToDisplay, finalPositions }) => {
   const svgRef = useRef();
 
-  const textContainer = document.querySelector('#textMainCard');
+  const textContainer = document.querySelector('#textContentFlexGrow');
   const textContainerHeight = textContainer
     ? textContainer.getBoundingClientRect().height + 'px'
     : '95vH';
@@ -24,15 +24,16 @@ const SectionArcs = ({ arcsToDisplay, finalPositions }) => {
   const containerTop = svgRef.current
     ? svgRef.current.getBoundingClientRect().top
     : '50';
+  const scrollTop = textContainer ? textContainer.scrollTop : 0;
+  console.log(`containerTop: ${containerTop} scrollTop: ${scrollTop}`);
   console.log(
     'arcsToDisplay',
     arcsToDisplay,
     finalPositions,
-    textContainerHeight
+    textContainerHeight,
+    !!svgRef.current
   );
 
-  if (!Object.keys(finalPositions) || !Object.keys(finalPositions).length)
-    return <></>;
   return (
     // <div className='section-arcs-svg-container'>
     <svg

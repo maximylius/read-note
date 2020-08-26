@@ -210,111 +210,79 @@ router.put('/:id', (req, res) => {
 });
 
 /**
- * @route   PUT api/sections/connections/:id
- * @desc    update a section
- * @access  Public
- */
-router.put('/connections/:id', (req, res) => {
-  if (req.params.add) {
-    Section.findById(req.params.id)
-      .then(section => {
-        section.directConnections = section.directConnections.concat(
-          ...[
-            ['two-way', 'outgoing'].includes(req.body.add.connectionType)
-              ? [{ resId: req.body.add.connectionId, resType: 'section' }]
-              : []
-          ]
-        );
-        section.indirectConnections = section.indirectConnections.concat(
-          ...[
-            ['two-way', 'incoming'].includes(req.body.add.connectionType)
-              ? [{ resId: req.body.add.connectionId, resType: 'section' }]
-              : []
-          ]
-        );
-
-        section.save().then(() =>
-          Section.findById(req.body.add.connectionId).then(section => {
-            section.directConnections = section.directConnections.concat(
-              ...[
-                ['two-way', 'incoming'].includes(req.body.add.connectionType)
-                  ? [{ resId: req.body.add.sectionId, resType: 'section' }]
-                  : []
-              ]
-            );
-            section.indirectConnections = section.indirectConnections.concat(
-              ...[
-                ['two-way', 'outgoing'].includes(req.body.add.connectionType)
-                  ? [{ resId: req.body.add.sectionId, resType: 'section' }]
-                  : []
-              ]
-            );
-
-            section.save().then(() =>
-              res.json({
-                success: true
-              })
-            );
-          })
-        );
-      })
-      .catch(err => res.status(404).json({ success: false, err: err }));
-  }
-
-  if (req.params.remove) {
-    Section.findById(req.params.id)
-      .then(section => {
-        section.directConnections = section.directConnections.filter(
-          connection => connection.resId !== req.body.remove.connectionId
-        );
-        section.indirectConnections = section.indirectConnections.filter(
-          connection => connection.resId !== req.body.remove.connectionId
-        );
-
-        section.save().then(() =>
-          Section.findById(req.body.remove.connectionId).then(section => {
-            section.directConnections = section.directConnections.filter(
-              connection => connection.resId !== req.body.remove.sectionId
-            );
-            section.indirectConnections = section.indirectConnections.filter(
-              connection => connection.resId !== req.body.remove.sectionId
-            );
-
-            section.save().then(() =>
-              res.json({
-                success: true
-              })
-            );
-          })
-        );
-      })
-      .catch(err => res.status(404).json({ success: false, err: err }));
-  }
-});
-
-/**
  * @route   DELETE api/sections/:id
  * @desc    delete one section or many sections
  * @access  Public
  */
 router.delete('/:id', (req, res) => {
   // split at + to detect if multiple
-  const sectionIds = req.params.id.split('+');
-  if (sectionIds.length === 1) {
-    // single delete
-    Section.findById(sectionIds[0])
-      .then(section => section.remove().then(() => res.json({ success: true })))
-      .catch(err => res.status(404).json({ success: false }));
-  } else {
-    // delete many
-    Section.deleteMany({ _id: { $in: sectionIds } }, (err, result) => {
-      if (err) {
-        res.status(400).json({ err });
-      } else {
-        res.json(result.n);
-      }
+  const deleteIds = req.params.id.split('+');
+  const promises = [];
+  const connections = [];
+  // delete documents and get documents_ids that got affected by the delete
+  deleteIds.forEach(id => {
+    promises.push(
+      Section.findById(id).then(doc => {
+        [
+          ...doc.directConnections,
+          ...doc.indirectConnections,
+          { resId: doc.textId }
+        ].forEach(connection => {
+          if (
+            !deleteIds.includes(connection.resId.toString()) &&
+            !connections.some(
+              c => c.resId.toString() === connection.resId.toString()
+            )
+          ) {
+            connections.push(connection);
+          }
+        });
+        doc.remove();
+      })
+    );
+  });
+  // remove the connection to delted note for other documents
+  connections.forEach(connection => {
+    promises.push(
+      (connection.resType === 'text'
+        ? Text
+        : connection.resType === 'section'
+        ? Section
+        : connection.resType === 'note'
+        ? Note
+        : null
+      )
+        .findById(connection.resId)
+        .then(doc => {
+          if (Array.isArray(doc.directConnections))
+            doc.directConnections = doc.directConnections.filter(
+              c => !deleteIds.includes(c.resId.toString())
+            );
+          if (Array.isArray(doc.indirectConnections))
+            doc.indirectConnections = doc.indirectConnections.filter(
+              c => !deleteIds.includes(c.resId.toString())
+            );
+          if (Array.isArray(doc.sectionIds))
+            doc.sectionIds = doc.sectionIds.filter(
+              id => !deleteIds.includes(id.toString())
+            );
+          if (doc.isAnnotation) doc.isAnnotation.sectionId = null;
+
+          doc.save();
+        })
+    );
+  });
+  Promise.all(promises)
+    .then(() => {
+      console.log('delete successfull');
+      res.json({
+        success: true
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(404).json({ success: false, err: err });
     });
-  }
 });
 
 /**

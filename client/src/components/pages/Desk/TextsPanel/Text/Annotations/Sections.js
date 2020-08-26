@@ -245,10 +245,13 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
               />
             ))}
           </div>
-          <SectionArcs
-            arcsToDisplay={arcsToDisplay}
-            finalPositions={finalPositions}
-          />
+          {Object.keys(finalPositions) &&
+            Object.keys(finalPositions).length && (
+              <SectionArcs
+                arcsToDisplay={arcsToDisplay}
+                finalPositions={finalPositions}
+              />
+            )}
         </>
       ) : (
         <p>
