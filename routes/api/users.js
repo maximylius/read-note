@@ -5,8 +5,11 @@ const config = require('config');
 const jwt = require('jsonwebtoken');
 const auth = require('../../middleware/auth');
 
-// User Model
+// import Models
 const User = require('../../models/user');
+const Text = require('../../models/text');
+const Section = require('../../models/section');
+const Note = require('../../models/note');
 
 /**
  * @route   GET api/users

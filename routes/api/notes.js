@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-// Note Model
-const Note = require('../../models/note');
-const Section = require('../../models/section');
+// import Models
+const User = require('../../models/user');
 const Text = require('../../models/text');
+const Section = require('../../models/section');
+const Note = require('../../models/note');
 
 /**
  * @route   GET api/notes

@@ -66,7 +66,7 @@ const SectionPreview = ({ sectionId }) => {
           key={`connection-${connection.resId}`}
           className='section-attribute section-connections two-way-connection'
         >
-          {sections[connection.resId].title}
+          {(sections[connection.resId] || { title: 'Unknown' }).title}
         </div>
       ))}
       {outgoingConnections.map(connection => (
@@ -74,7 +74,7 @@ const SectionPreview = ({ sectionId }) => {
           key={`connection-${connection.resId}`}
           className='section-attribute section-connections outgoing-connection'
         >
-          {sections[connection.resId].title}
+          {(sections[connection.resId] || { title: 'Unknown' }).title}
         </div>
       ))}
       {incomingConnections.map(connection => (
@@ -82,7 +82,7 @@ const SectionPreview = ({ sectionId }) => {
           key={`connection-${connection.resId}`}
           className='section-attribute section-connections incoming-connection'
         >
-          {sections[connection.resId].title}
+          {(sections[connection.resId] || { title: 'Unknown' }).title}
         </div>
       ))}
     </>

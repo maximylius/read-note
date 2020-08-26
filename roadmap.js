@@ -26,6 +26,8 @@
 1    Enable user to define and recommend category schemas
 2    design mind map of sections: custom icons, shapes, (border-)color, dots on the right to indicate type and amount of attributes in section. 2 category levels, maximum 3.
 2   shrink text size to fit into single line for section Title.
+5   while not in flowchar view connect connected section with simple arc on the right hand side
+6   set maximum height on section item - if exceeded 
 
 
 @QUILL
@@ -95,6 +97,10 @@
 
 
 6 @SERVER improvements ----------------------------------
+8    multi document updates. UPDATE_MANY
+8    make sure to send one response per request. 
+8    when document is deleted: the connections need to be deleted as well
+8    if a link to deleted document is in any note, then all these notes have to be updated: replacing mention blot with deleted-blot. in both: frontend and server side? 
 6    implement server clean up routines.
 4    get anonymousSession token for not logged in users...
 6    make get request not url only -> what if to many notes get requested? string to long...

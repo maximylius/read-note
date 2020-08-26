@@ -905,16 +905,22 @@ export const addSection = ({ categoryId, begin, end }) => (
     }
   });
 
-  axios.put(
-    `/api/sections/${section._id}`,
-    filterObjectByKeys(section, ['_id'], null)
+  const request = {
+    section: ObjectRemoveKeys(section, ['_id']),
+    previousTextSectionId: {
+      _id: textSectionIds[textSectionIds.indexOf(section._id) - 1]
+    }
+  };
+  console.log(
+    request,
+    '\n\nreq.body.hasOwnProperty',
+    request.hasOwnProperty('previousTextSectionId'),
+    Object.keys(request)
   );
-
   axios
-    .put(`/api/texts/${activeTextPanel}`, {
-      sectionIds: textSectionIds
-    })
-    .catch(err => console.error(err, 'err.response.data, err.response.status'));
+    .put(`/api/sections/${section._id}`, request)
+    .then(res => console.log('section put response', res))
+    .catch(err => console.log('section put error', err));
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     sectionIds: user.sectionIds.concat(section._id)
@@ -973,46 +979,96 @@ export const updateSection = update => (dispatch, getState) => {
     }
   });
 
-  const textSections = {
-    ...ObjectKeepKeys(sections, text.sectionIds)
-  };
-  const textSectionIds = sortSectionIds(textSections);
+  let textSectionIds, previousTextSectionId;
+  if (request.begin || request.end) {
+    // why is this updated? maybe that the range has changed.
+    let prevIndex = text.sectionIds.indexOf(update._id);
+    const textSections = {
+      ...ObjectKeepKeys(sections, text.sectionIds)
+    };
+    textSectionIds = sortSectionIds(textSections);
+    let newIndex = textSectionIds.indexOf(update._id);
+    if (newIndex !== prevIndex) {
+      previousTextSectionId = { _id: textSectionIds[newIndex - 1] };
+    }
+  }
 
   dispatch({
     type: types.UPDATE_SECTION,
-    payload: { section, textId: text._id, textSectionIds }
+    payload: {
+      section,
+      textId: text._id,
+      ...(previousTextSectionId && { textSectionIds })
+    }
   });
 
-  axios.put(`/api/sections/${update._id}`, request);
+  axios
+    .put(`/api/sections/${update._id}`, {
+      section: request,
+      ...(previousTextSectionId && { previousTextSectionId })
+    })
+    .then(res => console.log('section put response', res));
 };
 
 export const addSectionConnection = (
   sectionId,
   connectionId,
-  connectionType
-) => dispatch => {
+  connectionType,
+  resType = 'section'
+) => (dispatch, getState) => {
+  const { sections } = getState();
+  const section = sections[sectionId];
+  const update = {
+    ...(['outgoing', 'two-way'].includes(connectionType) && {
+      directConnections: [
+        ...section.directConnections,
+        { resId: connectionId, resType }
+      ]
+    }),
+    ...(['incoming', 'two-way'].includes(connectionType) && {
+      indirectConnections: [
+        ...section.indirectConnections,
+        { resId: connectionId, resType }
+      ]
+    })
+  };
+  console.log('update', update);
   dispatch({
     type: types.ADD_SECTION_CONNECTION,
     payload: { sectionId, connectionId, connectionType }
   });
-  axios.put(`/api/sections/connections/${sectionId}`, {
-    add: { sectionId, connectionId, connectionType }
-  });
+
+  axios.put(`/api/sections/${sectionId}`, { section: update });
 };
 
 export const changeSectionConnection = () => () => {};
 
-export const removeSectionConnection = (
-  sectionId,
-  connectionId
-) => dispatch => {
+export const removeSectionConnection = (sectionId, connectionId) => (
+  dispatch,
+  getState
+) => {
+  const { sections } = getState();
+  const section = sections[sectionId];
+  const update = {
+    ...(section.directConnections.some(c => c.resId === connectionId) && {
+      directConnections: section.directConnections.filter(
+        c => c.resId !== connectionId
+      )
+    }),
+    ...(section.indirectConnections.some(c => c.resId === connectionId) && {
+      indirectConnections: section.indirectConnections.filter(
+        c => c.resId !== connectionId
+      )
+    })
+  };
+  if (!Object.keys(update).length) return;
+
   dispatch({
     type: types.REMOVE_SECTION_CONNECTION,
     payload: { sectionId, connectionId }
   });
-  axios.put(`/api/sections/connections/${sectionId}`, {
-    remove: { sectionId, connectionId }
-  });
+
+  axios.put(`/api/sections/${sectionId}`, { section: update });
 };
 
 export const addSectionCategory = (sectionId, categoryId) => (
@@ -1046,7 +1102,7 @@ export const addSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/sections/${sectionId}`, update);
+  axios.put(`/api/sections/${sectionId}`, { section: update });
 };
 
 export const removeSectionCategory = (sectionId, categoryId) => (
@@ -1085,7 +1141,7 @@ export const removeSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/sections/${sectionId}`, update);
+  axios.put(`/api/sections/${sectionId}`, { section: update });
 };
 
 export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
@@ -1097,11 +1153,9 @@ export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
 
   dispatch({
     type: types.UPDATE_SECTION,
-    payload: { section: { id: sectionId, importance } }
+    payload: { section: { _id: sectionId, importance } }
   });
-  axios.put(`/api/sections/${sectionId}`, {
-    importance
-  });
+  axios.put(`/api/sections/${sectionId}`, { section: { importance } });
 };
 
 export const deleteSection = sectionId => (dispatch, getState) => {

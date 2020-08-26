@@ -23,7 +23,7 @@ const Tooltip = ({ quillTextRef, selection }) => {
   const addSectionClickHandler = () => {
     dispatch(
       addSection({
-        categoryId: 'none',
+        categoryId: null,
         begin: selection.index,
         end: selection.index + selection.length
       })

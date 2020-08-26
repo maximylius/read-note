@@ -7,6 +7,7 @@ import SectionArcs from './SectionArcs';
 
 const marginBottom = 5;
 const calcBestPositions = sectionsToDisplay => {
+  // 2do maybe sectionsToDisplay needs to be sorted according to px position.
   const quillTextPanel = document.getElementById('quillTextPanel');
   const textSectionsNodeList = quillTextPanel
     ? [...quillTextPanel.querySelectorAll('.TextPanelSectionBlot')]

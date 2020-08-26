@@ -7,7 +7,7 @@ import TextsPanel from './TextsPanel';
 import Placeholder from './Placeholder';
 import { loadText, loadNotes } from '../../../store/actions';
 import isEqual from 'lodash/isEqual';
-import Flowchart from './Flowchart';
+// import Flowchart from './Flowchart';
 import { regExpOpenTexts } from '../../../functions/main';
 
 const Desk = () => {

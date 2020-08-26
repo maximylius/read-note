@@ -38,14 +38,15 @@ export default (state = initialState, action) => {
         }
       };
     case types.UPDATE_SECTION:
-      console.log('UPDATE_TEXT from', type, 'with', payload);
-      return {
-        ...state,
-        [payload.textId]: {
-          ...state[payload.textId],
-          sectionIds: payload.textSectionIds
-        }
-      };
+      return payload.textSectionIds
+        ? {
+            ...state,
+            [payload.textId]: {
+              ...state[payload.textId],
+              sectionIds: payload.textSectionIds
+            }
+          }
+        : state;
     case types.DELETE_SECTION:
       return {
         ...state,

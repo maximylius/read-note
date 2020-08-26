@@ -169,9 +169,6 @@
 .section-title-input {
   width: 100%;
 }
-span.section-title-input {
-  cursor: default;
-}
 .side-notes-container {
   margin-bottom: 8px;
 }

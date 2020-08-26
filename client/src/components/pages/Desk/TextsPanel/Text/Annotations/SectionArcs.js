@@ -8,7 +8,7 @@ import SectionArc from './SectionArc';
  *
  *
  *
- *
+ * MAKE SURE TO DRAW ARC ONLY ONCE
  */
 const SectionArcs = ({ arcsToDisplay, finalPositions }) => {
   const svgRef = useRef();
@@ -31,6 +31,8 @@ const SectionArcs = ({ arcsToDisplay, finalPositions }) => {
     textContainerHeight
   );
 
+  if (!Object.keys(finalPositions) || !Object.keys(finalPositions).length)
+    return <></>;
   return (
     // <div className='section-arcs-svg-container'>
     <svg
@@ -41,6 +43,7 @@ const SectionArcs = ({ arcsToDisplay, finalPositions }) => {
     >
       {arcsToDisplay.map(arc => (
         <SectionArc
+          key={`arc_${arc.from}_${arc.to}`}
           startX={finalPositions[arc.from].right - containerLeft}
           startY={finalPositions[arc.from].top - containerTop}
           endX={finalPositions[arc.to].right - containerLeft}
