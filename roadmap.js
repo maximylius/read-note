@@ -122,8 +122,8 @@
 4    undo / redo buttons flashing / highlighting changed parts possible?
 4    search within your text / comments
 4    make selection begin after last whitespace before and end before first whitespace after.
-5     allow quotes as links to sections to be expanded inside a non editable blockquote paragraph
-4     think about whether a differnce between linked and embeded notes shall be made (one doesnt expand, the other does always).
+5    allow quotes as links to sections to be expanded inside a non editable blockquote paragraph
+4    think about whether a differnce between linked and embeded notes shall be made (one doesnt expand, the other does always).
 4    enable modification of section range
 4    make categories hierarchical & editable & save to server
 4    make non-user notes not editable? add button: suggest edit, this would then get suggested to the author. 
@@ -132,8 +132,10 @@
 4    scrape PDF & html, perserve formatting OR use
 4    resize displayed text
 4    make text and notebook ids short for nice urls. OR make them include title.
-4     think about emoji implementation in note names.
+4    think about emoji implementation in note names.
 4    DARK MODE - css theme.
+4    Soft delete: add delete flag to documents to enable restore.
+6    URL should represent session - somehow. It maybe have a session token - and a state id: if you request this token from server you get the contents. if you are entitled to.
 
 2 Design -------------
 2 desing right click menu.

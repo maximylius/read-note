@@ -602,29 +602,12 @@ export const deleteText = id => (dispatch, getState) => {
   } = getState();
   // and its sections...
   // make private later on...
-  axios.get(`/api/texts/${id}`).then(res => {
-    if (res.data.sectionIds.length > 0) {
-      axios.delete(`/api/sections/${res.data.sectionIds.join('+')}`);
-    }
-  });
-  axios.delete(`/api/texts/${id}`);
+  // 2do dispatch
+
+  axios.delete(`/api/common/text/${id}`);
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     textIds: user.textIds.filter(textId => textId !== id)
-  });
-};
-
-export const deleteAllTexts = () => {
-  // DEV only...
-  axios.get(`/api/texts/`).then(res => {
-    res.data.forEach(text => {
-      axios.get(`/api/texts/${text._id}`).then(res => {
-        if (res.data.sectionIds.length > 0) {
-          axios.delete(`/api/sections/${res.data.sectionIds.join('+')}`);
-        }
-      });
-      axios.delete(`/api/texts/${text._id}`);
-    });
   });
 };
 
@@ -1167,7 +1150,7 @@ export const deleteSection = sectionId => (dispatch, getState) => {
     textsPanel: { activeTextPanel }
   } = getState();
 
-  axios.delete(`/api/sections/${sectionId}`);
+  axios.delete(`/api/common/section/${sectionId}`);
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     sectionIds: user.sectionIds.filter(id => id !== sectionId)
@@ -1308,12 +1291,7 @@ export const addNote = ({
     title: guessTitle || 'Note 1',
     delta: delta || { ops: [{ insert: '\n' }] },
     plainText: '',
-    directConnections: isAnnotation
-      ? [
-          { resId: isAnnotation.textId, resType: 'text' },
-          { resId: isAnnotation.sectionId, resType: 'section' }
-        ]
-      : [],
+    directConnections: [],
     indirectConnections: parentNoteId
       ? [{ resId: parentNoteId, resType: 'note' }]
       : [],
@@ -1417,7 +1395,7 @@ export const deleteNote = noteId => (dispatch, getState) => {
     payload: { note }
   });
 
-  axios.delete(`/api/notes/${noteId}`);
+  axios.delete(`/api/common/note/${noteId}`);
 };
 
 export const toggleUserFavourite = (resId, resType) => dispatch => {
