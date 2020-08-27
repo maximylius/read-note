@@ -196,6 +196,7 @@ router.put('/:id', (req, res) => {
       });
 
       Object.keys(req.body.section).forEach(updateKey => {
+        // if(updateKey==="importance") { section.importance = section.importancef.filter().concat() } else { }
         section[updateKey] = req.body.section[updateKey];
       });
       promises.push(section.save());

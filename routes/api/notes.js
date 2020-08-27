@@ -198,64 +198,160 @@ router.put('/init/:id', (req, res) => {
  * @access  Public
  */
 router.put('/:id', (req, res) => {
-  console.log(
-    '--------(UPDATE NOTE)',
-    req.params.id,
-    'BODY:',
-    req.body,
-    '-----------'
-  );
+  // update connection of other documents
+  // document type could be: User, Text, Section, Note
+  // update could be subject to multiple types.
+  // textId
+  // directConnections
+  // indirectConnections
+  // connections both ways.
+  // From note update, the following could happen:
+  // isAnnotation, isReply
+  // can it happen that changes appear to a document multiple times?
+  // convert ids to string before comparing to string.
+
   Note.findById(req.params.id)
     .then(note => {
-      Object.keys(req.body.note).forEach(updateKey => {
-        note[updateKey] = req.body.note[updateKey];
-      });
-      note.save().then(() => {});
-    })
-    .catch(err => res.status(404).json({ success: false, err: err }));
-  console.log('--------(+)', req.body.connectionsToAdd, '-----------');
-  if (req.body.connectionsToAdd) {
-    req.body.connectionsToAdd.forEach(connectionId => {
-      Note.findById(connectionId)
-        .then(note => {
-          if (
-            !note.indirectConnections.some(el => el.resId === req.params.id)
-          ) {
-            note.indirectConnections = [
-              ...note.indirectConnections,
-              {
-                resId: req.params.id,
-                resType: 'note' // is it always of type note?
-              }
-            ];
-          }
-          note.save().then(() =>
-            res.json({
-              success: true
-            })
-          );
-        })
-        .catch(err => res.status(404).json({ success: false, err: err }));
-    });
-  }
-  console.log('--------(-)', req.body.connectionsToRemove, '-----------');
+      const promises = [];
 
-  if (req.body.connectionsToRemove) {
-    req.body.connectionsToRemove.forEach(connectionId => {
-      Note.findById(connectionId)
-        .then(note => {
-          note.indirectConnections = note.indirectConnections.filter(
-            el => el.resId !== req.params.id
-          );
-          note.save().then(() =>
-            res.json({
-              success: true
+      // if change in isAnnotation // does not account for remove of isAnnotation
+      if (
+        (req.body.isAnnotation && !note.isAnnotation) ||
+        req.body.isAnnotation.textId !== note.isAnnotation.textId ||
+        req.body.isAnnotation.sectionId !== note.isAnnotation.sectionId
+      ) {
+        console.log('change in isAnnotation');
+        promises.push(
+          Text.findById(req.body.isAnnotation.textId).then(text => {
+            if (
+              !text.directConnections.some(
+                c => c.resId.toString() === req.params.resId
+              )
+            )
+              text.directConnections.push({
+                resId: req.params.resId,
+                resType: 'note'
+              });
+            text.save();
+          })
+        );
+        promises.push(
+          Section.findById(req.body.isAnnotation.sectionId).then(section => {
+            if (
+              !section.directConnections.some(
+                c => c.resId.toString() === req.params.resId
+              )
+            )
+              section.directConnections.push({
+                resId: req.params.resId,
+                resType: 'note'
+              });
+            section.save();
+          })
+        );
+      }
+
+      // if change in isReply // does not account for remove of isReply
+      if (
+        (req.body.isReply && !note.isReply) ||
+        req.body.isReply.noteId !== note.isReply.noteId
+      ) {
+        promises.push(
+          Note.findById(req.body.isReply.noteId).then(note => {
+            if (
+              !note.replies.some(c => c.resId.toString() === req.params.resId)
+            )
+              note.replies.push({ resId: req.params.resId, resType: 'note' });
+            note.save();
+          })
+        );
+      }
+
+      // add new connections and remove connections. in map() it is...
+      //    set whether connection is direct (or indirect) relative to req.params.id.
+      //    set whether new connection shall be added or old removed
+      const connectionsToAddAndToRemove = [];
+      if (req.body.note.directConnections) {
+        connectionsToAddAndToRemove.push(
+          ...addedConnections(
+            req.body.note.directConnections,
+            note.directConnections
+          ).map(c => ({ ...c, isDirect: true, add: true })),
+          ...removedConnections(
+            req.body.note.directConnections,
+            note.directConnections
+          ).map(c => ({ ...c, isDirect: true }))
+        );
+      }
+      if (req.body.note.indirectConnections)
+        connectionsToAddAndToRemove.push(
+          ...addedConnections(
+            req.body.note.indirectConnections,
+            note.indirectConnections
+          ).map(c => ({ ...c, add: true })),
+          ...removedConnections(
+            req.body.note.indirectConnections,
+            note.indirectConnections
+          ).map(c => c)
+        );
+      connectionsToAddAndToRemove.forEach(connection => {
+        promises.push(
+          (connection.resType === 'text'
+            ? Text
+            : connection.resType === 'section'
+            ? Section
+            : connection.resType === 'note'
+            ? Note
+            : null
+          )
+            .findById(connection.resId)
+            .then(doc => {
+              if (connection.isDirect) {
+                doc.indirectConnections = doc.indirectConnections.filter(
+                  c => c.resId.toString() !== req.params.id
+                );
+                if (connection.add)
+                  doc.indirectConnections.push({
+                    resId: req.params.id,
+                    resType: 'section'
+                  });
+              } else {
+                doc.directConnections = doc.directConnections.filter(
+                  c => c.resId.toString() !== req.params.id
+                );
+                if (connection.add)
+                  doc.directConnections.push({
+                    resId: req.params.id,
+                    resType: 'section'
+                  });
+              }
+              doc.save();
             })
-          );
-        })
-        .catch(err => res.status(404).json({ success: false, err: err }));
-    });
-  }
+        );
+      });
+
+      Object.keys(req.body.section).forEach(updateKey => {
+        // if (updateKey === 'votes') {
+        //   section[updateKey] = section[updateKey]
+        //     .filter(el => el.userId !== '2do')
+        //     .concat({
+        //       // userId: "2do",
+        //       userReputation: 0,
+        //       bill: 1 //2do
+        //     });
+        // } else {
+        section[updateKey] = req.body.section[updateKey];
+        // }
+      });
+      promises.push(section.save());
+      return Promise.all(promises);
+    })
+    .then(() =>
+      res.json({
+        success: true
+      })
+    )
+    .catch(err => res.status(404).json({ success: false, err: err }));
 });
 
 /**
@@ -288,9 +384,81 @@ router.put('/vote/:id', (req, res) => {
  * @access  Public
  */
 router.delete('/:id', (req, res) => {
-  Note.findById(req.params.id)
-    .then(section => section.remove().then(() => res.json({ success: true })))
-    .catch(err => res.status(404).json({ success: false, err: err }));
+  // split at + to detect if multiple
+  const deleteIds = req.params.id.split('+');
+  const promises = [];
+  const connections = [];
+  // delete documents and get documents_ids that got affected by the delete
+  deleteIds.forEach(id => {
+    promises.push(
+      Note.findById(id).then(doc => {
+        [
+          ...doc.directConnections,
+          ...doc.indirectConnections,
+          ...(doc.isAnnotation
+            ? [
+                { resId: doc.isAnnotation.textId, resType: 'text' },
+                { resId: doc.isAnnotation.sectionId, resType: 'section' }
+              ]
+            : []),
+          ...(doc.isReply
+            ? [{ resId: doc.isReply.noteId, resType: 'note' }]
+            : [])
+        ].forEach(connection => {
+          if (
+            !deleteIds.includes(connection.resId.toString()) &&
+            !connections.some(
+              c => c.resId.toString() === connection.resId.toString()
+            )
+          ) {
+            connections.push(connection);
+          }
+        });
+        doc.remove();
+      })
+    );
+  });
+  // remove the connection to delted note for other documents
+  connections.forEach(connection => {
+    promises.push(
+      (connection.resType === 'text'
+        ? Text
+        : connection.resType === 'section'
+        ? Section
+        : connection.resType === 'note'
+        ? Note
+        : null
+      )
+        .findById(connection.resId)
+        .then(doc => {
+          if (Array.isArray(doc.directConnections))
+            doc.directConnections = doc.directConnections.filter(
+              c => !deleteIds.includes(c.resId.toString())
+            );
+          if (Array.isArray(doc.indirectConnections))
+            doc.indirectConnections = doc.indirectConnections.filter(
+              c => !deleteIds.includes(c.resId.toString())
+            );
+          if (Array.isArray(doc.replies))
+            doc.sectionIds = doc.replies.filter(
+              reply => !deleteIds.includes(reply.resId.toString())
+            );
+
+          doc.save();
+        })
+    );
+  });
+  Promise.all(promises)
+    .then(() => {
+      console.log('delete successfull');
+      res.json({
+        success: true
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(404).json({ success: false, err: err });
+    });
 });
 
 /**

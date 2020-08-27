@@ -1168,9 +1168,7 @@ export const deleteSection = sectionId => (dispatch, getState) => {
   } = getState();
 
   axios.delete(`/api/sections/${sectionId}`);
-  axios.put(`/api/texts/${activeTextPanel}`, {
-    sectionIds: texts[activeTextPanel].sectionIds.filter(id => id !== sectionId)
-  });
+
   putUserUpdateIfAuth(isAuthenticated, getState, {
     sectionIds: user.sectionIds.filter(id => id !== sectionId)
   });
@@ -1178,11 +1176,6 @@ export const deleteSection = sectionId => (dispatch, getState) => {
   const sectionIds = texts[activeTextPanel].sectionIds.filter(
     id => id !== sectionId
   );
-
-  // const ranges = [
-  //   ...texts[activeTextPanel].formatDivs,
-  //   ...sectionIds.map(id => sections[id])
-  // ];
 
   dispatch({
     type: types.DELETE_SECTION,
