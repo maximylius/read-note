@@ -604,7 +604,11 @@ export const deleteText = id => (dispatch, getState) => {
   // make private later on...
   // 2do dispatch
 
-  axios.delete(`/api/common/text/${id}`);
+  axios.delete(`/api/common/text/${id}`, {
+    data: {
+      shouldDeleteTypes: ['section', 'note']
+    }
+  });
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     textIds: user.textIds.filter(textId => textId !== id)
@@ -1150,7 +1154,11 @@ export const deleteSection = sectionId => (dispatch, getState) => {
     textsPanel: { activeTextPanel }
   } = getState();
 
-  axios.delete(`/api/common/section/${sectionId}`);
+  axios.delete(`/api/common/section/${sectionId}`, {
+    data: {
+      shouldDeleteTypes: ['note']
+    }
+  });
 
   putUserUpdateIfAuth(isAuthenticated, getState, {
     sectionIds: user.sectionIds.filter(id => id !== sectionId)
@@ -1395,7 +1403,9 @@ export const deleteNote = noteId => (dispatch, getState) => {
     payload: { note }
   });
 
-  axios.delete(`/api/common/note/${noteId}`);
+  axios.delete(`/api/common/note/${noteId}`, {
+    data: { shouldDeleteTypes: ['note'] }
+  });
 };
 
 export const toggleUserFavourite = (resId, resType) => dispatch => {

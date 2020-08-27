@@ -20,7 +20,12 @@ const returnCollection = resType => {
     : null;
 };
 
-const nestedDelete = (deleteArray, connections, blacklist) => {
+const nestedDelete = (
+  deleteArray,
+  connections,
+  blacklist,
+  shouldDeleteTypes
+) => {
   return deleteArray.map(serachObj => {
     return returnCollection(serachObj.resType)
       .findById(serachObj.resId)
@@ -37,6 +42,7 @@ const nestedDelete = (deleteArray, connections, blacklist) => {
           // maybe work with nested level. docsToDelte[0], docsToDelte[1], docsToDelte[2]... if at some point docsToDelte[2].length === 0 it does not have to be nested further.
         ].filter(del => {
           if (blacklist.includes(del.resId.toString())) return false;
+          if (shouldDeleteTypes.includes(del.resType)) return false;
           blacklist.push(del.resId.toString());
           return true;
         });
@@ -87,11 +93,25 @@ router.delete('/:restype/:id', (req, res) => {
   }));
   const connections = []; //2do delete from User also.
   const blacklist = deleteIds;
-  console.log('starting ', req.params.restype, ' delete', deleteArray);
+  console.log(
+    'starting ',
+    req.params.restype,
+    ' delete',
+    deleteArray,
+    'with deleting sub:',
+    req.body.shouldDeleteTypes
+  );
   // this function needs to be executed while deleteArrays[deleteArrayIndex].length>0
   // but execution of next level is just allowed to start after previous is finished.
 
-  Promise.all(nestedDelete(deleteArray, connections, blacklist))
+  Promise.all(
+    nestedDelete(
+      deleteArray,
+      connections,
+      blacklist,
+      req.body.shouldDeleteTypes
+    )
+  )
     .then(() => {
       console.log('connections', connections);
       console.log('blacklist', blacklist);
