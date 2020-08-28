@@ -89,30 +89,6 @@ router.post('/', (req, res) => {
 });
 
 /**
- * @route   PUT api/text/:id
- * @desc    update a text
- * @access  Public
- */
-router.put('/:id', (req, res) => {
-  Text.findById(req.params.id)
-    .then(text => {
-      Object.keys(req.body).forEach(updateKey => {
-        text[updateKey] = req.body[updateKey];
-      });
-      console.log(2000);
-      text.save().then(() =>
-        res.json({
-          success: true
-        })
-      );
-    })
-    .catch(err => {
-      console.log('Error in update text:', err);
-      res.status(404).json({ success: false, err: err });
-    });
-});
-
-/**
  * @route   POST api/text/spareids/:number
  * @desc    get spare id(s)
  * @access  Public

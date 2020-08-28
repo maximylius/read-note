@@ -315,7 +315,7 @@ export const closeAllModals = history => (dispatch, getState) => {
  * @SPARE_IDS
  */
 const fetchSpareIds = (prefix, number, dispatch) => {
-  axios.post(`/api/${prefix}/spareIds/${number}`).then(res => {
+  axios.post(`/api/common/spareIds/${prefix}/${number}`).then(res => {
     dispatch({
       type: types.PUSH_SPARE_IDS,
       payload: { prefix, spareIds: res.data.spareIds }
@@ -336,7 +336,7 @@ export const fillSpareIds = () => (dispatch, getState) => {
 };
 
 export const getNewSpareIds = (prefix, numberOfSpareIds) =>
-  axios.post(`/api/${prefix}/spareIds/${numberOfSpareIds}`).then(res => {
+  axios.post(`/api/common/spareIds/${prefix}/${numberOfSpareIds}`).then(res => {
     return {
       type: types.PUSH_SPARE_IDS,
       payload: { prefix, spareIds: res.data.spareIds }
@@ -892,20 +892,13 @@ export const addSection = ({ categoryId, begin, end }) => (
     }
   });
 
-  const request = {
-    section: ObjectRemoveKeys(section, ['_id']),
-    previousTextSectionId: {
-      _id: textSectionIds[textSectionIds.indexOf(section._id) - 1]
-    }
-  };
-  console.log(
-    request,
-    '\n\nreq.body.hasOwnProperty',
-    request.hasOwnProperty('previousTextSectionId'),
-    Object.keys(request)
-  );
   axios
-    .put(`/api/sections/${section._id}`, request)
+    .put(`/api/common/section/${section._id}`, {
+      doc: ObjectRemoveKeys(section, ['_id']),
+      previousTextSectionId: {
+        _id: textSectionIds[textSectionIds.indexOf(section._id) - 1]
+      }
+    })
     .then(res => console.log('section put response', res))
     .catch(err => console.log('section put error', err));
 
@@ -1025,7 +1018,7 @@ export const addSectionConnection = (
     payload: { sectionId, connectionId, connectionType }
   });
 
-  axios.put(`/api/sections/${sectionId}`, { section: update });
+  axios.put(`/api/common/sections/${sectionId}`, { doc: update });
 };
 
 export const changeSectionConnection = () => () => {};
@@ -1055,7 +1048,7 @@ export const removeSectionConnection = (sectionId, connectionId) => (
     payload: { sectionId, connectionId }
   });
 
-  axios.put(`/api/sections/${sectionId}`, { section: update });
+  axios.put(`/api/common/section/${sectionId}`, { doc: update });
 };
 
 export const addSectionCategory = (sectionId, categoryId) => (
@@ -1089,7 +1082,7 @@ export const addSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/sections/${sectionId}`, { section: update });
+  axios.put(`/api/common/section/${sectionId}`, { doc: update });
 };
 
 export const removeSectionCategory = (sectionId, categoryId) => (
@@ -1128,7 +1121,7 @@ export const removeSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/sections/${sectionId}`, { section: update });
+  axios.put(`/api/common/section/${sectionId}`, { doc: update });
 };
 
 export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
@@ -1142,7 +1135,7 @@ export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
     type: types.UPDATE_SECTION,
     payload: { section: { _id: sectionId, importance } }
   });
-  axios.put(`/api/sections/${sectionId}`, { section: { importance } });
+  axios.put(`/api/common/section/${sectionId}`, { doc: { importance } });
 };
 
 export const deleteSection = sectionId => (dispatch, getState) => {
@@ -1328,7 +1321,7 @@ export const addNote = ({
     payload: { note, open: !!history }
   });
 
-  axios.put(`/api/notes/init/${note._id}`, { note: note });
+  axios.put(`/api/common/note/${note._id}`, { doc: note });
 
   fetchSpareIds('notes', 1, dispatch);
 
@@ -1371,10 +1364,8 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
     payload: { note: noteToUpdate, connectionsToAdd, connectionsToRemove }
   });
 
-  axios.put(`/api/notes/${noteUpdate._id}`, {
-    note: ObjectRemoveKeys(noteUpdate, ['_id']),
-    connectionsToAdd,
-    connectionsToRemove
+  axios.put(`/api/common/note/${noteUpdate._id}`, {
+    doc: ObjectRemoveKeys(noteUpdate, ['_id'])
   }); // 2do add route to handle update of added / removed connections in target notes
 
   console.log({
@@ -1428,5 +1419,5 @@ export const submitNoteVote = (noteId, bill) => (dispatch, getState) => {
     }
   });
 
-  axios.put(`/api/notes/vote/${noteId}`, { vote });
+  axios.put(`/api/common/note/${noteId}`, { doc: { vote } });
 };

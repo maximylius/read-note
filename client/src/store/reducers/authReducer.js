@@ -29,8 +29,6 @@ export default (state = initialState, action) => {
         isAuthenticated: true,
         isLoading: false
       };
-    case types.LOGIN_FAIL:
-    case types.REGISTER_FAIL:
     case types.LOGOUT_SUCCESS:
       localStorage.removeItem('token');
       return {
@@ -41,8 +39,8 @@ export default (state = initialState, action) => {
       };
     case types.AUTH_ERROR:
       return state; //what is auth error?
-    case types.LOGOUT_SUCCESS:
-      return initialState;
+    case types.LOGIN_FAIL:
+    case types.REGISTER_FAIL:
     default:
       return state;
   }

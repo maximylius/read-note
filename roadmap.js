@@ -1,6 +1,9 @@
 /**
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
-
+9     resolce problems in common routes.
+8     removeSectionConnection update reducer actions. 
+8     same with reply delete
+4     route: migrate session to user.
 2DAY- 8    allow for connection of other types than just notes.
 6    integrate new connected data structure: deleteNote: also delete its connections / it as reply / its replies(?).
 
@@ -135,6 +138,7 @@
 4    think about emoji implementation in note names.
 4    DARK MODE - css theme.
 4    Soft delete: add delete flag to documents to enable restore.
+4    Creted dialogue when deleting: "Are you sure?" "Do you want to delete all annotations you have made within this text / section?"
 6    URL should represent session - somehow. It maybe have a session token - and a state id: if you request this token from server you get the contents. if you are entitled to.
 
 2 Design -------------
