@@ -122,19 +122,4 @@ router.put('/vote/:id', (req, res) => {
     .catch(err => res.status(404).json({ success: false, err: err }));
 });
 
-/**
- * @route   DELETE api/notes/spareids/:minutestoexpire
- * @desc    delete one note or many notes
- * @access  Public
- */
-router.delete('/spareids/:minutestoexpire', (req, res) => {
-  Note.deleteMany({ $and: [{ editedBy: { $size: 0 } }] }, (err, result) => {
-    if (err) {
-      res.status(400).json({ err });
-    } else {
-      res.json(result.n);
-    }
-  });
-});
-
 module.exports = router;

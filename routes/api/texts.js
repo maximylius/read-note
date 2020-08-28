@@ -88,39 +88,4 @@ router.post('/', (req, res) => {
     .catch(err => res.status(400).json({ err }));
 });
 
-/**
- * @route   POST api/text/spareids/:number
- * @desc    get spare id(s)
- * @access  Public
- */
-router.post('/spareids/:number', (req, res) => {
-  let spareDocuments = [];
-  for (let i = 0; i < Number(req.params.number); i++) {
-    spareDocuments.push(new Text({ type: 'SPARE', content: '' }));
-  }
-
-  Text.collection.insertMany(spareDocuments, (err, docs) => {
-    if (err) {
-      res.status(400).json({ err });
-    } else {
-      res.json({ spareIds: spareDocuments.map(doc => doc._id) });
-    }
-  });
-});
-
-/**
- * @route   DELETE api/texts/spareids/:minutestoexpire
- * @desc    delete one text or many texts
- * @access  Public
- */
-router.delete('/spareids/:minutestoexpire', (req, res) => {
-  Text.deleteMany({ $and: [{ editedBy: { $size: 0 } }] }, (err, result) => {
-    if (err) {
-      res.status(400).json({ err });
-    } else {
-      res.json(result.n);
-    }
-  });
-});
-
 module.exports = router;

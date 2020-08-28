@@ -72,18 +72,4 @@ router.post('/spareids/:number', (req, res) => {
   });
 });
 
-/**
- * @route   DELETE api/sections/spareids/:minutestoexpire
- * @desc    delete one section or many sections
- * @access  Public
- */
-router.delete('/spareids/:minutestoexpire', (req, res) => {
-  Section.deleteMany({ $and: [{ editedBy: { $size: 0 } }] }, (err, result) => {
-    if (err) {
-      res.status(400).json({ err });
-    } else {
-      res.json(result.n);
-    }
-  });
-});
 module.exports = router;
