@@ -1,5 +1,5 @@
 import * as types from '../types';
-import { sortSectionIds, filterObjectByKeys } from '../../functions/main';
+import { ObjectRemoveKeys } from '../../functions/main';
 
 const initialState = {};
 
@@ -20,9 +20,7 @@ export default (state = initialState, action) => {
         [payload.text._id]: payload.text
       };
     case types.DELETE_TEXT: //2do
-      return {
-        ...state
-      };
+      return ObjectRemoveKeys(state, payload.textId);
     case types.UPDATE_TEXT:
       return {
         ...state,

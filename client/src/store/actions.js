@@ -22,10 +22,6 @@ import _isEqual from 'lodash/isEqual';
  *
  * @AUTH
  */
-const putUserUpdateIfAuth = (isAuthenticated, getState, updateObj) => {
-  if (!isAuthenticated) return;
-  axios.put(`/api/users/update`, updateObj, tokenConfig(getState)); // 2do: add auth only...
-};
 
 const fetchUserData = async (user, openTexts, dispatch) => {
   if (user.noteIds.length > 0) {
@@ -502,12 +498,7 @@ export const uploadTextcontent = (
   { textcontent, delta },
   publicAccess = true
 ) => (dispatch, getState) => {
-  const {
-    user,
-    texts,
-    spareIds,
-    auth: { isAuthenticated }
-  } = getState();
+  const { user, texts, spareIds } = getState();
   const text = defaultText();
   text._id = spareIds['texts'][0];
   text.textcontent = textcontent;
@@ -542,12 +533,9 @@ export const uploadTextcontent = (
       'delta',
       'editedBy',
       'accessFor'
-    ])
+    ]),
+    tokenConfig(getState)
   );
-
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    textIds: [...user.textIds, text._id]
-  });
 
   fetchSpareIds('texts', 1, dispatch);
 };
@@ -562,7 +550,7 @@ export const updateText = (textId, textUpdate) => (dispatch, getState) => {
     payload: { text }
   });
 
-  axios.put(`/api/texts/${textId}`, textUpdate);
+  axios.put(`/api/texts/${textId}`, textUpdate, tokenConfig(getState));
 };
 
 export const clearAddTextPanel = () => dispatch => {
@@ -582,36 +570,51 @@ export const openAddTextPanel = () => dispatch => {
  *
  * @TEXT_SEARCH_PAGE
  */
-export const searchTextsInDatabase = (
-  searchString,
-  searchFields = 'all'
-) => dispatch => {
-  axios.get(`/api/texts/search/${searchFields}&${searchString}`).then(res => {
-    console.log(res.data);
-    dispatch({
-      type: types.SET_TEXT_SEARCH_RESULTS,
-      payload: { searchResults: res.data }
+export const searchTextsInDatabase = (searchString, searchFields = 'all') => (
+  dispatch,
+  getState
+) => {
+  axios
+    .get(
+      `/api/texts/search/${searchFields}&${searchString}`,
+      tokenConfig(getState)
+    )
+    .then(res => {
+      console.log(res.data);
+      dispatch({
+        type: types.SET_TEXT_SEARCH_RESULTS,
+        payload: { searchResults: res.data }
+      });
     });
-  });
 };
 
-export const deleteText = id => (dispatch, getState) => {
-  const {
-    auth: { isAuthenticated },
-    user
-  } = getState();
-  // and its sections...
-  // make private later on...
-  // 2do dispatch
+export const deleteText = textId => (dispatch, getState) => {
+  const { texts, sections } = getState();
 
-  axios.delete(`/api/common/text/${id}`, {
-    data: {
-      shouldDeleteTypes: ['section', 'note']
-    }
+  dispatch({
+    type: types.DELETE_TEXT,
+    payload: { textId }
+  });
+  texts[textId].sectionIds.forEach(sectionId => {
+    const section = sections[sectionId];
+    if (!section) return;
+    deleteNestedNotes(
+      section.directConnections.filter(c => c.resType === 'note')
+    );
+    dispatch({
+      type: types.DELETE_SECTION,
+      payload: {
+        sectionId,
+        textId: textId
+      }
+    });
   });
 
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    textIds: user.textIds.filter(textId => textId !== id)
+  axios.delete(`/api/common/text/${textId}`, {
+    data: {
+      shouldDeleteTypes: ['section', 'note']
+    },
+    ...tokenConfig(getState)
   });
 };
 
@@ -637,7 +640,10 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
   );
 
   if (notsToGet.length > 0) {
-    const notesRes = await axios.get(`/api/notes/${noteIds.join('+')}`); // add auth
+    const notesRes = await axios.get(
+      `/api/notes/${noteIds.join('+')}`,
+      tokenConfig(getState)
+    ); // add auth
     console.log(notesRes);
 
     notesRes.data.forEach(note => (notesById[note._id] = note));
@@ -714,7 +720,10 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
   let text;
   if (!loaded) {
     console.log('start loading text...', textId);
-    const textres = await axios.get(`/api/texts/id/${textId}`);
+    const textres = await axios.get(
+      `/api/texts/id/${textId}`,
+      tokenConfig(getState)
+    );
     const text = textres.data;
     if (!text) {
       console.log('text doesnt exist.');
@@ -724,7 +733,8 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
     const notesById = {};
     if (text.sectionIds.length > 0) {
       const sectionsRes = await axios.get(
-        `/api/sections/${text.sectionIds.join('+')}`
+        `/api/sections/${text.sectionIds.join('+')}`,
+        tokenConfig(getState)
       );
       console.log(sectionsRes);
       sectionsRes.data.forEach(
@@ -740,7 +750,10 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
         )
         .map(el => el.resId);
       if (notesToGet.length > 0) {
-        const notesRes = await axios.get(`/api/notes/${notesToGet.join('+')}`);
+        const notesRes = await axios.get(
+          `/api/notes/${notesToGet.join('+')}`,
+          tokenConfig(getState)
+        );
         console.log(notesRes);
         notesRes.data.forEach(note => (notesById[note._id] = note));
       }
@@ -829,7 +842,6 @@ export const addSection = ({ categoryId, begin, end }) => (
   getState
 ) => {
   const {
-    auth: { isAuthenticated },
     texts,
     sections,
     spareIds,
@@ -893,18 +905,18 @@ export const addSection = ({ categoryId, begin, end }) => (
   });
 
   axios
-    .put(`/api/common/section/${section._id}`, {
-      doc: ObjectRemoveKeys(section, ['_id']),
-      previousTextSectionId: {
-        _id: textSectionIds[textSectionIds.indexOf(section._id) - 1]
-      }
-    })
+    .put(
+      `/api/common/section/${section._id}`,
+      {
+        doc: ObjectRemoveKeys(section, ['_id']),
+        previousTextSectionId: {
+          _id: textSectionIds[textSectionIds.indexOf(section._id) - 1]
+        }
+      },
+      tokenConfig(getState)
+    )
     .then(res => console.log('section put response', res))
     .catch(err => console.log('section put error', err));
-
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    sectionIds: user.sectionIds.concat(section._id)
-  });
 
   fetchSpareIds('sections', 1, dispatch);
 };
@@ -983,10 +995,14 @@ export const updateSection = update => (dispatch, getState) => {
   });
 
   axios
-    .put(`/api/sections/${update._id}`, {
-      section: request,
-      ...(previousTextSectionId && { previousTextSectionId })
-    })
+    .put(
+      `/api/sections/${update._id}`,
+      {
+        section: request,
+        ...(previousTextSectionId && { previousTextSectionId })
+      },
+      tokenConfig(getState)
+    )
     .then(res => console.log('section put response', res));
 };
 
@@ -1018,7 +1034,11 @@ export const addSectionConnection = (
     payload: { sectionId, connectionId, connectionType }
   });
 
-  axios.put(`/api/common/sections/${sectionId}`, { doc: update });
+  axios.put(
+    `/api/common/section/${sectionId}`,
+    { doc: update },
+    tokenConfig(getState)
+  );
 };
 
 export const changeSectionConnection = () => () => {};
@@ -1048,7 +1068,11 @@ export const removeSectionConnection = (sectionId, connectionId) => (
     payload: { sectionId, connectionId }
   });
 
-  axios.put(`/api/common/section/${sectionId}`, { doc: update });
+  axios.put(
+    `/api/common/section/${sectionId}`,
+    { doc: update },
+    tokenConfig(getState)
+  );
 };
 
 export const addSectionCategory = (sectionId, categoryId) => (
@@ -1082,7 +1106,11 @@ export const addSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/common/section/${sectionId}`, { doc: update });
+  axios.put(
+    `/api/common/section/${sectionId}`,
+    { doc: update },
+    tokenConfig(getState)
+  );
 };
 
 export const removeSectionCategory = (sectionId, categoryId) => (
@@ -1121,7 +1149,11 @@ export const removeSectionCategory = (sectionId, categoryId) => (
     }
   });
 
-  axios.put(`/api/common/section/${sectionId}`, { doc: update });
+  axios.put(
+    `/api/common/section/${sectionId}`,
+    { doc: update },
+    tokenConfig(getState)
+  );
 };
 
 export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
@@ -1135,41 +1167,39 @@ export const setSectionWeight = (sectionId, score) => (dispatch, getState) => {
     type: types.UPDATE_SECTION,
     payload: { section: { _id: sectionId, importance } }
   });
-  axios.put(`/api/common/section/${sectionId}`, { doc: { importance } });
+  axios.put(
+    `/api/common/section/${sectionId}`,
+    { doc: { importance } },
+    tokenConfig(getState)
+  );
 };
 
 export const deleteSection = sectionId => (dispatch, getState) => {
   const {
-    auth: { isAuthenticated },
-    user,
-    texts,
     sections,
     textsPanel: { activeTextPanel }
   } = getState();
-
-  axios.delete(`/api/common/section/${sectionId}`, {
-    data: {
-      shouldDeleteTypes: ['note']
-    }
-  });
-
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    sectionIds: user.sectionIds.filter(id => id !== sectionId)
-  });
-
-  const sectionIds = texts[activeTextPanel].sectionIds.filter(
-    id => id !== sectionId
-  );
 
   dispatch({
     type: types.DELETE_SECTION,
     payload: {
       sectionId,
-      sections,
       textId: activeTextPanel
-      // divs: divsParser(texts[activeTextPanel].textcontent, ranges)
     }
   });
+
+  axios.delete(`/api/common/section/${sectionId}`, {
+    data: {
+      shouldDeleteTypes: ['note']
+    },
+    ...tokenConfig(getState)
+  });
+
+  deleteNestedNotes(
+    sections[sectionId].directConnections.filter(c => c.resType === 'note'),
+    dispatch,
+    getState
+  ); // deletes nested notes
 };
 
 // FLOWCHART
@@ -1280,12 +1310,7 @@ export const addNote = ({
   isReply,
   delta
 }) => (dispatch, getState) => {
-  const {
-    auth: { isAuthenticated },
-    notes,
-    spareIds,
-    user
-  } = getState();
+  const { notes, spareIds, user } = getState();
 
   const note = {
     _id: spareIds['notes'][0],
@@ -1321,13 +1346,14 @@ export const addNote = ({
     payload: { note, open: !!history }
   });
 
-  axios.put(`/api/common/note/${note._id}`, { doc: note });
+  axios.put(
+    `/api/common/note/${note._id}`,
+    { doc: note },
+    tokenConfig(getState)
+  );
 
   fetchSpareIds('notes', 1, dispatch);
 
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    noteIds: [...user.noteIds, note._id]
-  });
   if (history)
     history.push(
       regExpHistory(
@@ -1341,7 +1367,12 @@ export const addNote = ({
 
 export const updateNote = noteUpdate => (dispatch, getState) => {
   const { notes } = getState();
+  if (!notes[noteUpdate._id]) {
+    console.error('trying to update removed note.');
+    return;
+  }
   const noteToUpdate = { ...notes[noteUpdate._id] };
+
   // 2do allow for other types of connections than just notes
   const connectionsToAdd = !noteUpdate.directConnections
     ? []
@@ -1364,9 +1395,13 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
     payload: { note: noteToUpdate, connectionsToAdd, connectionsToRemove }
   });
 
-  axios.put(`/api/common/note/${noteUpdate._id}`, {
-    doc: ObjectRemoveKeys(noteUpdate, ['_id'])
-  }); // 2do add route to handle update of added / removed connections in target notes
+  axios.put(
+    `/api/common/note/${noteUpdate._id}`,
+    {
+      doc: ObjectRemoveKeys(noteUpdate, ['_id'])
+    },
+    tokenConfig(getState)
+  ); // 2do add route to handle update of added / removed connections in target notes
 
   console.log({
     note: ObjectRemoveKeys(noteUpdate, ['_id']),
@@ -1375,27 +1410,30 @@ export const updateNote = noteUpdate => (dispatch, getState) => {
   });
 };
 
+const deleteNestedNotes = (noteIds = [], dispatch, getState) => {
+  noteIds.forEach(noteId => {
+    const note = getState().notes[noteId];
+    if (!note) return;
+    if (note.replies.length > 0)
+      deleteNestedNotes(
+        note.replies.map(r => r.resId),
+        dispatch,
+        getState
+      );
+    dispatch({
+      type: types.DELETE_NOTE,
+      payload: { note }
+    });
+  });
+};
+
 // 2do: add history
 export const deleteNote = noteId => (dispatch, getState) => {
-  const {
-    user,
-    notes,
-    auth: { isAuthenticated }
-  } = getState();
-  const note = notes[noteId];
-  console.log('note', note);
-  // update server
-  putUserUpdateIfAuth(isAuthenticated, getState, {
-    noteIds: user.noteIds.filter(id => id !== noteId)
-  });
-
-  dispatch({
-    type: types.DELETE_NOTE,
-    payload: { note }
-  });
+  deleteNestedNotes([noteId], dispatch, getState); // will delete notes and their nested replies.
 
   axios.delete(`/api/common/note/${noteId}`, {
-    data: { shouldDeleteTypes: ['note'] }
+    data: { shouldDeleteTypes: ['note'] },
+    ...tokenConfig(getState)
   });
 };
 
@@ -1419,5 +1457,9 @@ export const submitNoteVote = (noteId, bill) => (dispatch, getState) => {
     }
   });
 
-  axios.put(`/api/common/note/${noteId}`, { doc: { vote } });
+  axios.put(
+    `/api/common/note/${noteId}`,
+    { doc: { vote } },
+    tokenConfig(getState)
+  );
 };

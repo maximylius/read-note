@@ -111,7 +111,21 @@ export default (state = initialState, action) => {
         })
       };
     case types.DELETE_NOTE:
-      return ObjectRemoveKeys(state, [payload.note._id]);
+      return {
+        ...ObjectRemoveKeys(state, [payload.note._id]),
+        ...(state[payload.note._id].isReply
+          ? state[state[payload.note._id].isReply.noteId]
+            ? {
+                [state[payload.note._id].isReply.noteId]: {
+                  ...state[state[payload.note._id].isReply.noteId],
+                  replies: state[
+                    state[payload.note._id].isReply.noteId
+                  ].replies.filter(r => r.resId !== payload.note._id)
+                }
+              }
+            : {}
+          : {})
+      };
 
     case types.LOGOUT_SUCCESS:
       return initialState;

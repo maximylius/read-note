@@ -26,7 +26,32 @@ export default (state = initialState, action) => {
         }
       };
     case types.DELETE_SECTION:
-      return ObjectRemoveKeys(state, [payload.sectionId]);
+      return {
+        ...ObjectRemoveKeys(state, [payload.sectionId]),
+        ...Object.fromEntries(
+          [
+            ...new Set([
+              ...state[payload.sectionId].directConnections.filter(
+                c => c.resType === 'section'
+              ),
+              ...state[payload.sectionId].directConnections.filter(
+                c => c.resType === 'section'
+              )
+            ])
+          ].map(c => [
+            c.resId,
+            {
+              ...state[c.resId],
+              directConnections: state[c.resId].directConnections.filter(
+                r => r.resId !== payload.sectionId
+              ),
+              indirectConnections: state[c.resId].indirectConnections.filter(
+                r => r.resId !== payload.sectionId
+              )
+            }
+          ])
+        )
+      };
 
     case types.ADD_NOTE:
       return payload.note.isAnnotation

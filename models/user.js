@@ -7,11 +7,12 @@ const schema = new Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  noteIds: [{ type: Schema.Types.ObjectId, ref: 'Notes', default: [] }],
+  projectIds: [{ type: Schema.Types.ObjectId, ref: 'Project', default: [] }],
   textIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
   sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section', default: [] }],
-  accessedNoteIds: [{ type: Schema.Types.ObjectId, ref: 'Note', default: [] }],
+  noteIds: [{ type: Schema.Types.ObjectId, ref: 'Notes', default: [] }],
   accessedTextIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
+  accessedNoteIds: [{ type: Schema.Types.ObjectId, ref: 'Note', default: [] }],
   favourites: [
     {
       resId: { type: Schema.Types.ObjectId },

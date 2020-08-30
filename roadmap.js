@@ -1,6 +1,13 @@
 /**
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
+_TestTable_    TEXT    SECTION     NOTE
+PUT (INIT)       0         1         1 
+PUT (UPDATE)     0         1         1 
+DELETE           0         1         1 
+DELETE (MANY)    0         0         1 
 9     resolce problems in common routes.
+9     send headers (for auth and getUserId)
+9     remove if auth put to user.
 8     removeSectionConnection update reducer actions. 
 8     same with reply delete
 4     route: migrate session to user.
@@ -100,9 +107,8 @@
 
 
 6 @SERVER improvements ----------------------------------
-8    multi document updates. UPDATE_MANY
+9    error check: .toString(). does indexOf always work?
 8    make sure to send one response per request. 
-8    when document is deleted: the connections need to be deleted as well
 8    if a link to deleted document is in any note, then all these notes have to be updated: replacing mention blot with deleted-blot. in both: frontend and server side? 
 6    implement server clean up routines.
 4    get anonymousSession token for not logged in users...
@@ -112,7 +118,7 @@
 6    request error handling
 6    set loading while requesting server data for individual components
 4    include password and email validation
-4
+4    do i need to JSON.stringify axios requests?
 
 4 @Future_Functionalities ----------------------------
 9    work with iframe for webpages and or PDF Docs.
@@ -140,6 +146,12 @@
 4    Soft delete: add delete flag to documents to enable restore.
 4    Creted dialogue when deleting: "Are you sure?" "Do you want to delete all annotations you have made within this text / section?"
 6    URL should represent session - somehow. It maybe have a session token - and a state id: if you request this token from server you get the contents. if you are entitled to.
+// suggest note tipps to format notes  // enforce structure of e.g. question
+// enable sectionless view with all comments.
+// intuitive Design
+// add PROJECT DATA TYPE
+// add GROUP DATA TYPE 
+
 
 2 Design -------------
 2 desing right click menu.

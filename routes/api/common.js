@@ -13,16 +13,21 @@ const Note = require('../../models/note');
  */
 // SELECT COLLECTION
 const returnCollection = resType => {
-  resType = resType.replace(/s$/, '');
-  return resType === 'text'
-    ? Text
-    : resType === 'section'
-    ? Section
-    : resType === 'note'
-    ? Note
-    : resType === 'user'
-    ? User
-    : null;
+  let str = resType.replace(/s$/, '');
+  const Collection =
+    str === 'text'
+      ? Text
+      : str === 'section'
+      ? Section
+      : str === 'note'
+      ? Note
+      : str === 'user'
+      ? User
+      : null;
+
+  if (!Collection)
+    throw `Document type '${resType}' cannot be matched with a collection.`;
+  return Collection;
 };
 
 // PUT RETRIEVE CONNECTION DIFFERENCE
@@ -48,6 +53,10 @@ const nestedDelete = (deleteArray, connections, blacklist, req) => {
     return returnCollection(serachObj.resType)
       .findById(serachObj.resId)
       .then(doc => {
+        if (!doc)
+          console.log(
+            '------------0---1----0---0----0---0----0---0-------------'
+          );
         console.log('found doc to delete of type', serachObj.resType);
         if (
           doc.accessFor.length > 0 &&
@@ -94,7 +103,8 @@ const nestedDelete = (deleteArray, connections, blacklist, req) => {
             : []),
           ...(serachObj.resType === 'note' && doc.isReply
             ? [{ resId: doc.isReply.noteId, resType: 'note' }]
-            : [])
+            : []),
+          ...doc.editedBy.map(resId => ({ resId, resType: 'user' }))
         );
         console.log('innerDeleteArray', innerDeleteArray);
 
@@ -126,19 +136,18 @@ router.get('/:restype/:id', getUserId, (req, res) => {
       err: 'Not allowed to request user data with this route.'
     });
 
-  const Collection = returnCollection(req.params.restype);
-
-  Collection.find({
-    $and: [
-      { _id: { $in: req.params.id.split('+') } },
-      {
-        $or: [
-          { accessFor: { $size: 0 } },
-          { accessFor: { $elemMatch: req.UserId } } // if !!req.UserId
-        ]
-      }
-    ]
-  })
+  returnCollection(req.params.restype)
+    .find({
+      $and: [
+        { _id: { $in: req.params.id.split('+') } },
+        {
+          $or: [
+            { accessFor: { $size: 0 } },
+            { accessFor: { $elemMatch: req.UserId } } // if !!req.UserId
+          ]
+        }
+      ]
+    })
     .then(docArray => res.json({ data: docArray }))
     .catch(err => {
       console.log('err in get', err);
@@ -194,6 +203,10 @@ router.put('/:restype/:id', getUserId, (req, res) => {
   returnCollection(req.params.restype)
     .findById(req.params.id)
     .then(mongoDoc => {
+      if (!mongoDoc)
+        console.log(
+          '------------0---0----0---0----0---0----0---0-------------'
+        );
       if (
         mongoDoc.accessFor.length > 0 &&
         (!req.userId ||
@@ -201,6 +214,50 @@ router.put('/:restype/:id', getUserId, (req, res) => {
       )
         throw '401 unauthorized to manipulate the document.';
       const promises = [];
+
+      // if new document add it to user
+      if (req.userId && mongoDoc.editedBy.length > 0) {
+        promises.push(
+          User.findById(req.userId).then(user => {
+            if (req.params.restype === 'text') {
+              user.textIds.push(req.params.id);
+            } else if (req.params.restype === 'section') {
+              user.sectionIds.push(req.params.id);
+            } else if (req.params.restype === 'note') {
+              user.noteIds.push(req.params.id);
+            } else return Promise.resolve();
+            return User.save();
+          })
+        );
+      }
+
+      // SECTION SPECIFIC TASKS
+      if (req.params.restype === 'section') {
+        // update (order of) sectionIds of text
+        if (req.body.previousTextSectionId) {
+          promises.push(
+            Text.findById(
+              req.body.doc.hasOwnProperty('textId')
+                ? req.body.doc.textId
+                : mongoDoc.textId
+            ).then(text => {
+              console.log(
+                'update text-sectionIds. insert at',
+                text.sectionIds.indexOf(req.body.previousTextSectionId._id) + 1
+              );
+              text.sectionIds = text.sectionIds.filter(
+                id => id.toString() !== req.params.id
+              );
+              text.sectionIds.splice(
+                text.sectionIds.indexOf(req.body.previousTextSectionId._id) + 1,
+                0,
+                req.params.id
+              );
+              return text.save();
+            })
+          );
+        }
+      }
 
       // NOTE SPECIFIC TASKS
       if (req.params.restype === 'note') {
@@ -217,11 +274,11 @@ router.put('/:restype/:id', getUserId, (req, res) => {
             Text.findById(req.body.doc.isAnnotation.textId).then(doc => {
               if (
                 !doc.directConnections.some(
-                  c => c.resId.toString() === req.params.resId
+                  c => c.resId.toString() === req.params.id
                 )
               )
                 doc.directConnections.push({
-                  resId: req.params.resId,
+                  resId: req.params.id,
                   resType: req.params.restype
                 });
               return doc.save();
@@ -232,11 +289,11 @@ router.put('/:restype/:id', getUserId, (req, res) => {
               section => {
                 if (
                   !section.directConnections.some(
-                    c => c.resId.toString() === req.params.resId
+                    c => c.resId.toString() === req.params.id
                   )
                 )
                   section.directConnections.push({
-                    resId: req.params.resId,
+                    resId: req.params.id,
                     resType: req.params.restype
                   });
                 return section.save();
@@ -253,11 +310,9 @@ router.put('/:restype/:id', getUserId, (req, res) => {
         ) {
           promises.push(
             Note.findById(req.body.doc.isReply.noteId).then(note => {
-              if (
-                !note.replies.some(c => c.resId.toString() === req.params.resId)
-              )
+              if (!note.replies.some(c => c.resId.toString() === req.params.id))
                 note.replies.push({
-                  resId: req.params.resId,
+                  resId: req.params.id,
                   resType: req.params.restype
                 });
               return note.save();
@@ -266,35 +321,11 @@ router.put('/:restype/:id', getUserId, (req, res) => {
         }
       }
 
-      // SECTION SPECIFIC TASKS
-      if (req.params.restype === 'section') {
-        // update (order of) sectionIds of text
-        if (req.body.previousTextSectionId) {
-          console.log('looking for textSectionIds update');
-          promises.push(
-            Text.findById(
-              req.body.doc.hasOwnProperty('textId')
-                ? req.body.doc.textId
-                : mongoDoc.textId
-            ).then(text => {
-              text.sectionIds = text.sectionIds.filter(
-                id => id.toString() !== req.params.id
-              );
-              text.sectionIds.splice(
-                text.sectionIds.indexOf(req.body.previousTextSectionId._id) + 1,
-                0,
-                req.params.id
-              );
-              return text.save();
-            })
-          );
-        }
-      }
       // add new connections and remove connections. in map() it is...
       //    set whether connection is direct (or indirect) relative to req.params.id.
       //    set whether new connection shall be added or old removed
       const connectionsToAddAndToRemove = [];
-      if (req.body.doc.directConnections) {
+      if (Array.isArray(req.body.doc.directConnections)) {
         connectionsToAddAndToRemove.push(
           ...addedConnections(
             req.body.doc.directConnections,
@@ -306,7 +337,7 @@ router.put('/:restype/:id', getUserId, (req, res) => {
           ).map(c => ({ ...c, isDirect: true }))
         );
       }
-      if (req.body.doc.indirectConnections) {
+      if (Array.isArray(req.body.doc.indirectConnections)) {
         connectionsToAddAndToRemove.push(
           ...addedConnections(
             req.body.doc.indirectConnections,
@@ -318,11 +349,19 @@ router.put('/:restype/:id', getUserId, (req, res) => {
           ).map(c => c)
         );
       }
+      console.log('connectionsToAddAndToRemove', connectionsToAddAndToRemove);
       promises.push(
         ...connectionsToAddAndToRemove.map(connection => {
-          return returnCollection(connection.resTyp)
+          return returnCollection(connection.resType)
             .findById(connection.resId)
             .then(doc => {
+              console.log(
+                'connection doc',
+                'direct',
+                doc.directConnections,
+                'indirect',
+                doc.indirectConnections
+              );
               if (connection.isDirect) {
                 doc.indirectConnections = doc.indirectConnections.filter(
                   c => c.resId.toString() !== req.params.id
@@ -342,19 +381,31 @@ router.put('/:restype/:id', getUserId, (req, res) => {
                     resType: req.params.restype
                   });
               }
+              console.log(
+                'save connection doc',
+                'direct',
+                doc.directConnections,
+                'indirect',
+                doc.indirectConnections
+              );
               return doc.save();
             });
         })
       );
 
-      Object.keys(req.body.doc).forEach(updateKey => {
-        // if( req.params.restype==="section" && updateKey==="importance") { mongoDoc.importance = mongoDoc.importancef.filter().concat() } else { }
-        // if(req.params.restype==="note" && updateKey==="votes") { mongoDoc.votes = mongoDoc.votesf.filter().concat() } else { }
-        mongoDoc[updateKey] = req.body.doc[updateKey];
+      return Promise.all(promises).then(() => {
+        console.log('mongoDoc updates:');
+        Object.keys(req.body.doc).forEach(updateKey => {
+          // if( req.params.restype==="section" && updateKey==="importance") { mongoDoc.importance = mongoDoc.importancef.filter().concat() } else { }
+          // if(req.params.restype==="note" && updateKey==="votes") { mongoDoc.votes = mongoDoc.votesf.filter().concat() } else { }
+          // editedBy can only be extended. // should not cotain duplicates.
+          // accessFor can only be changed from document owner = first editor
+          mongoDoc[updateKey] = req.body.doc[updateKey];
+          if (Array.isArray(req.body.doc[updateKey]))
+            console.log(updateKey, ':', req.body.doc[updateKey]);
+        });
+        return mongoDoc.save();
       });
-      console.log('mongoDoc', mongoDoc);
-      promises.push(mongoDoc.save());
-      return Promise.all(promises);
     })
     .then(() => {
       console.log('COMMON PUT SUCCESSFULL');
@@ -406,14 +457,17 @@ router.delete('/:restype/:id', getUserId, (req, res) => {
             return true;
           })
           .map(connection => {
+            console.log('map connection', connection);
             return returnCollection(connection.resType)
               .findById(connection.resId)
               .then(doc => {
                 console.log('found doc to update of type', connection.resType);
-                if (Array.isArray(doc.directConnections))
+                if (Array.isArray(doc.directConnections)) {
+                  console.log('directConnections', doc.directConnections);
                   doc.directConnections = doc.directConnections.filter(
-                    c => !deletedIds.includes(c.resId.toString()) // error here .toString of undefined
+                    c => !deletedIds.includes(c.resId.toString()) // error here .toString of undefined // somehow direct connections receive a _id. one element of type note did not receive a resId. Why?
                   );
+                }
                 if (Array.isArray(doc.indirectConnections))
                   doc.indirectConnections = doc.indirectConnections.filter(
                     c => !deletedIds.includes(c.resId.toString())
@@ -435,6 +489,17 @@ router.delete('/:restype/:id', getUserId, (req, res) => {
                   doc.replies = doc.replies.filter(
                     reply => !deletedIds.includes(reply.resId.toString())
                   );
+                if (connection.resType === 'user') {
+                  doc.textIds = doc.textIds.filter(
+                    id => !deletedIds.includes(id.toString())
+                  );
+                  doc.sectionIds = doc.sectionIds.filter(
+                    id => !deletedIds.includes(id.toString())
+                  );
+                  doc.noteIds = doc.noteIds.filter(
+                    id => !deletedIds.includes(id.toString())
+                  );
+                }
 
                 return doc.save();
               });
@@ -444,6 +509,35 @@ router.delete('/:restype/:id', getUserId, (req, res) => {
         res.json({
           success: true
         });
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(404).json({ success: false, err: err });
+    });
+});
+
+/**
+ * @route   DELETE api/spareids/:minutestoexpire
+ * @desc    delete spareIds older than.#
+ * @access  Public
+ */
+router.delete('/spareids/:minutestoexpire', (req, res) => {
+  let deleteBefore =
+    Date.now() - 1000 * 60 * Math.min(60, Number(req.params.minutestoexpire));
+
+  Promise.all(
+    [Text, Section, Note].map(Collection =>
+      Collection.deleteMany({
+        $and: [{ editedBy: { $size: 0 } }, { created: { $lt: deleteBefore } }]
+      })
+    )
+  )
+    .then(result => {
+      console.log('successfully deleted spareIds');
+      res.json({
+        success: true,
+        n: result.n
       });
     })
     .catch(err => {

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import InputWithPrepend from '../../../../../Metapanel/InputWithPrepend';
-import { updateText } from '../../../../../../store/actions';
+import { updateText, deleteText } from '../../../../../../store/actions';
 function TextMeta() {
   const dispatch = useDispatch();
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const text = useSelector(s => s.texts[s.textsPanel.activeTextPanel]);
 
   const [changeCounter, setChangeCounter] = useState(0);
@@ -61,6 +62,8 @@ function TextMeta() {
     }
   };
 
+  const deleteTextClick = () => dispatch(deleteText(activeTextPanel));
+
   useEffect(() => {
     const updateTimer = setTimeout(() => {
       updateChanges();
@@ -112,6 +115,11 @@ function TextMeta() {
         value={publicationDate}
         onEvent={{ onChange: e => setPublicationDate(e.target.value) }}
       />
+      <button className='btn btn-block btn-danger' onClick={deleteTextClick}>
+        <span>
+          <strong>permantly delete</strong> this text
+        </span>
+      </button>
     </div>
   );
 }
