@@ -103,7 +103,7 @@
 /* ADD BUBBLE */
 .add-bubble {
   position: absolute;
-  z-index: 3000;
+  z-index: 600;
   left: 0.25rem;
   height: 2rem;
   width: 2rem;

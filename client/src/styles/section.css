@@ -21,7 +21,7 @@
 }
 .section-scroll {
   padding: 0rem 0.5rem 0rem 0.5rem;
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -228,6 +228,7 @@ button.side-note-replies-toggle-display.hide-replies:hover::after {
   width: calc(100% - 1px);
   height: calc(100% - 28px);
   position: absolute;
+  z-index: 620;
   background-color: rgba(0, 0, 0, 0.1);
   pointer-events: none;
 }

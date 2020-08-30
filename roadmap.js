@@ -6,13 +6,11 @@ PUT (UPDATE)     0         1         1
 DELETE           0         1         1 
 DELETE (MANY)    0         0         1 
 9     resolce problems in common routes.
-9     send headers (for auth and getUserId)
-9     remove if auth put to user.
-8     removeSectionConnection update reducer actions. 
-8     same with reply delete
+9     test if headers (for auth and getUserId) work
+9     PUT / DELETE save res to user / project.
+9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
 4     route: migrate session to user.
-2DAY- 8    allow for connection of other types than just notes.
-6    integrate new connected data structure: deleteNote: also delete its connections / it as reply / its replies(?).
+@RECENT_BUGS : cant open two texts at once // when opening a note not always a tab item is created
 
 @NOTE_PANEL
 2     align add bubble for side notes. @SIDE_NOTE // postpone after css is polished
@@ -38,6 +36,11 @@ DELETE (MANY)    0         0         1
 2   shrink text size to fit into single line for section Title.
 5   while not in flowchar view connect connected section with simple arc on the right hand side
 6   set maximum height on section item - if exceeded 
+5   when section flow chart is opened reuse flowcahrt-item-preview and close notepanel
+6   improve scroll behaviour // alowing multiple scroll panes in side-panel
+6   allow modes: structuring / note taking / standard (both = current)
+6   display note title somewhere.
+
 
 
 @QUILL
@@ -51,6 +54,7 @@ DELETE (MANY)    0         0         1
 @UI
 2DAY- 2     improve quill text css. Also make cursor more visible: hard to see if next to mention Blot.
 1     100% width on footer.
+3     design idea for hide reply btn: when hover it shall created a shadow above replies that are going to be hidden
 
 
 @RAFAS_BRUDER
@@ -63,7 +67,6 @@ DELETE (MANY)    0         0         1
 6    is hording spareIds a good approach?
 6    how to prevent frontend and mongodb to get out of sync?
 
-
 // progressive web app.
 // uuid: to prevent spareIds
 // ATOMIC Design best practice
@@ -73,20 +76,17 @@ DELETE (MANY)    0         0         1
 // updateMany <- gibt es. 
 // nextJS -> kostenlos Content Delivery. Heroku nur für test. 
 
-  // smart - simple components
-  // NotePanelContainer - NotePanel
-  // styled components (angucken)
+// smart - simple components
+// NotePanelContainer - NotePanel
+// styled components (angucken)
   
 // Promise all
 
 
 7     reduce ammount of rerenders of flowchart
-
 6     Improve dagre layout 
 6     add flowchart for text comments
-
 6     make login session stable
-
 4     #hastags for categories @ for notes only? 
 
 @REMOVE BUGS  & NEW FEATURES------------------------
@@ -98,6 +98,7 @@ DELETE (MANY)    0         0         1
 6     make mouse/click Handlers non-blocking
 6     check whether multiple layers of mouse move / click
 6     check amount of rerenders
+1     check what settimeout does and when it would be necessary to remeasure divs.
 
 
 @CLEANER CODE ---------------
@@ -107,14 +108,12 @@ DELETE (MANY)    0         0         1
 
 
 6 @SERVER improvements ----------------------------------
-9    error check: .toString(). does indexOf always work?
+9    mongodb error check: .toString(). does indexOf always work?
 8    make sure to send one response per request. 
 8    if a link to deleted document is in any note, then all these notes have to be updated: replacing mention blot with deleted-blot. in both: frontend and server side? 
 6    implement server clean up routines.
 4    get anonymousSession token for not logged in users...
 6    make get request not url only -> what if to many notes get requested? string to long...
-6    request error handling
-6    add  try & catch + async + await?
 6    request error handling
 6    set loading while requesting server data for individual components
 4    include password and email validation
@@ -151,7 +150,8 @@ DELETE (MANY)    0         0         1
 // intuitive Design
 // add PROJECT DATA TYPE
 // add GROUP DATA TYPE 
-
+// add naviagation hierachy when creating @mention_connections (e.g. project-text-section-note / project-note)
+// make menu allowing to select what to do with embed: open inside other note, open at text-section, open in notepanel
 
 2 Design -------------
 2 desing right click menu.

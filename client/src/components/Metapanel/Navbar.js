@@ -17,7 +17,14 @@ const Navbar = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(s => s.auth.isAuthenticated);
-  const user = useSelector(s => s.user);
+  const welcomeOpen = useSelector(s => s.ui.welcomeOpen);
+  const aboutOpen = useSelector(s => s.ui.aboutOpen);
+  const registerOpen = useSelector(s => s.ui.registerOpen);
+  const signInOpen = useSelector(s => s.ui.signInOpen);
+  const logoutOpen = useSelector(s => s.ui.logoutOpen);
+  const deskOpen = !aboutOpen && !registerOpen && !signInOpen && !logoutOpen;
+  const username = useSelector(s => s.user.username);
+
   // 2do: make mini when mouse is not over.
   return (
     <nav className='navbar navbar-expand-sm navbar-dark bg-secondary row static nav-main'>
@@ -42,8 +49,7 @@ const Navbar = () => {
         <ul className='navbar-nav ml-auto'>
           <li className='nav-item'>
             <Link
-              className='nav-link'
-              to='/desk'
+              className={`nav-link ${deskOpen ? 'active' : ''}`}
               onClick={() => dispatch(closeAllModals(history))}
             >
               <BsLaptop />
@@ -53,7 +59,7 @@ const Navbar = () => {
 
           <li className='nav-item'>
             <Link
-              className='nav-link'
+              className={`nav-link ${aboutOpen ? 'active' : ''}`}
               to='/about'
               onClick={() => dispatch(toggleAboutModal(history))}
             >
@@ -65,12 +71,12 @@ const Navbar = () => {
             <>
               <li className='nav-item'>
                 <span className='nav-link'>
-                  <BsPerson /> {user.username}
+                  <BsPerson /> {username}
                 </span>
               </li>
               <li className='nav-item'>
                 <Link
-                  className='nav-link'
+                  className={`nav-link ${logoutOpen ? 'active' : ''}`}
                   to='/logout'
                   onClick={() => {
                     dispatch(logoutUser());
@@ -85,7 +91,7 @@ const Navbar = () => {
             <>
               <li className='nav-item'>
                 <Link
-                  className='nav-link'
+                  className={`nav-link ${signInOpen ? 'active' : ''}`}
                   to='/signin'
                   onClick={() => dispatch(toggleSignInModal(history))}
                 >
@@ -94,7 +100,7 @@ const Navbar = () => {
               </li>
               <li className='nav-item'>
                 <Link
-                  className='nav-link'
+                  className={`nav-link ${registerOpen ? 'active' : ''}`}
                   to='/signup'
                   onClick={() => dispatch(toggleRegisterModal(history))}
                 >
