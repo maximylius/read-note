@@ -35,7 +35,8 @@ const schema = new Schema({
   created: { type: Date },
   lastEdited: { type: Date },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+  accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  isPublic: { type: Boolean, default: false }
 });
 
 module.exports = Text = mongoose.model('Text', schema);

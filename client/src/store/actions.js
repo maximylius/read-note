@@ -494,10 +494,10 @@ export const setDisplayTextMeta = display => dispatch => {
  *
  * @TEXT_UPLOAD_PAGE
  */
-export const uploadTextcontent = (
-  { textcontent, delta },
-  publicAccess = true
-) => (dispatch, getState) => {
+export const uploadTextcontent = ({ textcontent, delta }, isPublic = true) => (
+  dispatch,
+  getState
+) => {
   const { user, texts, spareIds } = getState();
   const text = defaultText();
   text._id = spareIds['texts'][0];
@@ -505,11 +505,9 @@ export const uploadTextcontent = (
   text.delta = delta;
   text.formatDelta = delta;
   text.editedBy = user._id ? [user._id] : [];
-  text.accessFor = publicAccess
-    ? []
-    : user._id
-    ? [user._id]
-    : ['2do:session.id'];
+  text.accessFor = user._id ? [user._id] : []; //2do add sessionId / could be a spareId for user
+  text.isPublic = !!isPublic;
+
   // add a placeholder title
   const allTextTitles = [...Object.keys(texts).map(id => texts[id].title)];
   let i = 0;
@@ -1462,4 +1460,13 @@ export const submitNoteVote = (noteId, bill) => (dispatch, getState) => {
     { doc: { vote } },
     tokenConfig(getState)
   );
+};
+
+export const toggleShowNoteReplies = noteId => (dispatch, getState) => {
+  dispatch({
+    type: getState().ui.openReplyNotes.includes(noteId)
+      ? types.HIDE_SIDENOTE_REPLIES
+      : types.SHOW_SIDENOTE_REPLIES,
+    payload: { noteId }
+  });
 };

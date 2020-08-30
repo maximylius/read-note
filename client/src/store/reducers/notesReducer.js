@@ -19,46 +19,33 @@ export default (state = initialState, action) => {
         [payload.note._id]: payload.note,
         // update other notes when directConnections have changed.
         ...Object.fromEntries(
-          payload.connectionsToAdd.flatMap(el =>
-            el.resType === 'note' &&
-            !state[el.resId].indirectConnections.some(
-              connection => connection.resId === el.resId
-            )
-              ? [
-                  [
-                    el.resId,
-                    {
-                      ...state[el.resId],
-                      indirectConnections: state[
-                        el.resId
-                      ].indirectConnections.concat({
-                        resId: payload.note._id,
-                        resType: 'note'
-                      })
-                    }
-                  ]
-                ]
-              : []
-          )
+          payload.connectionsToAdd
+            .filter(c => c.resType === 'note')
+            .map(el => [
+              el.resId,
+              {
+                ...state[el.resId],
+                indirectConnections: state[el.resId].indirectConnections
+                  .filter(c => c.resId !== el.resId)
+                  .concat({
+                    resId: payload.note._id,
+                    resType: 'note'
+                  })
+              }
+            ])
         ),
         ...Object.fromEntries(
-          payload.connectionsToRemove.flatMap(el =>
-            el.resType === 'note'
-              ? [
-                  [
-                    el.resId,
-                    {
-                      ...state[el.resId],
-                      indirectConnections: state[
-                        el.resId
-                      ].indirectConnections.filter(
-                        id => id !== payload.note._id
-                      )
-                    }
-                  ]
-                ]
-              : []
-          )
+          payload.connectionsToRemove
+            .filter(c => c.resType === 'note')
+            .map(el => [
+              el.resId,
+              {
+                ...state[el.resId],
+                indirectConnections: state[el.resId].indirectConnections.filter(
+                  id => id !== payload.note._id
+                )
+              }
+            ])
         )
       };
     case types.SUBMIT_NOTE_VOTE:

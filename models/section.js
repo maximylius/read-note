@@ -38,7 +38,8 @@ const schema = new Schema({
   created: { type: Date, default: Date.now },
   lastEdited: { type: Date, default: Date.now },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+  accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  isPublic: { type: Boolean, default: false }
 });
 
 module.exports = Section = mongoose.model('sections', schema);

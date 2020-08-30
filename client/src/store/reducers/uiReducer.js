@@ -124,6 +124,7 @@ const initialState = {
   keepFinderOpen: false,
   lastDeskPathname: '/desk',
   loading: false,
+  openReplyNotes: [],
   alerts: [],
   alertId: 0
 };
@@ -143,8 +144,30 @@ export default (state = initialState, action) => {
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
     // close finder...
-    case types.OPEN_NOTE:
+    case types.SHOW_SIDENOTE_REPLIES:
+      return {
+        ...state,
+        openReplyNotes: state.openReplyNotes.concat(payload.noteId)
+      };
+    case types.HIDE_SIDENOTE_REPLIES:
+      return {
+        ...state,
+        openReplyNotes: state.openReplyNotes.filter(id => id !== payload.noteId)
+      };
     case types.ADD_NOTE:
+      return {
+        ...state,
+        ...mdResolver(
+          false,
+          state.mdTextsPanel > 0,
+          state.mdAnnotationsPanelLast > 0,
+          state.mdNotesPanel > 0
+        ),
+        openReplyNotes: state.openReplyNotes.concat([
+          payload.note._id,
+          ...(payload.note.isReply ? [payload.note.isReply.noteId] : [])
+        ])
+      };
     case types.UPDATE_NOTE:
     case types.UPDATE_TEXT:
     case types.OPEN_ADDTEXTPANEL:
@@ -253,7 +276,6 @@ export default (state = initialState, action) => {
         mdAnnotationsPanelLast: 0
       };
     case types.EXPAND_NOTES_PANEL:
-    case types.ADD_NOTE:
     case types.OPEN_NOTE:
       return {
         ...state,

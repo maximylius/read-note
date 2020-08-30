@@ -16,7 +16,7 @@ import {
   deleteNote
 } from '../../../../../../store/actions';
 
-const Reactions = ({ noteId }) => {
+const Reactions = ({ noteId, triggerRemeasure }) => {
   const dispatch = useDispatch();
   const userId = useSelector(s => s.user._id);
   const isUserNote = useSelector(
@@ -86,8 +86,12 @@ const Reactions = ({ noteId }) => {
       // return;
     }
     dispatch(addNote({ isReply: { noteId } }));
+    triggerRemeasure();
   };
-  const deleteClickHandler = () => dispatch(deleteNote(noteId));
+  const deleteClickHandler = () => {
+    dispatch(deleteNote(noteId));
+    triggerRemeasure();
+  };
 
   return (
     <div className='side-note-reaction-container'>

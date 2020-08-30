@@ -76,45 +76,35 @@ export default (state = initialState, action) => {
             ...state,
             // update when directConnections have changed.
             ...Object.fromEntries(
-              payload.connectionsToAdd.flatMap(el =>
-                el.resType === 'section'
-                  ? [
-                      [
-                        el.resId,
-                        {
-                          ...state[el.resId],
-                          indirectConnections: [
-                            ...new Set(
-                              ...state[el.resId].indirectConnections.concat({
-                                resId: payload.note._id,
-                                resType: 'note'
-                              })
-                            )
-                          ]
-                        }
-                      ]
-                    ]
-                  : []
-              )
+              payload.connectionsToAdd
+                .filter(c => c.resType === 'section')
+                .map(el => [
+                  el.resId,
+                  {
+                    ...state[el.resId],
+                    indirectConnections: state[el.resId].indirectConnections
+                      .filter(c => c.resId !== el.resId)
+                      .concat({
+                        resId: payload.note._id,
+                        resType: 'note'
+                      })
+                  }
+                ])
             ),
             ...Object.fromEntries(
-              payload.connectionsToRemove.flatMap(el =>
-                el.resType === 'section'
-                  ? [
-                      [
-                        el.resId,
-                        {
-                          ...state[el.resId],
-                          indirectConnections: state[
-                            el.resId
-                          ].indirectConnections.filter(
-                            el => el.resId !== payload.note._id
-                          )
-                        }
-                      ]
-                    ]
-                  : []
-              )
+              payload.connectionsToRemove
+                .filter(c => c.resType === 'section')
+                .map(el => [
+                  el.resId,
+                  {
+                    ...state[el.resId],
+                    indirectConnections: state[
+                      el.resId
+                    ].indirectConnections.filter(
+                      el => el.resId !== payload.note._id
+                    )
+                  }
+                ])
             )
           };
 
