@@ -1,22 +1,14 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import FinderPanel from './FinderPanel/';
 import Notes from './NotesPanel/';
 import TextsPanel from './TextsPanel';
 import Placeholder from './Placeholder';
-import { loadText, loadNotes } from '../../../store/actions';
 import isEqual from 'lodash/isEqual';
 // import Flowchart from './Flowchart';
-import { regExpOpenTexts } from '../../../functions/main';
 
 const Desk = () => {
-  const dispatch = useDispatch();
-  const params = useParams();
-  const openTextPanels = useSelector(s => s.textsPanel.openTextPanels);
-  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const openNotes = useSelector(s => s.notesPanel.openNotes);
-  const activeNote = useSelector(s => s.notesPanel.activeNote);
   const addNotesTo = useSelector(s => s.notesPanel.addNotesTo);
   const mdFinderPanel = useSelector(s => s.ui.mdFinderPanel);
   const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
@@ -37,59 +29,6 @@ const Desk = () => {
     setRefRenderTrigger(quillNoteRefs);
     return () => {};
   }, [isEqual(quillNoteRefs, refRenderTrigger)]);
-
-  useEffect(() => {
-    if (params.textIds) {
-      const textParams = params.textIds.split('+');
-      const textsParamsToLoad = textParams.filter(
-        param =>
-          !openTextPanels.includes(param.split('-')[0]) ||
-          (param.split('-')[1] == '1' &&
-            param.split('-')[0] !== activeTextPanel)
-      );
-      let nextActiveText = false;
-      const textsToLoad = textsParamsToLoad.map(param => {
-        if (param.split('-')[1] === '1') nextActiveText = param.split('-')[0];
-        return param.split('-')[0];
-      });
-      textsToLoad.forEach(textId => {
-        dispatch(
-          loadText({
-            textId: textId,
-            openText: true,
-            setToActive: textId === nextActiveText,
-            history: null
-          })
-        );
-      });
-    }
-    if (params.noteIds) {
-      const noteParams = params.noteIds.split('+');
-      const notesParamsToLoad = noteParams.filter(
-        param =>
-          !openNotes.includes(param.split('-')[0]) ||
-          (param.split('-')[1] == '1' && param.split('-')[0] !== activeNote)
-      );
-      let nextActiveNote = false;
-      const notesToLoad = notesParamsToLoad.map(param => {
-        if (param.split('-')[1] === '1') nextActiveNote = param.split('-')[0];
-        return param.split('-')[0];
-      });
-
-      notesToLoad.forEach(noteId => {
-        dispatch(
-          loadNotes({
-            noteIds: [noteId],
-            open: true,
-            setToActive: noteId === nextActiveNote ? noteId : false,
-            history: null
-          })
-        );
-      });
-    }
-    return () => {};
-    // eslint-disable-next-line
-  }, [params]);
 
   return (
     <>

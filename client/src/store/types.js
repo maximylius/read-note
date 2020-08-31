@@ -37,6 +37,8 @@ export const CLOSE_SIGNIN_MODAL = 'CLOSE_SIGNIN_MODAL';
 export const OPEN_LOGOUT_MODAL = 'OPEN_LOGOUT_MODAL';
 export const CLOSE_LOGOUT_MODAL = 'CLOSE_LOGOUT_MODAL';
 export const CLOSE_ALL_MODALS = 'CLOSE_ALL_MODALS';
+export const SET_CURRENT_PATHNAME = 'SET_CURRENT_PATHNAME';
+
 export const SHOW_SIDENOTE_REPLIES = 'SHOW_SIDENOTE_REPLIES';
 export const HIDE_SIDENOTE_REPLIES = 'HIDE_SIDENOTE_REPLIES';
 
@@ -68,7 +70,7 @@ export const PLAY_SPEED_READER = 'PLAY_SPEED_READER';
 export const CLOSE_SPEED_READER = 'CLOSE_SPEED_READER';
 
 // uploadpage
-export const UPLOADED_TEXT = 'UPLOADED_TEXT';
+export const UPLOADED_TEXT = 'UPLOADED_TEXT'; // rename this to ADD_TEXT
 export const SET_TEXT_UPLOAD_STATUS = 'SET_TEXT_UPLOAD_STATUS';
 export const SET_TEXT_SEARCH_RESULTS = 'SET_TEXT_SEARCH_RESULTS';
 
@@ -77,6 +79,7 @@ export const CLOSE_NOTE = 'CLOSE_NOTE'; // remove from openNotes
 export const OPEN_NOTE = 'OPEN_NOTE'; // change activeNote //append to openNotes
 
 // note actions
+export const LOAD_NOTES = 'LOAD_NOTES';
 export const GET_NOTES = 'GET_NOTES'; // GET all notes
 export const ADD_NOTE = 'ADD_NOTE';
 export const UPDATE_NOTE = 'UPDATE_NOTE';
@@ -88,10 +91,11 @@ export const TOGGLE_USER_FAVOURITE = 'TOGGLE_USER_FAVOURITE';
 export const SUBMIT_NOTE_VOTE = 'SUBMIT_NOTE_VOTE';
 
 // text actions
-export const OPEN_TEXT = 'OPEN_TEXT'; //new
+export const LOAD_TEXTS = 'LOAD_TEXTS'; //new
+export const OPEN_TEXT = 'OPEN_TEXT';
 export const ADD_TEXT = 'ADD_TEXT';
-export const ADD_AND_OPEN_TEXT = 'ADD_AND_OPEN_TEXT'; //new
-export const UPDATE_TEXT = 'UPDATE_TEXT'; //new
+export const ADD_AND_OPEN_TEXT = 'ADD_AND_OPEN_TEXT';
+export const UPDATE_TEXT = 'UPDATE_TEXT';
 export const DELETE_TEXT = 'DELETE_TEXT';
 export const GET_USER_TEXTS_META = 'GET_USER_TEXTS_META';
 export const SWITCH_TO_OPEN_TEXTPANEL = 'SWITCH_TO_OPEN_TEXTPANEL';
@@ -100,6 +104,7 @@ export const OPEN_ADDTEXTPANEL = 'OPEN_ADDTEXTPANEL';
 export const CLEAR_ADDTEXTPANEL = 'CLEAR_ADDTEXTPANEL';
 
 // sections actions
+export const LOAD_SECTIONS = 'LOAD_SECTIONS'; //new
 export const ADD_SECTION = 'ADD_SECTION';
 export const UPDATE_SECTION = 'UPDATE_SECTION';
 export const DELETE_SECTION = 'DELETE_SECTION';

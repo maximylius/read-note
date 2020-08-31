@@ -15,7 +15,7 @@ function Register() {
 
   const onSubmit = () => {
     console.log('sumbit');
-    if (emailRegExp.test(email) && username.length > 2 && password.length > 6) {
+    if (emailRegExp.test(email) && username.length > 0 && password.length > 6) {
       dispatch(registerUser({ username, email, password }));
     } else {
       if (!emailRegExp.test(email)) {
@@ -29,18 +29,17 @@ function Register() {
           )
         );
       }
-      if (username.length <= 2) {
+      if (!username.length) {
         dispatch(
           addAlert(
             {
               type: 'alert alert-warning',
-              message: `<p>Display name must contain at least 3 characters.</p>`
+              message: `<p>Please enter a display name.</p>`
             },
             5000
           )
         );
       }
-
       if (password.length <= 6) {
         dispatch(
           addAlert(

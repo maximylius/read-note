@@ -80,7 +80,6 @@ export default (state = initialState, action) => {
 
     case types.LOGIN_SUCCESS:
     case types.REGISTER_SUCCESS:
-      localStorage.setItem('token', action.payload.token);
     case types.USER_LOADED:
       // merge with any previous user activity.
       console.log(payload);
@@ -88,26 +87,15 @@ export default (state = initialState, action) => {
       console.log(payload.user.noteIds);
       return {
         ...payload.user,
-        noteIds: [...new Set([...payload.user.noteIds, ...state.noteIds])],
-        textIds: [...new Set([...payload.user.textIds, ...state.textIds])],
-        sectionIds: [
-          ...new Set([...payload.user.sectionIds, ...state.sectionIds])
-        ],
-        annotationIds: [
-          ...new Set([...payload.user.annotationIds, ...state.annotationIds])
-        ],
-        accessedNoteIds: [
-          ...new Set([
-            ...payload.user.accessedNoteIds,
-            ...state.accessedNoteIds
+        ...Object.fromEntries(
+          // merge all arrays
+          Object.keys(payload.user).map(key => [
+            key,
+            Array.isArray(payload.user[key]) && Array.isArray(state[key])
+              ? [...payload.user[key], ...state[key]]
+              : payload.user[key]
           ])
-        ],
-        accessedTextIds: [
-          ...new Set([
-            ...payload.user.accessedTextIds,
-            ...state.accessedTextIds
-          ])
-        ]
+        )
       };
     case types.LOGOUT_SUCCESS:
       localStorage.removeItem('token');

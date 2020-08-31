@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const schema = new Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: true, select: false },
   projectIds: [{ type: Schema.Types.ObjectId, ref: 'Project', default: [] }],
   textIds: [{ type: Schema.Types.ObjectId, ref: 'Text', default: [] }],
   sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section', default: [] }],
@@ -19,7 +19,8 @@ const schema = new Schema({
       resType: { type: String } //note | text | section
     }
   ],
-  reputation: { type: Number, default: 0 }
+  reputation: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now() }
 });
 
 // schema.plugin(mongooseUniqueValidator);

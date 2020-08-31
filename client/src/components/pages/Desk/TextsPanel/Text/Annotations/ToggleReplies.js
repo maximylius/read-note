@@ -19,8 +19,17 @@ const ToggleReplies = ({ noteId, showReplies, replies, triggerRemeasure }) => {
       onClick={toggleDisplayReplies}
     >
       <span>
-        {showReplies ? <BsChevronUp /> : <BsChevronDown />}
-        {`${showReplies ? ' Hide ' : ' Display '}`}
+        {showReplies ? (
+          <>
+            <BsChevronUp />
+            {' Hide '}
+          </>
+        ) : (
+          <>
+            <BsChevronDown />
+            {' Display '}
+          </>
+        )}
         {replies.length > 1 ? `${replies.length} replies` : '1 reply'}
       </span>
     </button>

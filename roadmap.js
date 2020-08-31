@@ -1,28 +1,36 @@
 /**
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 _TestTable_    TEXT    SECTION     NOTE
+GET              0         0         0
 PUT (INIT)       0         1         1 
 PUT (UPDATE)     0         1         1 
 DELETE           0         1         1 
 DELETE (MANY)    0         0         1 
+// register login success shall close modals.
 9     resolce problems in common routes.
 9     test if headers (for auth and getUserId) work
 9     PUT / DELETE save res to user / project.
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
-4     route: migrate session to user.
 @RECENT_BUGS : cant open two texts at once // when opening a note not always a tab item is created
+// make url change close and open modals
 
 @NOTE_PANEL
-2     align add bubble for side notes. @SIDE_NOTE // postpone after css is polished
 5    reduce amount of rerenders for side notes when section attributes are changed. Probably due to useSelector listener for sections. maybe custom hook would solve this when configured that only changes in title, delta and creation / deletion are necessary to observe.
 2DAY- 6     issue embeded notes can sometimes not be collapsed. happens with notes embed in other notes
 2DAY- 6     when are and should notes be remounted? // will this delete history? Can you transfer history // Can you duplicate the editor to allow editing from multiple places? // due to embeds this still would not be possible.
 2DAY- 6     trigger note update before switching into that notebook
 9     define object as function input => props = {state:{}, actions:{},input:{}} => pass props to next level and add new inputs to input.
+{
+  state: {},
+  redux: {},
+  actions: {}
+  references: {},
+  input: {}
+}
 
 
 @LOADING
-2DAY- 6    implement lazy loading.
+2DAY- 6    implement lazy loading. @HIGH_PRIORITY
 2DAY- 7     implement check, whether requested notes are loaded. If they arent load these notes. -> needs to be done for embeds and replies. And basically any note that is opened. 
 2DAY- 6     on first load, some embeded notes are not loaded. for this reason they are not embeded. should update to also show those embeds
 
@@ -112,7 +120,7 @@ DELETE (MANY)    0         0         1
 8    make sure to send one response per request. 
 8    if a link to deleted document is in any note, then all these notes have to be updated: replacing mention blot with deleted-blot. in both: frontend and server side? 
 6    implement server clean up routines.
-4    get anonymousSession token for not logged in users...
+4    get anonymousSession token for not logged in users... route: migrate session to user.
 6    make get request not url only -> what if to many notes get requested? string to long...
 6    request error handling
 6    set loading while requesting server data for individual components

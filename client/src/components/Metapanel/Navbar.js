@@ -23,6 +23,7 @@ const Navbar = () => {
   const signInOpen = useSelector(s => s.ui.signInOpen);
   const logoutOpen = useSelector(s => s.ui.logoutOpen);
   const deskOpen = !aboutOpen && !registerOpen && !signInOpen && !logoutOpen;
+  const lastDeskPathname = useSelector(s => s.ui.lastDeskPathname);
   const username = useSelector(s => s.user.username);
 
   // 2do: make mini when mouse is not over.
@@ -51,6 +52,7 @@ const Navbar = () => {
             <Link
               className={`nav-link ${deskOpen ? 'active' : ''}`}
               onClick={() => dispatch(closeAllModals(history))}
+              to={lastDeskPathname}
             >
               <BsLaptop />
               Desk

@@ -17,36 +17,33 @@ router.post('/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
     return res.status(400).json({ msg: 'Please fill in all fields.' });
-  User.findOne({ email }).then(user => {
-    if (!user) return res.status(400).json({ msg: 'User does not exists' });
-    // validate password
-    bcrypt.compare(password, user.password).then(isMatch => {
-      if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
-      jwt.sign(
-        { _id: user._id },
-        config.get('jwtSecret'),
-        { expiresIn: 3600 },
-        (err, token) => {
-          if (err) throw err;
-          res.json({
-            token,
-            user: {
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              notebookIds: user.notebookIds,
-              textIds: user.textIds,
-              sectionIds: user.sectionIds,
-              annotationIds: user.annotationIds,
-              accessedNotebookIds: user.accessedNotebookIds,
-              accessedTextIds: user.accessedTextIds,
-              reputation: user.reputation
-            }
-          });
-        }
-      );
+  User.findOne({ email })
+    .select('+password')
+    .then(user => {
+      if (!user) return res.status(404).json({ msg: 'User does not exists' });
+      // validate password
+      bcrypt.compare(password, user.password).then(isMatch => {
+        if (!isMatch)
+          return res.status(400).json({ msg: 'Invalid credentials' });
+        jwt.sign(
+          { _id: user._id },
+          config.get('jwtSecret'),
+          { expiresIn: 3600 },
+          (err, token) => {
+            console.log('err', err);
+            if (err)
+              return res
+                .status(500)
+                .json({ err, msg: 'Internal server error.' });
+
+            res.json({
+              token,
+              user: user // 2do this still contains (hashed) password. How to remove that without producing an error?
+            });
+          }
+        );
+      });
     });
-  });
 });
 
 /**

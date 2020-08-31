@@ -15,9 +15,9 @@ body,
 .footer-version {
   margin-left: 10%;
 }
-.footer-shared-toolbar-container {
-  background-color: rgb(200, 245, 200);
-}
+/* .footer-shared-toolbar-container {
+  background-color: var(--secondary);
+} */
 
 .page-modal-outer {
   position: absolute;
@@ -278,7 +278,8 @@ button.closeAlertElement {
 .footer {
   justify-content: center;
   width: 100vw;
-  background-color: #add;
+  background-color: var(--secondary);
+  color: white;
 }
 
 /* @media (max-height: 600px) {

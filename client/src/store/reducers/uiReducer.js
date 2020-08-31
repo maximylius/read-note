@@ -122,6 +122,7 @@ const initialState = {
   signInOpen: false,
   logoutOpen: false,
   keepFinderOpen: false,
+  currentPathname: null,
   lastDeskPathname: '/desk',
   loading: false,
   openReplyNotes: [],
@@ -347,6 +348,11 @@ export default (state = initialState, action) => {
         )
       };
 
+    case types.SET_CURRENT_PATHNAME:
+      return {
+        ...state,
+        currentPathname: payload.pathname
+      };
     case types.OPEN_WELCOME_MODAL:
       return {
         ...state,
@@ -407,11 +413,13 @@ export default (state = initialState, action) => {
         ...state,
         aboutOpen: false
       };
+    case types.REGISTER_SUCCESS:
     case types.CLOSE_REGISTER_MODAL:
       return {
         ...state,
         registerOpen: false
       };
+    case types.LOGIN_SUCCESS:
     case types.CLOSE_SIGNIN_MODAL:
       return {
         ...state,

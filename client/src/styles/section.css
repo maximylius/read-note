@@ -246,12 +246,12 @@ svg.section-arcs-svg-container {
   width: 100%;
   height: 100%;
 }
-.section-arcs-svg-container {
-  /* background-color: red; */
-  /* width: 100%;
+/* .section-arcs-svg-container {
+  background-color: red;
+  width: 100%;
   height: 100%;
-  position: absolute; */
-}
+  position: absolute;
+} */
 path.section-arc-path {
   stroke-width: 2px;
 }

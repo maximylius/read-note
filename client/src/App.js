@@ -23,6 +23,7 @@ import Alerts from './components/Metapanel/Alerts';
 // import Welcome from './components/pages/Welcome';
 import Footer from './components/Metapanel/Footer';
 import MainPage from './components/pages';
+import RouteWrapper from './components/pages/RouteWrapper';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -41,20 +42,20 @@ const App = () => {
           <Navbar />
           <Alerts />
           <Switch>
-            <Route exact path='/' component={MainPage} />
+            <Route exact path='/' component={RouteWrapper} />
             <Route
               exact
               path='/desk/texts=:textIds&notes=:noteIds'
-              component={MainPage}
+              component={RouteWrapper}
             />
-            <Route exact path='/desk/texts=:textIds' component={MainPage} />
-            <Route exact path='/desk/notes=:noteIds' component={MainPage} />
-            <Route path='/desk' component={MainPage} />
-            <Route exact path='/about' component={MainPage} />
-            <Route exact path='/signup' component={MainPage} />
-            <Route exact path='/signin' component={MainPage} />
-            <Route exact path='/logout' component={MainPage} />
-            <Route component={MainPage} />
+            <Route exact path='/desk/texts=:textIds' component={RouteWrapper} />
+            <Route exact path='/desk/notes=:noteIds' component={RouteWrapper} />
+            <Route path='/desk' component={RouteWrapper} />
+            <Route exact path='/about' component={RouteWrapper} />
+            <Route exact path='/signup' component={RouteWrapper} />
+            <Route exact path='/signin' component={RouteWrapper} />
+            <Route exact path='/logout' component={RouteWrapper} />
+            <Route component={RouteWrapper} />
           </Switch>
           <Footer />
         </div>

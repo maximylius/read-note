@@ -21,7 +21,93 @@ import _isEqual from 'lodash/isEqual';
  *
  *
  * @AUTH
+ *
  */
+const nestedFetch = (
+  r = { projectIds: [], textIds: [], sectionIds: [], noteIds: [] },
+  redux = { dispatch: Function(), getState: Function() }
+) => {
+  if (!Array.isArray(r.projectIds)) r.projectIds = [];
+  if (!Array.isArray(r.textIds)) r.textIds = [];
+  if (!Array.isArray(r.sectionIds)) r.sectionIds = [];
+  if (!Array.isArray(r.noteIds)) r.noteIds = [];
+  if (!Array.isArray(r.blacklist)) r.blacklist = [];
+
+  const resType =
+    r.projectIds.length > 0
+      ? 'project'
+      : r.textIds.length > 0
+      ? 'text'
+      : r.sectionIds.length > 0
+      ? 'section'
+      : r.noteIds.length > 0
+      ? 'note'
+      : null;
+  if (!resType) return console.log('done fetching resources.');
+
+  const promises = [];
+  const resState = redux.getState()[`${resType}s`];
+
+  r[`${resType}Ids`].forEach(id => {
+    if (r.blacklist.includes(id)) return;
+    r.blacklist.push(id);
+    if (
+      Object.keys(resState).includes(id) &&
+      resState[id] //2do add is loaded check.
+    )
+      return;
+
+    promises.push(
+      axios
+        .get(`/api/common/${resType}/${id}`)
+        .then(res => {
+          // flexibly push items
+          ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
+            if (Array.isArray(res.data[key])) {
+              if (key === 'replies') {
+                r.noteIds.push(...res.data.replies.map(reply => reply.noteId));
+              } else {
+                r[key].push(...res.data[key]);
+              }
+            }
+          });
+
+          redux.dispatch(
+            resType === 'project'
+              ? { type: 'types.LOAD_PROJECTS', payload: {} }
+              : resType === 'text'
+              ? { type: types.LOAD_TEXTS, payload: {} }
+              : resType === 'section'
+              ? { type: types.LOAD_SECTIONS, payload: {} }
+              : resType === 'note'
+              ? { type: types.LOAD_NOTES, payload: {} }
+              : null
+          );
+        })
+        .catch(err => {
+          console.log('nested fetch error: ', err, err.response);
+          dispatchAlert(
+            {
+              message: `<span>Requested ${resType} cannot be loaded.</span>`,
+              type: 'danger'
+            },
+            4000,
+            redux.dispatch,
+            redux.getState
+          );
+          // fetches error on individual resource level: could possibly spam error message.
+          // add error that counts how many are not
+        })
+    );
+  });
+
+  Promise.all(promises).then(() => {
+    r[`${resType}Ids`] = r[`${resType}Ids`].filter(
+      id => !r.blacklist.includes(id)
+    );
+    nestedFetch(r, redux);
+  });
+};
 
 const fetchUserData = async (user, openTexts, dispatch) => {
   if (user.noteIds.length > 0) {
@@ -48,7 +134,10 @@ const fetchUserData = async (user, openTexts, dispatch) => {
   }
 };
 
-export const registerUser = ({ username, email, password }) => dispatch => {
+export const registerUser = ({ username, email, password }) => (
+  dispatch,
+  getState
+) => {
   // Headers
   const config = {
     headers: {
@@ -60,14 +149,31 @@ export const registerUser = ({ username, email, password }) => dispatch => {
 
   axios
     .post('/api/users/register', body, config)
-    .then(res =>
+    .then(res => {
+      dispatchAlert(
+        {
+          message: '<span>Successfully registered</span>',
+          type: 'success'
+        },
+        4000,
+        dispatch,
+        getState
+      );
       dispatch({
         type: types.REGISTER_SUCCESS,
         payload: res.data
-      })
-    )
+      });
+    })
     .catch(err => {
-      dispatch(returnErrors(err, err, 'REGISTER_FAIL'));
+      dispatchAlert(
+        {
+          message: '<span>E-Mail address is already in use.</span>',
+          type: 'info'
+        },
+        4000,
+        dispatch,
+        getState
+      );
       dispatch({
         type: types.REGISTER_FAIL
       });
@@ -85,7 +191,6 @@ export const loadUser = () => async (dispatch, getState) => {
     return;
   }
 
-  console.log(!token);
   // User loading
   dispatch({ type: types.USER_LOADING });
 
@@ -98,7 +203,15 @@ export const loadUser = () => async (dispatch, getState) => {
     });
 
     const user = userRes.data.user;
-    fetchUserData(user, openTexts, dispatch);
+    nestedFetch(
+      {
+        projectIds: user.projectIds,
+        textIds: user.textIds,
+        sectionIds: user.sectionIds,
+        noteIds: user.noteIds
+      },
+      { dispatch, getState }
+    );
   } catch (error) {
     console.log(error);
     dispatch(returnErrors(error, error));
@@ -115,33 +228,60 @@ export const loginUser = ({ email, password }) => async (
   const {
     textsPanel: { openTexts }
   } = getState();
-  try {
-    // Headers
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
+  // Headers
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
 
-    // Request body
-    const body = JSON.stringify({ email, password });
-    console.log(body, config);
+  // Request body
+  const body = JSON.stringify({ email, password });
+  console.log(body, config);
 
-    const userRes = await axios.post('/api/auth/login', body, config);
-    dispatch({
-      type: types.LOGIN_SUCCESS,
-      payload: userRes.data
+  axios
+    .post('/api/auth/login', body, config)
+    .then(userRes => {
+      console.log('userRes', userRes);
+      dispatch({
+        type: types.LOGIN_SUCCESS,
+        payload: userRes.data // contains {user, token}
+      });
+      dispatchAlert(
+        {
+          message: '<span>Successfully logged in.</span>',
+          type: 'success'
+        },
+        4000,
+        dispatch,
+        getState
+      );
+      const user = userRes.data.user;
+      nestedFetch(
+        {
+          projectIds: user.projectIds,
+          textIds: user.textIds,
+          sectionIds: user.sectionIds,
+          noteIds: user.noteIds
+        },
+        { dispatch, getState }
+      );
+    })
+    .catch(err => {
+      console.log('login err', err, err.response, Object.keys(err));
+      dispatch({
+        type: types.LOGIN_FAIL
+      });
+      dispatchAlert(
+        {
+          message: `<span>${err.response.data.msg}.</span>`,
+          type: 'info'
+        },
+        4000,
+        dispatch,
+        getState
+      );
     });
-
-    const user = userRes.data.user;
-    fetchUserData(user, openTexts, dispatch);
-  } catch (err) {
-    console.log(err);
-    dispatch(returnErrors(err.response, err.response, 'LOGIN_FAIL'));
-    dispatch({
-      type: types.LOGIN_FAIL
-    });
-  }
 };
 
 export const logoutUser = () => {
@@ -188,7 +328,12 @@ export const clearErrors = () => {
  *
  * @UI
  */
-export const addAlert = (alertObj, timeout) => (dispatch, getState) => {
+const dispatchAlert = (
+  alertObj = { message: '<span>Alert message.</span>', type: 'info' },
+  timeout = 3000,
+  dispatch,
+  getState
+) => {
   const {
     ui: { alertId }
   } = getState();
@@ -205,7 +350,14 @@ export const addAlert = (alertObj, timeout) => (dispatch, getState) => {
         id: alertId + 1
       }
     });
-  }, timeout || 3000);
+  }, timeout);
+};
+
+export const addAlert = (
+  alertObj = { message: '<span>Alert message.</span>', type: 'info' },
+  timeout = 3000
+) => (dispatch, getState) => {
+  dispatchAlert(alertObj, timeout, dispatch, getState);
 };
 
 export const removeAlert = id => dispatch => {
@@ -247,6 +399,14 @@ export const toggleKeepFinderOpen = () => dispatch => {
   });
 };
 
+export const setCurrentPathname = pathname => (dispatch, getState) => {
+  if (getState().ui.currentPahtname === 'pathname') return;
+  dispatch({
+    type: types.SET_CURRENT_PATHNAME,
+    payload: { pathname }
+  });
+};
+
 export const toggleWelcomeModal = history => (dispatch, getState) => {
   dispatch({
     type: types.OPEN_WELCOME_MODAL,
@@ -278,6 +438,12 @@ export const toggleRegisterModal = history => (dispatch, getState) => {
   });
 };
 export const toggleSignInModal = history => (dispatch, getState) => {
+  const {
+    user: { username },
+    ui: { lastDeskPathname }
+  } = getState();
+  if (username) history.push(lastDeskPathname); //dont open if signed in
+
   dispatch({
     type: types.OPEN_SIGNIN_MODAL,
     payload: {
@@ -288,12 +454,16 @@ export const toggleSignInModal = history => (dispatch, getState) => {
   });
 };
 export const toggleLogoutModal = history => (dispatch, getState) => {
+  const {
+    user: { username },
+    ui: { lastDeskPathname }
+  } = getState();
+  if (username) history.push(lastDeskPathname); //dont open if signed in
+
   dispatch({
     type: types.OPEN_LOGOUT_MODAL,
     payload: {
-      pathname: history.location.pathname.startsWith('/desk')
-        ? history.location.pathname
-        : null
+      pathname: '/desk'
     }
   });
 };
@@ -301,7 +471,8 @@ export const closeAllModals = history => (dispatch, getState) => {
   const {
     ui: { lastDeskPathname }
   } = getState();
-  history.push(lastDeskPathname);
+  if (!history.location.pathname.startsWith('/desk'))
+    history.push(lastDeskPathname);
   dispatch({ type: types.CLOSE_ALL_MODALS });
 };
 
