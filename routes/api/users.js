@@ -7,6 +7,7 @@ const auth = require('../../middleware/auth');
 
 // import Models
 const User = require('../../models/user');
+const Project = require('../../models/project');
 const Text = require('../../models/text');
 const Section = require('../../models/section');
 const Note = require('../../models/note');
@@ -36,37 +37,51 @@ router.post('/register', (req, res) => {
     if (user) return res.status(400).json({ msg: 'User already exists' });
 
     const newUser = new User({ username, email, password });
+    console.log('newUser._id', newUser._id);
+    // create users default project
+    const project = new Project({
+      title: 'Default',
+      ownerIds: [newUser._id],
+      accessFor: [newUser._id],
+      created: Date.now()
+    });
+    project.save().then(() => {
+      newUser.projectIds = [project._id];
+      console.log('newUser.projectIds', newUser.projectIds);
 
-    // create salt & hash
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) throw err;
-      bcrypt.hash(newUser.password, salt, (err, hash) => {
+      // create salt & hash
+      bcrypt.genSalt(10, (err, salt) => {
         if (err) throw err;
-        newUser.password = hash;
-        newUser.save().then(user => {
-          jwt.sign(
-            { _id: user._id },
-            config.get('jwtSecret'),
-            { expiresIn: 3600 },
-            (err, token) => {
-              if (err) throw err;
-              res.json({
-                token,
-                user: {
-                  _id: user._id,
-                  username: user.username,
-                  email: user.email,
-                  notebookIds: user.notebookIds,
-                  textIds: user.textIds,
-                  sectionIds: user.sectionIds,
-                  annotationIds: user.annotationIds,
-                  accessedNotebookIds: user.accessedNotebookIds,
-                  accessedTextIds: user.accessedTextIds,
-                  reputation: user.reputation
-                }
-              });
-            }
-          );
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
+          if (err) throw err;
+          newUser.password = hash;
+          newUser.save().then(user => {
+            jwt.sign(
+              { _id: user._id },
+              config.get('jwtSecret'),
+              { expiresIn: 3600 },
+              (err, token) => {
+                if (err) throw err;
+                res.json({
+                  token,
+                  user: {
+                    _id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    notebookIds: user.notebookIds,
+                    projectIds: user.projectIds,
+                    textIds: user.textIds,
+                    sectionIds: user.sectionIds,
+                    annotationIds: user.annotationIds,
+                    accessedNotebookIds: user.accessedNotebookIds,
+                    accessedTextIds: user.accessedTextIds,
+                    reputation: user.reputation
+                  },
+                  projects: [project]
+                });
+              }
+            );
+          });
         });
       });
     });

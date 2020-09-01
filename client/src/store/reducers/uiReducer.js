@@ -155,7 +155,7 @@ export default (state = initialState, action) => {
         ...state,
         openReplyNotes: state.openReplyNotes.filter(id => id !== payload.noteId)
       };
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         ...mdResolver(
@@ -198,6 +198,18 @@ export default (state = initialState, action) => {
         )
       };
     // OPEN TEXT AND COLLAPSE FINDER
+    case types.LOAD_TEXTS:
+      return payload.openTexts.length > 0
+        ? {
+            ...state,
+            ...mdResolver(
+              state.keepFinderOpen,
+              true,
+              state.mdAnnotationsPanel > 0,
+              state.mdNotesPanel > 0
+            )
+          }
+        : state;
     case types.OPEN_TEXT:
     case types.ADD_AND_OPEN_TEXT:
     case types.ADD_TEXT:
@@ -250,11 +262,9 @@ export default (state = initialState, action) => {
         mdAnnotationsPanelLast: 1
       };
     // EXPAND ANNOTATIONS PANEL AND COLLAPSE FINDER
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
     case types.UPDATE_SECTION:
     case types.DELETE_SECTION:
-      // case types.ADD_ANNOTATION:
-      // case types.DELETE_ANNOTATION:
       return {
         ...state,
         ...mdResolver(

@@ -15,6 +15,7 @@ const SectionPreview = ({ sectionId }) => {
   const sectionIndirectConnections = useSelector(
     s => s.sections[sectionId].indirectConnections
   );
+  const noteIds = useSelector(s => s.sections[sectionId].noteIds);
 
   const twoWayConnections = sectionDirectConnections.filter(
     connection =>
@@ -30,9 +31,6 @@ const SectionPreview = ({ sectionId }) => {
     connection =>
       connection.resType === 'section' &&
       !twoWayConnections.some(el => el.resId === connection.resId)
-  );
-  const noteIds = sectionDirectConnections.filter(
-    connection => connection.resType === 'note'
   );
 
   return (

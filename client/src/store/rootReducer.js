@@ -1,28 +1,28 @@
 import { combineReducers } from 'redux';
-import sectionsReducer from './reducers/sectionsReducer';
+import projectsReducer from './reducers/projectsReducer';
 import textsReducer from './reducers/textsReducer';
+import sectionsReducer from './reducers/sectionsReducer';
+import notesReducer from './reducers/notesReducer';
 import uiReducer from './reducers/uiReducer';
 import textsPanelReducer from './reducers/textsPanelReducer';
 import notesPanelReducer from './reducers/notesPanelReducer';
 import spareIdsReducer from './reducers/spareIdsReducer';
 import authReducer from './reducers/authReducer';
-import errorReducer from './reducers/errorReducer';
 import userReducer from './reducers/userReducer';
 import categoriesReducer from './reducers/categoriesReducer';
 import flowchartReducer from './reducers/flowchartReducer';
-import notesReducer from './reducers/notesReducer';
 
 export default combineReducers({
   auth: authReducer,
-  error: errorReducer,
-  ui: uiReducer, //join with errorReducer.
+  ui: uiReducer,
   spareIds: spareIdsReducer,
   textsPanel: textsPanelReducer,
   notesPanel: notesPanelReducer,
   user: userReducer,
-  notes: notesReducer,
+  projects: projectsReducer,
   texts: textsReducer,
   sections: sectionsReducer,
+  notes: notesReducer,
   flowchart: flowchartReducer,
   categories: categoriesReducer
 });

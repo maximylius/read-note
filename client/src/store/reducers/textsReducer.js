@@ -6,10 +6,15 @@ const initialState = {};
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.LOAD_TEXTS:
+      return {
+        ...state,
+        ...payload.docsById
+      };
     case types.GET_USER_TEXTS_META:
       return {
-        ...payload.textsMetaById,
-        ...state
+        ...state,
+        ...payload.textsMetaById
       };
     case types.OPEN_TEXT:
     case types.ADD_AND_OPEN_TEXT:
@@ -27,7 +32,7 @@ export default (state = initialState, action) => {
         [payload.text._id]: payload.text
       };
 
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         [payload.textId]: {
@@ -56,7 +61,7 @@ export default (state = initialState, action) => {
         }
       };
 
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return payload.note.isAnnotation
         ? {
             ...state,

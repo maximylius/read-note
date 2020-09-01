@@ -1,11 +1,23 @@
 import * as types from '../types';
 
 const initialState = {};
-//projects contain // this will make add note and stuff more complicated.
 
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.LOGIN_SUCCESS:
+    case types.USER_LOADED:
+      return {
+        ...state,
+        ...Object.fromEntries(
+          payload.projects.map(project => [project._id, project])
+        )
+      };
+    case types.LOAD_PROJECTS:
+      return {
+        ...state,
+        ...payload.docsById
+      };
     case types.UPLOADED_TEXT:
       return {
         ...state,
@@ -21,7 +33,7 @@ export default (state = initialState, action) => {
           ])
         )
       };
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         ...Object.fromEntries(
@@ -34,11 +46,11 @@ export default (state = initialState, action) => {
           ])
         )
       };
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         ...Object.fromEntries(
-          payload.section.projectIds.map(projectId => [
+          payload.note.projectIds.map(projectId => [
             projectId,
             {
               ...state[projectId],

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactQuill from 'react-quill';
 import Tooltip from './Tooltip';
@@ -9,11 +9,7 @@ import {
 } from '../../../../../store/actions';
 import SectionBlot from '../../../../Metapanel/SectionBlot';
 import isEqual from 'lodash/isEqual';
-import {
-  extractNumber,
-  ObjectKeepKeys,
-  colorGenerator
-} from '../../../../../functions/main';
+import { ObjectKeepKeys, colorGenerator } from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
 // it does not push section updates into view.
@@ -32,9 +28,9 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
   const holdControl = useSelector(s => s.textsPanel.holdControl);
 
   const text = texts[activeTextPanel];
-  const textSectionsCategoryIds = text.sectionIds.flatMap(
-    id => sections[id].categoryIds
-  );
+  const textSectionsCategoryIds = text.sectionIds
+    .map(id => (sections[id] ? [sections[id].categoryIds] : []))
+    .flat(2);
   const [editorEditState, setEditorEditState] = useState(false);
   const [editorSelection, setEditorSelection] = useState(null);
   const [tentativeSectionIdsState, setTentativeSectionIdsState] = useState(
@@ -45,10 +41,12 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
     setTextSectionsCategoryIdsState
   ] = useState(
     Object.fromEntries(
-      text.sectionIds.map(id => [id, sections[id].categoryIds])
+      text.sectionIds
+        .map(id => (sections[id] ? [[id, sections[id].categoryIds]] : []))
+        .flat(1)
     )
   );
-  const [stateSectionsById, setStateSectionsById] = useState([]);
+  const [stateSectionsById, setStateSectionsById] = useState({}); // shall this be an object or an array?
   const [previousTarget, _setPreviousTarget] = useState(null);
   const previousTargetRef = React.useRef(previousTarget);
   const setPreviousTarget = newTarget => {
@@ -169,8 +167,11 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
   React.useEffect(() => {
     if (!quillTextRef.current) return;
     const newSectionIds = text.sectionIds.filter(
-      id => !Object.keys(stateSectionsById).includes(id)
+      id =>
+        !Object.keys(stateSectionsById).includes(id) &&
+        Object.keys(sections).includes(id)
     );
+    console.log('newSectionIds', newSectionIds);
     paintSections(
       newSectionIds.map(id => sections[id]),
       tentativeSectionIds
@@ -192,7 +193,9 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
       isEqual(
         textSectionsCategoryIdsState,
         Object.fromEntries(
-          text.sectionIds.map(id => [id, sections[id].categoryIds])
+          text.sectionIds.flatMap(id =>
+            sections[id] ? [[id, sections[id].categoryIds]] : []
+          )
         )
       )
     )
@@ -206,7 +209,9 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
     );
     setTextSectionsCategoryIdsState(
       Object.fromEntries(
-        text.sectionIds.map(id => [id, sections[id].categoryIds])
+        text.sectionIds.flatMap(id =>
+          sections[id] ? [[id, sections[id].categoryIds]] : []
+        )
       )
     );
     return () => {};
@@ -238,15 +243,14 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
     quillTextRef.current.editor.enable(false);
 
     const clickHandler = e => {
-      dispatch(
-        setCommittedSections(
-          typeof e.target.className !== 'string' ||
-            !e.target.className.includes('TextPanelSectionBlot')
-            ? []
-            : e.target.dataset.sectionIds.split(','),
-          false
-        )
-      );
+      if (
+        typeof e.target.className === 'string' &&
+        e.target.className.includes('TextPanelSectionBlot')
+      ) {
+        dispatch(
+          setCommittedSections(e.target.dataset.sectionIds.split(','), false)
+        );
+      }
     };
 
     const mousemoveHandler = e => {

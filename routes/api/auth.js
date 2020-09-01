@@ -4,9 +4,11 @@ const router = express.Router();
 const config = require('config');
 const jwt = require('jsonwebtoken');
 const auth = require('../../middleware/auth');
+const getUserId = require('../../middleware/getUserId');
 
 // User Model
 const User = require('../../models/user');
+const Project = require('../../models/project');
 
 /**
  * @route   POST api/auth
@@ -25,23 +27,27 @@ router.post('/login', (req, res) => {
       bcrypt.compare(password, user.password).then(isMatch => {
         if (!isMatch)
           return res.status(400).json({ msg: 'Invalid credentials' });
-        jwt.sign(
-          { _id: user._id },
-          config.get('jwtSecret'),
-          { expiresIn: 3600 },
-          (err, token) => {
-            console.log('err', err);
-            if (err)
-              return res
-                .status(500)
-                .json({ err, msg: 'Internal server error.' });
+        Promise.all(
+          user.projectIds.map(projectId => Project.findById(projectId)) // append user projects
+        ).then(projects => {
+          jwt.sign(
+            { _id: user._id },
+            config.get('jwtSecret'),
+            { expiresIn: 36000 },
+            (err, token) => {
+              if (err)
+                return res
+                  .status(500)
+                  .json({ err, msg: 'Internal server error.' });
 
-            res.json({
-              token,
-              user: user // 2do this still contains (hashed) password. How to remove that without producing an error?
-            });
-          }
-        );
+              res.json({
+                token,
+                projects,
+                user: user // 2do this still contains (hashed) password. How to remove that without producing an error?
+              });
+            }
+          );
+        });
       });
     });
 });
@@ -51,10 +57,17 @@ router.post('/login', (req, res) => {
  * @desc    authenticate user
  * @access  Private
  */
-router.get('/user', auth, (req, res) => {
-  User.findById(req.user._id)
-    .select('-password')
-    .then(user => res.json({ user }))
+router.get('/user', getUserId, (req, res) => {
+  User.findById(req.userId)
+    // .select('-email') // check security
+    .then(user => {
+      Promise.all(
+        user.projectIds.map(projectId => Project.findById(projectId)) // append user projects
+      ).then(projects => {
+        console.log('projects', projects);
+        res.json({ user, projects });
+      });
+    })
     .catch(err => res.status(400).json({ msg: err.message }));
 });
 

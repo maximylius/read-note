@@ -1,5 +1,10 @@
 /**
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
+// section => noteIds
+// flatten reply data structure {resId} => resId
+// problem in textmain: sections get out of sync.
+// think about where to put projectIds: To direct connections? or to seperate projectIds? why shouldnt it?
+// project could just have indirectConnections. That would make it consistent. On the other hand then it would not be able to keep other direct references. E.g. 
 _TestTable_    TEXT    SECTION     NOTE
 GET              0         0         0
 PUT (INIT)       0         1         1 
@@ -12,7 +17,7 @@ DELETE (MANY)    0         0         1
 9     PUT / DELETE save res to user / project.
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
 @RECENT_BUGS : cant open two texts at once // when opening a note not always a tab item is created
-// make url change close and open modals
+// dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack.
 
 @NOTE_PANEL
 5    reduce amount of rerenders for side notes when section attributes are changed. Probably due to useSelector listener for sections. maybe custom hook would solve this when configured that only changes in title, delta and creation / deletion are necessary to observe.
@@ -33,6 +38,7 @@ DELETE (MANY)    0         0         1
 2DAY- 6    implement lazy loading. @HIGH_PRIORITY
 2DAY- 7     implement check, whether requested notes are loaded. If they arent load these notes. -> needs to be done for embeds and replies. And basically any note that is opened. 
 2DAY- 6     on first load, some embeded notes are not loaded. for this reason they are not embeded. should update to also show those embeds
+2    optimize request batch sizes per request: e.g. 50 projects, 1 text, 20 sections, 10 notes.
 
 
 @SECTION_UI
@@ -146,6 +152,7 @@ DELETE (MANY)    0         0         1
 4    moderate markup for text with multiple section layers.
 4    mind map creator before start reading text
 4    scrape PDF & html, perserve formatting OR use
+6    add To-Do-List functionalities. 1. Add To-Do-Blot to Texteditor. 2. extract To-Do-Blot (like @mentions) from note when updating. add To-Dos to Project and/or User. To-Do data contains: {status: "open"||"done"||"dismissed", textId: null||isAnnotation.textId, sectionId: null||isAnnotation.sectionId, noteId: noteId, content? }. Enable view of all To-Dos of User / Project / Text / Group. How to extract the To-Do Content - compare To-Do Delta? Shall To-Do be own document-type? 
 4    resize displayed text
 4    make text and notebook ids short for nice urls. OR make them include title.
 4    think about emoji implementation in note names.
@@ -158,8 +165,9 @@ DELETE (MANY)    0         0         1
 // intuitive Design
 // add PROJECT DATA TYPE
 // add GROUP DATA TYPE 
-// add naviagation hierachy when creating @mention_connections (e.g. project-text-section-note / project-note)
+// add naviagation hierachy in drop-down-menu when creating @mention_connections (e.g. project-text-section-note / project-note)
 // make menu allowing to select what to do with embed: open inside other note, open at text-section, open in notepanel
+
 
 2 Design -------------
 2 desing right click menu.

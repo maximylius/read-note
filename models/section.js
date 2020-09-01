@@ -20,23 +20,28 @@ const schema = new Schema({
   delta: { type: Object, default: { ops: [{ insert: '\n' }] } },
 
   // links
-  textId: { type: Schema.Types.ObjectId, ref: 'Text' }, // 2do: will this be the only text in direct connections? Yes. But: it is an overhead to iterate of the direct connections to find the text. but you rarely need to do that.
+  //    parents
+  textId: { type: Schema.Types.ObjectId, ref: 'Text' },
+  projectIds: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
+  //    children
+  noteIds: [{ type: Schema.Types.ObjectId, ref: 'Note' }],
+  //    connections
   directConnections: [
     {
       resId: { type: Schema.Types.ObjectId },
-      resType: { type: String } //note | text | section // will include: parentText, those notes that shall be displayed, and connected sections.
+      resType: { type: String } // section
     }
   ],
   indirectConnections: [
     {
       resId: { type: Schema.Types.ObjectId },
-      resType: { type: String } //note | text | section
+      resType: { type: String } // section | note
     }
   ],
 
   // meta
-  created: { type: Date, default: Date.now },
-  lastEdited: { type: Date, default: Date.now },
+  created: { type: Date, default: null },
+  lastEdited: { type: Date, default: null },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   isPublic: { type: Boolean, default: false }

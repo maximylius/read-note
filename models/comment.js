@@ -6,12 +6,7 @@ const schema = new Schema({
   delta: { type: Object, default: { op: [{ insert: '\n' }] } },
   plainText: { type: String, default: '' },
 
-  replies: [
-    {
-      resId: { type: Schema.Types.ObjectId },
-      resType: { type: String } //note | text | section
-    }
-  ],
+  replies: [{ type: Schema.Types.ObjectId, ref: 'Note' }],
   isReply: {
     type: Object,
     noteId: { type: Schema.Types.ObjectId, ref: 'Note' },

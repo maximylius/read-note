@@ -4,6 +4,7 @@ const getUserId = require('../../middleware/getUserId');
 
 // import Models
 const User = require('../../models/user');
+const Project = require('../../models/project');
 const Text = require('../../models/text');
 const Section = require('../../models/section');
 const Note = require('../../models/note');
@@ -22,6 +23,8 @@ const returnCollection = resType => {
       : str === 'note'
       ? Note
       : str === 'user'
+      ? Project
+      : str === 'project'
       ? User
       : null;
 
@@ -79,7 +82,7 @@ const nestedDelete = (deleteArray, connections, blacklist, req) => {
             : []),
           ...(serachObj.resType === 'note' &&
           req.body.shouldDeleteTypes.includes('note')
-            ? doc.replies
+            ? doc.replies.map(id => ({ resId: id, resType: 'note' }))
             : [])
         ].filter(del => {
           if (blacklist.includes(del.resId.toString())) return false;
@@ -128,7 +131,6 @@ const nestedDelete = (deleteArray, connections, blacklist, req) => {
  * @desc    GET specific Documents
  * @access  Public
  */
-// 2do: get request could be smarter: returning children also. // problem having possibly to large size. // user waits until everything is done.
 router.get('/:restype/:id', getUserId, (req, res) => {
   if (req.params.restype === 'user')
     return res.status(401).json({
@@ -138,17 +140,17 @@ router.get('/:restype/:id', getUserId, (req, res) => {
 
   returnCollection(req.params.restype)
     .find({
-      $and: [
-        { _id: { $in: req.params.id.split('+') } },
-        {
-          $or: [
-            { accessFor: { $size: 0 } },
-            { accessFor: { $elemMatch: req.UserId } } // if !!req.UserId
-          ]
-        }
+      _id: { $in: req.params.id.split('+') },
+      $or: [
+        { accessFor: { $size: 0 } },
+        ...(req.userId
+          ? [{ accessFor: { $elemMatch: { $eq: req.userId } } }]
+          : [])
       ]
     })
-    .then(docArray => res.json({ data: docArray }))
+    .then(docArray => {
+      res.json({ docArray });
+    })
     .catch(err => {
       console.log('err in get', err);
       res.status(404).json({ success: false, err: err });
@@ -204,31 +206,41 @@ router.put('/:restype/:id', getUserId, (req, res) => {
     .findById(req.params.id)
     .then(mongoDoc => {
       if (!mongoDoc)
-        console.log(
-          '------------0---0----0---0----0---0----0---0-------------'
-        );
+        return res
+          .status(404)
+          .json({ success: false, msg: 'Document not found.' });
+
       if (
         mongoDoc.accessFor.length > 0 &&
         (!req.userId ||
           !mongoDoc.accessFor.map(id => id.toString()).includes(req.userId))
       )
-        throw '401 unauthorized to manipulate the document.';
+        return res.status(401).json({
+          success: false,
+          msg: `Unauthorized to manipulate the document.${
+            !req.userId ? ' Sign in if possible.' : ''
+          }`
+        });
       const promises = [];
 
-      // if new document add it to user
-      if (req.userId && mongoDoc.editedBy.length > 0) {
-        promises.push(
-          User.findById(req.userId).then(user => {
-            if (req.params.restype === 'text') {
-              user.textIds.push(req.params.id);
-            } else if (req.params.restype === 'section') {
-              user.sectionIds.push(req.params.id);
-            } else if (req.params.restype === 'note') {
-              user.noteIds.push(req.params.id);
-            } else return Promise.resolve();
-            return User.save();
-          })
-        );
+      // if new document
+      if (!mongoDoc.created && req.params.restype !== 'user') {
+        mongoDoc.created = Date.now(); //add creation date.
+        //  add to user
+        if (req.userId) {
+          promises.push(
+            User.findById(req.userId).then(user => {
+              if (req.params.restype === 'text') {
+                user.textIds.push(req.params.id);
+              } else if (req.params.restype === 'section') {
+                user.sectionIds.push(req.params.id);
+              } else if (req.params.restype === 'note') {
+                user.noteIds.push(req.params.id);
+              } else return Promise.resolve();
+              return user.save();
+            })
+          );
+        }
       }
 
       // SECTION SPECIFIC TASKS
@@ -236,11 +248,7 @@ router.put('/:restype/:id', getUserId, (req, res) => {
         // update (order of) sectionIds of text
         if (req.body.previousTextSectionId) {
           promises.push(
-            Text.findById(
-              req.body.doc.hasOwnProperty('textId')
-                ? req.body.doc.textId
-                : mongoDoc.textId
-            ).then(text => {
+            Text.findById(req.body.doc.textId || mongoDoc.textId).then(text => {
               console.log(
                 'update text-sectionIds. insert at',
                 text.sectionIds.indexOf(req.body.previousTextSectionId._id) + 1
@@ -287,15 +295,9 @@ router.put('/:restype/:id', getUserId, (req, res) => {
           promises.push(
             Section.findById(req.body.doc.isAnnotation.sectionId).then(
               section => {
-                if (
-                  !section.directConnections.some(
-                    c => c.resId.toString() === req.params.id
-                  )
-                )
-                  section.directConnections.push({
-                    resId: req.params.id,
-                    resType: req.params.restype
-                  });
+                if (section.noteIds.includes(req.params.id))
+                  return Promise.resolve();
+                section.noteIds.push(req.params.id);
                 return section.save();
               }
             )
@@ -310,11 +312,8 @@ router.put('/:restype/:id', getUserId, (req, res) => {
         ) {
           promises.push(
             Note.findById(req.body.doc.isReply.noteId).then(note => {
-              if (!note.replies.some(c => c.resId.toString() === req.params.id))
-                note.replies.push({
-                  resId: req.params.id,
-                  resType: req.params.restype
-                });
+              if (!note.replies.includes(req.params.id))
+                note.replies.push(req.params.id);
               return note.save();
             })
           );
@@ -392,6 +391,48 @@ router.put('/:restype/:id', getUserId, (req, res) => {
             });
         })
       );
+      if (req.params.restype !== 'user') {
+        const projectsToInform = [
+          ...req.body.doc.projectIds
+            .filter(projectId => !mongoDoc.projectIds.includes(projectId))
+            .map(id => ({ resId: id, add: true })),
+          ...mongoDoc.projectIds
+            .filter(projectId => !req.body.doc.projectIds.includes(projectId))
+            .map(id => ({ resId: id }))
+        ];
+        // add to doc to projects // this can be moved to standard put routine.
+        promises.push(
+          ...projectsToInform.map(c => {
+            return Project.findById(c.resId).then(project => {
+              const projectArray =
+                req.params.restype === 'text'
+                  ? project.textIds
+                  : req.params.restype === 'section'
+                  ? project.sectionIds
+                  : req.params.restype === 'note'
+                  ? project.noteIds
+                  : null;
+              if (!projectArray) return Promise.resolve();
+              if (c.add) {
+                projectArray.push(req.params.id);
+              } else {
+                const index = projectArray.indexOf(req.params.id);
+                if (index < 0) {
+                  console.log(
+                    'cannot find id',
+                    req.params.id,
+                    ' in projectsIds:',
+                    projectArray
+                  );
+                  return Promise.resolve();
+                }
+                projectArray.splice(index, 1);
+              }
+              return project.save();
+            });
+          })
+        );
+      }
 
       return Promise.all(promises).then(() => {
         console.log('mongoDoc updates:');
@@ -487,7 +528,7 @@ router.delete('/:restype/:id', getUserId, (req, res) => {
                   doc.isAnnotation.sectionId = null;
                 if (connection.resType === 'note' && Array.isArray(doc.replies))
                   doc.replies = doc.replies.filter(
-                    reply => !deletedIds.includes(reply.resId.toString())
+                    id => !deletedIds.includes(id.toString())
                   );
                 if (connection.resType === 'user') {
                   doc.textIds = doc.textIds.filter(

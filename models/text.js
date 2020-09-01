@@ -17,11 +17,15 @@ const schema = new Schema({
   delta: { type: Object },
 
   // links
-  sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section' }], // 2do can i remove this? directConnections.filter(el => el.resType==="section")
+  //    parents
+  projectIds: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
+  //    children
+  sectionIds: [{ type: Schema.Types.ObjectId, ref: 'Section' }],
+  //    connections
   directConnections: [
     {
       resId: { type: Schema.Types.ObjectId },
-      resType: { type: String } //note | text | section
+      resType: { type: String } //note | text | section // contains section-notes
     }
   ],
   indirectConnections: [
@@ -32,8 +36,8 @@ const schema = new Schema({
   ],
 
   // meta
-  created: { type: Date },
-  lastEdited: { type: Date },
+  created: { type: Date, default: null },
+  lastEdited: { type: Date, default: null },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   isPublic: { type: Boolean, default: false }

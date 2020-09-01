@@ -9,12 +9,12 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         notes: state.notes.slice(1)
       };
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         sections: state.sections.slice(1)

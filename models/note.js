@@ -9,7 +9,25 @@ const schema = new Schema({
   delta: { type: Object, default: { op: [{ insert: '\n' }] } },
   plainText: { type: String, default: '' },
 
-  // link
+  // links
+  //    parents
+  isAnnotation: {
+    type: Object,
+    textId: { type: Schema.Types.ObjectId, ref: 'Text' },
+    sectionId: { type: Schema.Types.ObjectId, ref: 'Section' },
+    default: null
+  },
+  isReply: {
+    type: Object,
+    noteId: { type: Schema.Types.ObjectId, ref: 'Note' },
+    // sectionId: { type: Schema.Types.ObjectId, ref: 'Section' },
+    // textId: { type: Schema.Types.ObjectId, ref: 'Text' },
+    default: null
+  },
+  projectIds: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
+  //    children
+  replies: [{ type: Schema.Types.ObjectId, ref: 'Note' }],
+  //    connections
   directConnections: [
     {
       resId: { type: Schema.Types.ObjectId },
@@ -22,23 +40,7 @@ const schema = new Schema({
       resType: { type: String } //note | text | section
     }
   ],
-  replies: [
-    {
-      resId: { type: Schema.Types.ObjectId },
-      resType: { type: String } //note | text | section
-    }
-  ],
-  isReply: {
-    type: Object,
-    noteId: { type: Schema.Types.ObjectId, ref: 'Note' },
-    default: null
-  },
-  isAnnotation: {
-    type: Object,
-    textId: { type: Schema.Types.ObjectId, ref: 'Text' },
-    sectionId: { type: Schema.Types.ObjectId, ref: 'Section' },
-    default: null
-  },
+
   votes: [
     {
       userId: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -48,8 +50,8 @@ const schema = new Schema({
   ], //maybe this should be a server thing, thats just transimitting the plain result to the client
 
   // meta
-  created: { type: Date, default: Date.now },
-  lastEdited: { type: Date, default: Date.now },
+  created: { type: Date, default: null },
+  lastEdited: { type: Date, default: null },
   editedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   accessFor: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   isPublic: { type: Boolean, default: false }

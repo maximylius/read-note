@@ -12,7 +12,7 @@ function SignIn() {
 
   const onSubmit = () => {
     if (!missingFields) {
-      dispatch(loginUser({ email, password }));
+      dispatch(loginUser({ email, password, history }));
     } else {
       dispatch(
         addAlert({

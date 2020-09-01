@@ -6,13 +6,18 @@ let initialState = {};
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.LOAD_SECTIONS:
+      return {
+        ...state,
+        ...payload.docsById
+      };
     case types.ADD_TEXT:
     case types.ADD_AND_OPEN_TEXT:
       return {
         ...state,
         ...payload.sectionsById
       };
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         [payload.section._id]: payload.section
@@ -53,15 +58,15 @@ export default (state = initialState, action) => {
         )
       };
 
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return payload.note.isAnnotation
         ? {
             ...state,
             [payload.note.isAnnotation.sectionId]: {
               ...state[payload.note.isAnnotation.sectionId],
-              directConnections: [
-                ...state[payload.note.isAnnotation.sectionId].directConnections,
-                { resId: payload.note._id, resType: 'note' }
+              noteIds: [
+                ...state[payload.note.isAnnotation.sectionId].noteIds,
+                payload.note._id
               ]
             }
           }
@@ -186,24 +191,31 @@ export default (state = initialState, action) => {
         ? {
             ...state,
             ...Object.fromEntries(
-              payload.note.directConnections.flatMap(el =>
-                el.resType === 'section' &&
-                Object.keys(state).includes(el.resId)
-                  ? [
-                      [
-                        el.resId,
-                        {
-                          ...state[el.resId],
-                          indirectConnections: state[
-                            el.resId
-                          ].indirectConnections.filter(
-                            el => el.resId !== payload.note._id
-                          )
-                        }
-                      ]
-                    ]
-                  : []
-              )
+              [
+                ...payload.note.directConnections
+                  .filter(
+                    el =>
+                      el.resType === 'section' &&
+                      Object.keys(state).includes(el.resId)
+                  )
+                  .map(el => el.resId),
+                ...(payload.note.isAnnotation
+                  ? [payload.note.isAnnotation.sectionId]
+                  : [])
+              ].map(sectionId => [
+                sectionId,
+                {
+                  ...state[sectionId],
+                  noteIds: state[sectionId].noteIds.filter(
+                    id => id !== payload.note._id
+                  ),
+                  indirectConnections: state[
+                    sectionId
+                  ].indirectConnections.filter(
+                    el => el.resId !== payload.note._id
+                  )
+                }
+              ])
             )
           }
         : state;

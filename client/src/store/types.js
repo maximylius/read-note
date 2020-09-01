@@ -62,6 +62,7 @@ export const SET_NOSELECT = 'SET_NOSELECT';
 export const SET_HOLDCONTROL = 'SET_HOLDCONTRO';
 export const UPDATE_PROGRESS = 'UPDATE_PROGRESS';
 export const SET_DISPLAY_TEXT_META = 'SET_DISPLAY_TEXT_META';
+
 // speed reader
 export const SET_SPEED_READER = 'SET_SPEED_READER';
 export const OPEN_SPEED_READER = 'OPEN_SPEED_READER';
@@ -78,10 +79,18 @@ export const SET_TEXT_SEARCH_RESULTS = 'SET_TEXT_SEARCH_RESULTS';
 export const CLOSE_NOTE = 'CLOSE_NOTE'; // remove from openNotes
 export const OPEN_NOTE = 'OPEN_NOTE'; // change activeNote //append to openNotes
 
+// projects
+export const LOAD_PROJECTS = 'LOAD_PROJECTS';
+export const ADD_NEW_PROJECT = 'ADD_NEW_PROJECT';
+export const UPDATE_PROJECT = 'UPDATE_PROJECT';
+export const DELETE_PROJECT = 'DELETE_PROJECT';
+export const ADD_RES_TO_PROJECT = 'ADD_RES_TO_PROJECT';
+export const REMOVE_RES_FROM_PROJECT = 'REMOVE_RES_FROM_PROJECT';
+
 // note actions
 export const LOAD_NOTES = 'LOAD_NOTES';
 export const GET_NOTES = 'GET_NOTES'; // GET all notes
-export const ADD_NOTE = 'ADD_NOTE';
+export const ADD_NEW_NOTE = 'ADD_NEW_NOTE';
 export const UPDATE_NOTE = 'UPDATE_NOTE';
 export const DELETE_NOTE = 'DELETE_NOTE';
 export const ADD_NOTE_TO_NOTE_CONNECTION = 'ADD_NOTE_TO_NOTE_CONNECTION';
@@ -105,7 +114,7 @@ export const CLEAR_ADDTEXTPANEL = 'CLEAR_ADDTEXTPANEL';
 
 // sections actions
 export const LOAD_SECTIONS = 'LOAD_SECTIONS'; //new
-export const ADD_SECTION = 'ADD_SECTION';
+export const ADD_NEW_SECTION = 'ADD_NEW_SECTION';
 export const UPDATE_SECTION = 'UPDATE_SECTION';
 export const DELETE_SECTION = 'DELETE_SECTION';
 export const DELETE_ALL_SECTIONS = 'DELETE_ALL_SECTIONS';

@@ -25,7 +25,7 @@ export default (state = initialState, action) => {
           ...new Set([...state.noteIds, ...Object.keys(payload.notesById)])
         ]
       };
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         noteIds: [...state.noteIds, payload.note._id]
@@ -38,7 +38,7 @@ export default (state = initialState, action) => {
         ...state,
         textIds: [...new Set([...state.textIds, payload.text._id])]
       };
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         sectionIds: [...state.sectionIds, payload.section.Id]
@@ -86,6 +86,7 @@ export default (state = initialState, action) => {
       console.log(payload.user);
       console.log(payload.user.noteIds);
       return {
+        ...state,
         ...payload.user,
         ...Object.fromEntries(
           // merge all arrays

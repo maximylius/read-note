@@ -58,8 +58,6 @@ const calcBestPositions = sectionsToDisplay => {
     bestPositions[id].right = !!sectionNode
       ? sectionNode.getBoundingClientRect().right
       : 800;
-
-    console.log('bestPositions[id].height', bestPositions[id].height);
   });
   return bestPositions;
 };
@@ -68,17 +66,18 @@ const calcAllFinalPositions = (sectionsToDisplay, bestPositions) => {
   const finalPositions = {};
   sectionsToDisplay.forEach((id, index) => {
     let positionTop = bestPositions[id].top;
-    if (index > 0) {
-      const lastId = sectionsToDisplay[index - 1];
-      finalPositions[lastId].freeSpaceBottom =
-        finalPositions[lastId].top - positionTop - marginBottom;
-      const positionBottomAbove =
-        finalPositions[lastId].top + bestPositions[lastId].height;
+    if (!positionTop)
+      if (index > 0) {
+        const lastId = sectionsToDisplay[index - 1];
+        finalPositions[lastId].freeSpaceBottom =
+          finalPositions[lastId].top - positionTop - marginBottom;
+        const positionBottomAbove =
+          finalPositions[lastId].top + bestPositions[lastId].height;
 
-      if (positionBottomAbove >= positionTop) {
-        positionTop = positionBottomAbove + marginBottom;
+        if (positionBottomAbove >= positionTop) {
+          positionTop = positionBottomAbove + marginBottom;
+        }
       }
-    }
     finalPositions[id] = {
       top: positionTop,
       right: bestPositions[id].right,
@@ -161,6 +160,15 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
   const sectionsToDisplayRef = useRef(sectionsToDisplay);
   const committedSectionIdsRef = useRef(committedSectionIds);
 
+  if (!_isEqual(sectionsToDisplayRef.current, sectionsToDisplay)) {
+    // positions will not always be up to date as reference elements in textpanel might not have been rendered by the time this component renders.
+    bestPositionsRef.current = calcBestPositions(sectionsToDisplay);
+    setFinalPositions(
+      calcAllFinalPositions(sectionsToDisplay, bestPositionsRef.current)
+    );
+    sectionsToDisplayRef.current = sectionsToDisplay;
+  }
+
   useEffect(() => {
     // initial set up
     bestPositionsRef.current = calcBestPositions(sectionsToDisplay);
@@ -170,18 +178,6 @@ const Sections = ({ quillTextRef, quillNoteRefs }) => {
 
     return () => {};
   }, []);
-
-  useEffect(() => {
-    // changes in sectionsToDisplay
-    if (_isEqual(sectionsToDisplayRef.current, sectionsToDisplay)) return;
-    // check which of is true: section added, section removed, section moved
-    bestPositionsRef.current = calcBestPositions(sectionsToDisplay);
-    setFinalPositions(
-      calcAllFinalPositions(sectionsToDisplay, bestPositionsRef.current)
-    );
-    sectionsToDisplayRef.current = sectionsToDisplay;
-    return () => {};
-  }, [_isEqual(sectionsToDisplayRef.current, sectionsToDisplay)]);
 
   useEffect(() => {
     if (updateDimensions.count === 0) return;

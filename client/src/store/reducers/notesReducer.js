@@ -6,6 +6,11 @@ const initialState = {};
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.LOAD_NOTES:
+      return {
+        ...state,
+        ...payload.docsById
+      };
     case types.ADD_TEXT:
     case types.ADD_AND_OPEN_TEXT:
     case types.GET_NOTES:
@@ -70,7 +75,7 @@ export default (state = initialState, action) => {
         }
       };
 
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         [payload.note._id]: payload.note,
@@ -90,10 +95,9 @@ export default (state = initialState, action) => {
         ...(payload.note.isReply && {
           [payload.note.isReply.noteId]: {
             ...state[payload.note.isReply.noteId],
-            replies: state[payload.note.isReply.noteId].replies.concat({
-              resId: payload.note._id,
-              resType: 'note'
-            })
+            replies: state[payload.note.isReply.noteId].replies.concat(
+              payload.note._id
+            )
           }
         })
       };
@@ -107,7 +111,7 @@ export default (state = initialState, action) => {
                   ...state[state[payload.note._id].isReply.noteId],
                   replies: state[
                     state[payload.note._id].isReply.noteId
-                  ].replies.filter(r => r.resId !== payload.note._id)
+                  ].replies.filter(replyId => replyId !== payload.note._id)
                 }
               }
             : {}

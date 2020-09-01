@@ -25,7 +25,8 @@ import _isEqual from 'lodash/isEqual';
  */
 const nestedFetch = (
   r = { projectIds: [], textIds: [], sectionIds: [], noteIds: [] },
-  redux = { dispatch: Function(), getState: Function() }
+  redux = { dispatch: Function(), getState: Function() },
+  options = { openTexts: [], setToActive: null }
 ) => {
   if (!Array.isArray(r.projectIds)) r.projectIds = [];
   if (!Array.isArray(r.textIds)) r.textIds = [];
@@ -48,39 +49,56 @@ const nestedFetch = (
   const promises = [];
   const resState = redux.getState()[`${resType}s`];
 
-  r[`${resType}Ids`].forEach(id => {
-    if (r.blacklist.includes(id)) return;
-    r.blacklist.push(id);
+  r[`${resType}Ids`].forEach(resId => {
+    if (r.blacklist.includes(resId)) return;
+    r.blacklist.push(resId);
     if (
-      Object.keys(resState).includes(id) &&
-      resState[id] //2do add is loaded check.
+      Object.keys(resState).includes(resId) &&
+      resState[resId] &&
+      resState[resId].delta //2do add is loaded check.
     )
       return;
-
+    console.log(`REQUESTING: /api/common/${resType}/${resId}`);
     promises.push(
       axios
-        .get(`/api/common/${resType}/${id}`)
+        .get(`/api/common/${resType}/${resId}`, tokenConfig(redux.getState))
         .then(res => {
-          // flexibly push items
-          ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
-            if (Array.isArray(res.data[key])) {
-              if (key === 'replies') {
-                r.noteIds.push(...res.data.replies.map(reply => reply.noteId));
-              } else {
-                r[key].push(...res.data[key]);
+          console.log('nested res.data', res.data);
+          const docArray = res.data.docArray;
+          docArray.forEach(doc => {
+            ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
+              if (Array.isArray(doc[key])) {
+                r[key === 'replies' ? 'noteIds' : key].push(...doc[key]);
               }
-            }
+            });
           });
 
+          const docsById = Object.fromEntries(
+            docArray.map(doc => [doc._id, doc])
+          );
+
+          console.log('nested docsById', docsById);
           redux.dispatch(
             resType === 'project'
-              ? { type: 'types.LOAD_PROJECTS', payload: {} }
+              ? {
+                  type: types.LOAD_PROJECTS,
+                  payload: {
+                    docsById
+                  }
+                }
               : resType === 'text'
-              ? { type: types.LOAD_TEXTS, payload: {} }
+              ? {
+                  type: types.LOAD_TEXTS,
+                  payload: {
+                    docsById,
+                    openTexts: options.openTexts || [],
+                    setToActive: options.setToActive
+                  }
+                }
               : resType === 'section'
-              ? { type: types.LOAD_SECTIONS, payload: {} }
+              ? { type: types.LOAD_SECTIONS, payload: { docsById } }
               : resType === 'note'
-              ? { type: types.LOAD_NOTES, payload: {} }
+              ? { type: types.LOAD_NOTES, payload: { docsById } }
               : null
           );
         })
@@ -105,7 +123,7 @@ const nestedFetch = (
     r[`${resType}Ids`] = r[`${resType}Ids`].filter(
       id => !r.blacklist.includes(id)
     );
-    nestedFetch(r, redux);
+    nestedFetch(r, redux, options);
   });
 };
 
@@ -199,7 +217,7 @@ export const loadUser = () => async (dispatch, getState) => {
     console.log(userRes.data);
     dispatch({
       type: types.USER_LOADED,
-      payload: userRes.data
+      payload: userRes.data // contains {user, token, projects}
     });
 
     const user = userRes.data.user;
@@ -221,11 +239,12 @@ export const loadUser = () => async (dispatch, getState) => {
   }
 };
 
-export const loginUser = ({ email, password }) => async (
+export const loginUser = ({ email, password, history }) => async (
   dispatch,
   getState
 ) => {
   const {
+    ui: { lastDeskPathname },
     textsPanel: { openTexts }
   } = getState();
   // Headers
@@ -245,7 +264,7 @@ export const loginUser = ({ email, password }) => async (
       console.log('userRes', userRes);
       dispatch({
         type: types.LOGIN_SUCCESS,
-        payload: userRes.data // contains {user, token}
+        payload: userRes.data // contains {user, token, projects}
       });
       dispatchAlert(
         {
@@ -256,6 +275,7 @@ export const loginUser = ({ email, password }) => async (
         dispatch,
         getState
       );
+      history.push(lastDeskPathname);
       const user = userRes.data.user;
       nestedFetch(
         {
@@ -674,6 +694,7 @@ export const uploadTextcontent = ({ textcontent, delta }, isPublic = true) => (
   text._id = spareIds['texts'][0];
   text.textcontent = textcontent;
   text.delta = delta;
+  text.projectIds = []; //2do
   text.formatDelta = delta;
   text.editedBy = user._id ? [user._id] : [];
   text.accessFor = user._id ? [user._id] : []; //2do add sessionId / could be a spareId for user
@@ -767,9 +788,7 @@ export const deleteText = textId => (dispatch, getState) => {
   texts[textId].sectionIds.forEach(sectionId => {
     const section = sections[sectionId];
     if (!section) return;
-    deleteNestedNotes(
-      section.directConnections.filter(c => c.resType === 'note')
-    );
+    deleteNestedNotes(section.noteIds);
     dispatch({
       type: types.DELETE_SECTION,
       payload: {
@@ -889,67 +908,38 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
   let text;
   if (!loaded) {
     console.log('start loading text...', textId);
-    const textres = await axios.get(
-      `/api/texts/id/${textId}`,
-      tokenConfig(getState)
-    );
-    const text = textres.data;
-    if (!text) {
-      console.log('text doesnt exist.');
-      return;
-    }
-    const sectionsById = {};
-    const notesById = {};
-    if (text.sectionIds.length > 0) {
-      const sectionsRes = await axios.get(
-        `/api/sections/${text.sectionIds.join('+')}`,
-        tokenConfig(getState)
-      );
-      console.log(sectionsRes);
-      sectionsRes.data.forEach(
-        section => (sectionsById[section._id] = section)
-      );
-
-      const notesToGet = sectionsRes.data
-        .flatMap(section =>
-          section.directConnections.filter(
-            el =>
-              el.resType === 'note' && !Object.keys(notes).includes(el.resId)
-          )
-        )
-        .map(el => el.resId);
-      if (notesToGet.length > 0) {
-        const notesRes = await axios.get(
-          `/api/notes/${notesToGet.join('+')}`,
-          tokenConfig(getState)
-        );
-        console.log(notesRes);
-        notesRes.data.forEach(note => (notesById[note._id] = note));
+    nestedFetch(
+      { textIds: [textId] },
+      { dispatch, getState },
+      {
+        ...(openText && { openTexts: [textId] }),
+        ...(setToActive && { setToActive: textId })
       }
-    }
+    ); // shall also tell whether text has to be opened
+
     console.log('openText?', openText);
-    if (!openText) {
-      dispatch({
-        type: types.ADD_TEXT,
-        payload: {
-          sectionsById,
-          notesById,
-          text
-        }
-      });
-    } else if (openText) {
-      text.words = text.textcontent.split(/\s+/);
-      dispatch({
-        type: types.ADD_AND_OPEN_TEXT,
-        payload: {
-          sectionsById,
-          notesById,
-          text,
-          textId: text._id,
-          setToActive: setToActive
-        }
-      });
-    }
+    // if (!openText) {
+    //   dispatch({
+    //     type: types.ADD_TEXT,
+    //     payload: {
+    //       sectionsById,
+    //       notesById,
+    //       text
+    //     }
+    //   });
+    // } else if (openText) {
+    //   text.words = text.textcontent.split(/\s+/);
+    //   dispatch({
+    //     type: types.ADD_AND_OPEN_TEXT,
+    //     payload: {
+    //       sectionsById,
+    //       notesById,
+    //       text,
+    //       textId: text._id,
+    //       setToActive: setToActive
+    //     }
+    //   });
+    // }
   } else if (loaded) {
     if (!openText) {
       console.log('text already loaded, and doesnt need to be openend.');
@@ -1034,13 +1024,18 @@ export const addSection = ({ categoryId, begin, end }) => (
     delta: null,
 
     textId: activeTextPanel,
+    projectIds: [], //2do
+
+    noteIds: [],
+
     directConnections: [],
     indirectConnections: [],
 
     created: Date.now(),
     lastEdited: Date.now(),
     editedBy: user._id ? [user._id] : [],
-    accessFor: user._id ? [user._id] : []
+    accessFor: user._id ? [user._id] : [],
+    isPublic: true //2do
   };
   console.log(text.sectionIds);
   console.log(sections);
@@ -1065,7 +1060,7 @@ export const addSection = ({ categoryId, begin, end }) => (
   const textSectionIds = sortSectionIds(textSections);
 
   dispatch({
-    type: types.ADD_SECTION,
+    type: types.ADD_NEW_SECTION,
     payload: {
       section,
       textSectionIds: textSectionIds,
@@ -1486,18 +1481,24 @@ export const addNote = ({
     title: guessTitle || 'Note 1',
     delta: delta || { ops: [{ insert: '\n' }] },
     plainText: '',
+
+    isAnnotation: isAnnotation || null,
+    isReply: isReply || null,
+    projectIds: [], //2do
+
+    replies: [],
     directConnections: [],
     indirectConnections: parentNoteId
       ? [{ resId: parentNoteId, resType: 'note' }]
       : [],
-    replies: [],
-    isReply: isReply || null,
-    isAnnotation: isAnnotation || null,
+
     votes: [],
+
     created: Date.now(),
     lastEdited: Date.now(),
     editedBy: user._id ? [user._id] : [],
-    accessFor: user._id ? [user._id] : []
+    accessFor: user._id ? [user._id] : [],
+    isPublic: true //2do
   };
 
   // add a placeholder title
@@ -1511,7 +1512,7 @@ export const addNote = ({
   console.log('addNote');
   console.log(note);
   dispatch({
-    type: types.ADD_NOTE,
+    type: types.ADD_NEW_NOTE,
     payload: { note, open: !!history }
   });
 
@@ -1584,11 +1585,7 @@ const deleteNestedNotes = (noteIds = [], dispatch, getState) => {
     const note = getState().notes[noteId];
     if (!note) return;
     if (note.replies.length > 0)
-      deleteNestedNotes(
-        note.replies.map(r => r.resId),
-        dispatch,
-        getState
-      );
+      deleteNestedNotes(note.replies, dispatch, getState);
     dispatch({
       type: types.DELETE_NOTE,
       payload: { note }

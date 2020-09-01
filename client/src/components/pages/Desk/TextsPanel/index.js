@@ -14,6 +14,7 @@ function TextsPanel({ quillNoteRefs }) {
   const dispatch = useDispatch();
   const {
     ui,
+    texts,
     textsPanel: { activeTextPanel }
   } = useSelector(s => s);
   const onClickHandlerBtn1 = () => dispatch(expandFinderPanel());
@@ -40,7 +41,9 @@ function TextsPanel({ quillNoteRefs }) {
 
       <div className='col px-0 mx-0 box'>
         <Nav />
-        {!activeTextPanel || activeTextPanel === 'addTextPanel' ? (
+        {!activeTextPanel ||
+        activeTextPanel === 'addTextPanel' ||
+        !texts[activeTextPanel] ? (
           <AddText key={activeTextPanel} />
         ) : (
           <Textpage key={activeTextPanel} quillNoteRefs={quillNoteRefs} />

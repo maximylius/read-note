@@ -27,7 +27,7 @@ export default (state = initialState, action) => {
             ]
           : state.openNotes
       };
-    case types.ADD_NOTE:
+    case types.ADD_NEW_NOTE:
       return {
         ...state,
         ...(payload.open && {

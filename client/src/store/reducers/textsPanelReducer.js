@@ -17,6 +17,20 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.LOAD_TEXTS:
+      return {
+        ...state,
+        ...(payload.openTexts.length > 0 && {
+          openTextPanels: state.openTextPanels
+            .concat(...payload.openTexts)
+            .filter(id => id !== 'addTextPanel'),
+          activeTextPanel:
+            payload.setToActive ||
+            (state.activeTextPanel === 'addTextPanel'
+              ? payload.openTexts[0]
+              : state.activeTextPanel)
+        })
+      };
     case types.ADD_AND_OPEN_TEXT:
     case types.OPEN_TEXT:
       return {
@@ -88,7 +102,7 @@ export default (state = initialState, action) => {
         ...state,
         committedSectionIds: payload.sectionIds
       };
-    case types.ADD_SECTION:
+    case types.ADD_NEW_SECTION:
       return {
         ...state,
         committedSectionIds: [
@@ -152,16 +166,6 @@ export default (state = initialState, action) => {
         ...state,
         editState: [...state.editState.filter(id => id !== payload)]
       };
-    // case types.ADD_ANNOTATION:
-    //   return {
-    //     ...state,
-    //     editAnnotationId: payload.annotation._id
-    //   };
-    // case types.SET_ANNOTATION_EDIT_STATE:
-    //   return {
-    //     ...state,
-    //     editAnnotationId: payload.annotationIdOrNull
-    //   };
 
     case types.SET_VALID_SELECTION:
       return {

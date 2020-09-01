@@ -9,8 +9,8 @@ import {
   toggleRegisterModal,
   toggleSignInModal,
   toggleLogoutModal,
-  closeAllModals,
-  setCurrentPathname
+  closeAllModals
+  // setCurrentPathname
 } from '../../store/actions';
 import MainPage from '.';
 
@@ -20,7 +20,7 @@ const RouteWrapper = () => {
   const dispatch = useDispatch();
 
   const pathname = history.location.pathname;
-  const currentPathname = useSelector(s => s.notesPanel.currentPathname);
+  // const currentPathname = useSelector(s => s.notesPanel.currentPathname);
 
   const openTextPanels = useSelector(s => s.textsPanel.openTextPanels);
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
@@ -33,10 +33,10 @@ const RouteWrapper = () => {
   const signInOpen = useSelector(s => s.ui.signInOpen);
   const logoutOpen = useSelector(s => s.ui.logoutOpen);
 
-  useEffect(() => {
-    if (currentPathname !== pathname) dispatch(setCurrentPathname(pathname));
-    return () => {};
-  }, [currentPathname === pathname]);
+  // useEffect(() => {
+  //   if (currentPathname !== pathname) dispatch(setCurrentPathname(pathname));
+  //   return () => {};
+  // }, [currentPathname === pathname]);
 
   useEffect(() => {
     console.log('pathname', pathname);

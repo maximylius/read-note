@@ -83,8 +83,8 @@ const SectionItem = ({
     ? true
     : false;
 
-  const notesToDisplay = section.directConnections.filter(
-    el => el.resType === 'note' && Object.keys(notes).includes(el.resId)
+  const notesToDisplay = section.noteIds.filter(noteId =>
+    Object.keys(notes).includes(noteId)
   );
   const occupancy = committedToSection || tentativeToSection ? high : std;
   const rgbColor = colorGenerator(
@@ -138,11 +138,11 @@ const SectionItem = ({
               triggerRemeasure={triggerRemeasure}
             />
             <div className='side-notes-container'>
-              {notesToDisplay.map(el => (
+              {notesToDisplay.map(noteId => (
                 <SideNote
-                  key={el.resId}
+                  key={noteId}
                   sectionId={sectionId}
-                  noteId={el.resId}
+                  noteId={noteId}
                   triggerRemeasure={triggerRemeasure}
                 />
               ))}
