@@ -142,11 +142,11 @@
   display: block;
   border-radius: 0.5rem;
   border: 1px solid rgb(0, 0, 0, 0.3);
-  background-color: rgb(255, 255, 255, 0.2);
+  background-color: rgb(247, 247, 247);
   padding: 0.25rem 0rem;
 }
 .add-side-note:hover {
-  background-color: rgb(255, 255, 255, 0.4);
+  background-color: rgb(242, 242, 242);
 }
 .add-side-note-type {
   background-color: rgba(255, 255, 255, 0.4);
@@ -203,13 +203,10 @@ button.side-note-reaction:hover {
 button.side-note-replies-toggle-display {
   display: block;
   width: 100%;
-  background-color: rgb(232, 232, 232);
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.125);
   border-radius: 0rem 0.5rem 0.5rem 0.5rem;
   margin-bottom: 4px;
 }
-/* button.side-note-replies-toggle-display:hover {
-} */
 button.side-note-replies-toggle-display.hide-replies {
   border-left: 1px solid black;
   background-color: white;
@@ -217,9 +214,12 @@ button.side-note-replies-toggle-display.hide-replies {
 button.side-note-replies-toggle-display.hide-replies:hover {
   background-color: rgb(232, 232, 232);
 }
+button.side-note-replies-toggle-display.show-replies {
+  background-color: rgb(247, 247, 247);
+}
 button.side-note-replies-toggle-display.show-replies:hover {
   border-left: 1px solid black;
-  background-color: rgb(247, 247, 247);
+  background-color: rgb(242, 242, 242);
 }
 button.side-note-replies-toggle-display.hide-replies:hover::after {
   content: '';

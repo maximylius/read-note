@@ -110,24 +110,24 @@ const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
 };
 
 const initialState = {
-  mdFinderPanel: 2,
-  mdTextsPanel: 6,
-  mdAnnotationsPanel: 4,
-  mdAnnotationsPanelLast: 4,
-  mdNotesPanel: 4,
-  mdNotesPanelLast: 4,
-  welcomeOpen: false,
-  aboutOpen: false,
-  registerOpen: false,
-  signInOpen: false,
-  logoutOpen: false,
-  keepFinderOpen: false,
-  currentPathname: null,
-  lastDeskPathname: '/desk',
-  loading: false,
-  openReplyNotes: [],
-  alerts: [],
-  alertId: 0
+  mdFinderPanel: 2, // I panelReducer
+  mdTextsPanel: 6, // I panelReducer
+  mdAnnotationsPanel: 4, // I panelReducer
+  mdAnnotationsPanelLast: 4, // I panelReducer
+  mdNotesPanel: 4, // I panelReducer
+  mdNotesPanelLast: 4, // I panelReducer
+  welcomeOpen: false, // II modalReducer
+  aboutOpen: false, // II modalReducer
+  registerOpen: false, // II modalReducer
+  signInOpen: false, // II modalReducer
+  logoutOpen: false, // II modalReducer
+  keepFinderOpen: false, // I panelReducer or remove
+  currentPathname: null, // II modalReducer or remove
+  lastDeskPathname: '/desk', // II modalReducer
+  loading: false, // ?
+  openReplyNotes: [], // ?
+  alerts: [], // IV Alerts
+  alertId: 0 // IV Alerts
 };
 
 export default (state = initialState, action) => {

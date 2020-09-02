@@ -264,11 +264,12 @@ button.closeAlertElement {
 }
 
 .nav-main {
-  padding-top: 0.4em;
-  padding-bottom: 0.4em;
+  padding: 0.4rem 2rem 0.4rem 2rem;
   font-size: 1em;
 }
-
+.nav-add {
+  cursor: pointer;
+}
 /* .nav-main:hover {
   padding-top: 0.6em;
   padding-bottom: 0.4em;

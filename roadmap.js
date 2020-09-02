@@ -1,10 +1,8 @@
 /**
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 // section => noteIds
-// flatten reply data structure {resId} => resId
 // problem in textmain: sections get out of sync.
-// think about where to put projectIds: To direct connections? or to seperate projectIds? why shouldnt it?
-// project could just have indirectConnections. That would make it consistent. On the other hand then it would not be able to keep other direct references. E.g. 
+// DELTE_TEXT reducers.
 _TestTable_    TEXT    SECTION     NOTE
 GET              0         0         0
 PUT (INIT)       0         1         1 
@@ -16,8 +14,10 @@ DELETE (MANY)    0         0         1
 9     test if headers (for auth and getUserId) work
 9     PUT / DELETE save res to user / project.
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
-@RECENT_BUGS : cant open two texts at once // when opening a note not always a tab item is created
+@RECENT_BUGS :section item gets positioned badly. bug is recently introduced.
 // dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack.
+@OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections
+
 
 @NOTE_PANEL
 5    reduce amount of rerenders for side notes when section attributes are changed. Probably due to useSelector listener for sections. maybe custom hook would solve this when configured that only changes in title, delta and creation / deletion are necessary to observe.
@@ -54,7 +54,7 @@ DELETE (MANY)    0         0         1
 6   improve scroll behaviour // alowing multiple scroll panes in side-panel
 6   allow modes: structuring / note taking / standard (both = current)
 6   display note title somewhere.
-
+2   improve side-note-reply-count: just shows top level so far.
 
 
 @QUILL
@@ -69,7 +69,19 @@ DELETE (MANY)    0         0         1
 2DAY- 2     improve quill text css. Also make cursor more visible: hard to see if next to mention Blot.
 1     100% width on footer.
 3     design idea for hide reply btn: when hover it shall created a shadow above replies that are going to be hidden
+// rethink panel distribution:
+remove finderpanel?
+integrate flowchart in panels: left hand side: 2/3 flowchart. right 1/3 insepect elements
+when text is open: 
+- 3/5 texts, 2/5 sidepanel-sidenotes. 
+- 3/5 texts, 2/5 notes. 
+- 2/5 texts, 1/5 annotation 2/5 notes. 
+- text(3/5) sidepanel-flowchart (2/5).
+- text(2/5) sidepanel-flowchart (2/5) inspect (1/5).
 
+@ADD_TEXT_PANEL
+// list last used texts <- needs to be saved to user.  slice(100)
+// allow search in your texts
 
 @RAFAS_BRUDER
 7    @MOBGODB   multiple document updates.
@@ -178,6 +190,8 @@ DELETE (MANY)    0         0         1
 0 @FURTHER_IDEAS
 1    Text-Logik-Visualisierung: Zoom-Level für Argumente -> Grob zu Feingliederung.
 
+@SECURTIY
+2    sanitize strings in alerts. unsave docname e.g. could do stuff.
 
 4 @pages  --------------------------------------
 4    REMOVE second stage upload page.

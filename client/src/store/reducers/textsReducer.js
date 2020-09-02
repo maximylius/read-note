@@ -25,7 +25,9 @@ export default (state = initialState, action) => {
         [payload.text._id]: payload.text
       };
     case types.DELETE_TEXT: //2do
-      return ObjectRemoveKeys(state, payload.textId);
+      return {
+        ...ObjectRemoveKeys(state, payload.textId)
+      };
     case types.UPDATE_TEXT:
       return {
         ...state,

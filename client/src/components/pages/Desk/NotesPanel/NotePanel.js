@@ -80,6 +80,42 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const documentBodyRef = React.useRef();
   const quillNoteRef = React.useRef(null);
   const selectionIndexRef = React.useRef(-1);
+  const state = {
+    noteId,
+    history,
+    notes,
+    notesRef,
+    functionsRef,
+    texts,
+    sections,
+    mdNotesPanel,
+    note,
+    quillValue,
+    setQuillValue,
+    addBubble,
+    setAddBubble,
+    changedEditorCounter,
+    setChangedEditorCounter,
+    embedClickCounter,
+    setEmbedClickCounter,
+    atValues,
+    setAtValues,
+    deltaRef,
+    savedRef,
+    cardBodyRef,
+    documentBodyRef,
+    quillNoteRef,
+    selectionIndexRef
+  };
+  const store = {
+    dispatch,
+    loadText,
+    setCommittedSections,
+    setTentativeSections,
+    updateNote,
+    loadNotes,
+    addAlert
+  };
 
   const mentionModule = React.useCallback(mentionModuleCreator(atValues, []), [
     atValues

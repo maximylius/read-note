@@ -54,7 +54,7 @@ export default (state = initialState, action) => {
             projectId,
             {
               ...state[projectId],
-              noteIds: [...state.noteIds, payload.note._id]
+              noteIds: [...state[projectId].noteIds, payload.note._id]
             }
           ])
         )

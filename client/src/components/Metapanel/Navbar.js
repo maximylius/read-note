@@ -11,7 +11,13 @@ import {
   closeAllModals
 } from '../../store/actions';
 import { Link } from 'react-router-dom';
-import { BsPower, BsLaptop, BsPerson } from 'react-icons/bs';
+import {
+  BsPower,
+  BsLaptop,
+  BsPerson,
+  BsCollection,
+  BsCollectionFill
+} from 'react-icons/bs';
 
 const Navbar = () => {
   const history = useHistory();
@@ -22,6 +28,7 @@ const Navbar = () => {
   const registerOpen = useSelector(s => s.ui.registerOpen);
   const signInOpen = useSelector(s => s.ui.signInOpen);
   const logoutOpen = useSelector(s => s.ui.logoutOpen);
+  const projects = useSelector(s => s.projects);
   const deskOpen = !aboutOpen && !registerOpen && !signInOpen && !logoutOpen;
   const lastDeskPathname = useSelector(s => s.ui.lastDeskPathname);
   const username = useSelector(s => s.user.username);
@@ -48,6 +55,17 @@ const Navbar = () => {
 
       <div className='collapse navbar-collapse' id='navbarSupportedContent'>
         <ul className='navbar-nav ml-auto'>
+          {Object.keys(projects).map(projectId => (
+            <li className='nav-item' key={projectId}>
+              <span
+                className={`nav-link ${false ? 'active' : ''}`}
+                // onClick={() => dispatch(closeAllModals(history))}
+              >
+                {false ? <BsCollectionFill /> : <BsCollection />}
+                {' ' + projects[projectId].title}
+              </span>
+            </li>
+          ))}
           <li className='nav-item'>
             <Link
               className={`nav-link ${deskOpen ? 'active' : ''}`}

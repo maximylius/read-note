@@ -1,15 +1,15 @@
 import * as types from '../types';
 
 const initialState = {
-  activeTextPanel: 'addTextPanel',
+  activeTextPanel: 'addTextPanel', //
   openTextPanels: ['addTextPanel'],
   addTextState: null,
   addedId: null, //remove
   expandAll: false,
   committedSectionIds: [],
   tentativeSectionIds: [],
-  holdControl: false,
-  progress: 0,
+  holdControl: false, // remove
+  progress: 0, // shall be moved to text? as an array [0%-12%, 30%-55%, 87%-100%]
   displayTextMeta: false,
   speedReader: { isOpenFor: [], words: [], byId: {} }
 };
@@ -49,24 +49,23 @@ export default (state = initialState, action) => {
         activeTextPanel: payload.textPanelId,
         validSelection: null
       };
+    case types.DELETE_TEXT:
     case types.CLOSE_TEXT:
       return {
         ...state,
         activeTextPanel:
-          state.activeTextPanel !== payload.textPanelId
+          state.activeTextPanel !== payload.textId
             ? state.activeTextPanel
             : state.openTextPanels.length === 1
             ? null
-            : state.openTextPanels.filter(id => id !== payload.textPanelId)[
-                Math.max(
-                  state.openTextPanels.indexOf(payload.textPanelId) - 1,
-                  0
-                )
+            : state.openTextPanels.filter(id => id !== payload.textId)[
+                Math.max(state.openTextPanels.indexOf(payload.textId) - 1, 0)
               ],
         openTextPanels:
           state.openTextPanels.length > 1
-            ? state.openTextPanels.filter(id => id !== payload.textPanelId)
+            ? state.openTextPanels.filter(id => id !== payload.textId)
             : ['addTextPanel'],
+        displayTextMeta: false,
         validSelection: null
       };
     case types.OPEN_ADDTEXTPANEL:

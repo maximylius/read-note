@@ -391,7 +391,7 @@ router.put('/:restype/:id', getUserId, (req, res) => {
             });
         })
       );
-      if (req.params.restype !== 'user') {
+      if (Array.isArray(req.body.doc.projectIds)) {
         const projectsToInform = [
           ...req.body.doc.projectIds
             .filter(projectId => !mongoDoc.projectIds.includes(projectId))
@@ -503,44 +503,42 @@ router.delete('/:restype/:id', getUserId, (req, res) => {
               .findById(connection.resId)
               .then(doc => {
                 console.log('found doc to update of type', connection.resType);
-                if (Array.isArray(doc.directConnections)) {
-                  console.log('directConnections', doc.directConnections);
+                // for every  connection.resType
+                if (Array.isArray(doc.directConnections))
                   doc.directConnections = doc.directConnections.filter(
-                    c => !deletedIds.includes(c.resId.toString()) // error here .toString of undefined // somehow direct connections receive a _id. one element of type note did not receive a resId. Why?
+                    c => !deletedIds.includes(c.resId.toString())
                   );
-                }
                 if (Array.isArray(doc.indirectConnections))
                   doc.indirectConnections = doc.indirectConnections.filter(
                     c => !deletedIds.includes(c.resId.toString())
                   );
+
+                // if connection.resType === note
                 if (
-                  connection.resType === 'text' &&
-                  Array.isArray(doc.sectionIds)
-                )
-                  doc.sectionIds = doc.sectionIds.filter(
-                    id => !deletedIds.includes(id.toString())
-                  );
-                if (
-                  connection.resType === 'note' &&
                   doc.isAnnotation &&
                   deletedIds.includes(doc.isAnnotation.sectionId.toString())
                 )
                   doc.isAnnotation.sectionId = null;
-                if (connection.resType === 'note' && Array.isArray(doc.replies))
+                if (Array.isArray(doc.replies))
                   doc.replies = doc.replies.filter(
                     id => !deletedIds.includes(id.toString())
                   );
-                if (connection.resType === 'user') {
-                  doc.textIds = doc.textIds.filter(
-                    id => !deletedIds.includes(id.toString())
-                  );
+
+                // if connection.resType === user | project | text
+                if (Array.isArray(doc.sectionIds))
                   doc.sectionIds = doc.sectionIds.filter(
                     id => !deletedIds.includes(id.toString())
                   );
+
+                // if connection.resType === user | project
+                if (Array.isArray(doc.textIds))
+                  doc.textIds = doc.textIds.filter(
+                    id => !deletedIds.includes(id.toString())
+                  );
+                if (Array.isArray(doc.noteIds))
                   doc.noteIds = doc.noteIds.filter(
                     id => !deletedIds.includes(id.toString())
                   );
-                }
 
                 return doc.save();
               });

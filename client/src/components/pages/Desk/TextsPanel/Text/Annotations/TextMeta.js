@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import InputWithPrepend from '../../../../../Metapanel/InputWithPrepend';
 import { updateText, deleteText } from '../../../../../../store/actions';
+
 function TextMeta() {
+  const history = useHistory();
   const dispatch = useDispatch();
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const text = useSelector(s => s.texts[s.textsPanel.activeTextPanel]);
@@ -62,7 +65,7 @@ function TextMeta() {
     }
   };
 
-  const deleteTextClick = () => dispatch(deleteText(activeTextPanel));
+  const deleteTextClick = () => dispatch(deleteText(activeTextPanel, history));
 
   useEffect(() => {
     const updateTimer = setTimeout(() => {

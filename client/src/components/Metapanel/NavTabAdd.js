@@ -4,7 +4,7 @@ import { BsX, BsPlus } from 'react-icons/bs';
 const NavTab = ({ isActive, openAction }) => {
   const openClickHandler = e => openAction();
   return (
-    <li className='nav-item' onClick={openClickHandler}>
+    <li className='nav-item nav-add' onClick={openClickHandler}>
       <span
         className={`nav-link noSelect
       ${isActive ? 'active' : ''} `}

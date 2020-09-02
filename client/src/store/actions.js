@@ -23,6 +23,14 @@ import _isEqual from 'lodash/isEqual';
  * @AUTH
  *
  */
+const addToNestedFetch = (doc, r) => {
+  ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
+    if (Array.isArray(doc[key]) && Object.keys(r).includes(key)) {
+      console.log('new key', key, doc[key]);
+      r[key === 'replies' ? 'noteIds' : key].push(...doc[key]);
+    }
+  });
+};
 const nestedFetch = (
   r = { projectIds: [], textIds: [], sectionIds: [], noteIds: [] },
   redux = { dispatch: Function(), getState: Function() },
@@ -33,7 +41,7 @@ const nestedFetch = (
   if (!Array.isArray(r.sectionIds)) r.sectionIds = [];
   if (!Array.isArray(r.noteIds)) r.noteIds = [];
   if (!Array.isArray(r.blacklist)) r.blacklist = [];
-
+  console.log('nested fetch r', r);
   const resType =
     r.projectIds.length > 0
       ? 'project'
@@ -52,26 +60,23 @@ const nestedFetch = (
   r[`${resType}Ids`].forEach(resId => {
     if (r.blacklist.includes(resId)) return;
     r.blacklist.push(resId);
-    if (
+
+    const resourceAlreadyLoaded =
       Object.keys(resState).includes(resId) &&
       resState[resId] &&
-      resState[resId].delta //2do add is loaded check.
-    )
-      return;
-    console.log(`REQUESTING: /api/common/${resType}/${resId}`);
+      resState[resId].delta; //check if it need to be loaded
+    if (resourceAlreadyLoaded) return addToNestedFetch(resState[resId], r);
+
+    if (!resourceAlreadyLoaded)
+      console.log(`REQUESTING: /api/common/${resType}/${resId}`);
     promises.push(
       axios
         .get(`/api/common/${resType}/${resId}`, tokenConfig(redux.getState))
         .then(res => {
           console.log('nested res.data', res.data);
           const docArray = res.data.docArray;
-          docArray.forEach(doc => {
-            ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
-              if (Array.isArray(doc[key])) {
-                r[key === 'replies' ? 'noteIds' : key].push(...doc[key]);
-              }
-            });
-          });
+
+          docArray.forEach(doc => addToNestedFetch(doc, r));
 
           const docsById = Object.fromEntries(
             docArray.map(doc => [doc._id, doc])
@@ -119,12 +124,25 @@ const nestedFetch = (
     );
   });
 
-  Promise.all(promises).then(() => {
-    r[`${resType}Ids`] = r[`${resType}Ids`].filter(
-      id => !r.blacklist.includes(id)
-    );
-    nestedFetch(r, redux, options);
-  });
+  Promise.all(promises)
+    .then(() => {
+      r[`${resType}Ids`] = r[`${resType}Ids`].filter(
+        id => !r.blacklist.includes(id)
+      );
+      nestedFetch(r, redux, options);
+    })
+    .catch(err => {
+      console.log('nested fetch outer error:', err);
+      dispatchAlert(
+        {
+          message: `<span>Oops! Something went wrong.</span>`,
+          type: 'danger'
+        },
+        4000,
+        redux.dispatch,
+        redux.getState
+      );
+    });
 };
 
 const fetchUserData = async (user, openTexts, dispatch) => {
@@ -221,6 +239,7 @@ export const loadUser = () => async (dispatch, getState) => {
     });
 
     const user = userRes.data.user;
+    console.log('nestedFetch of user', user);
     nestedFetch(
       {
         projectIds: user.projectIds,
@@ -277,6 +296,7 @@ export const loginUser = ({ email, password, history }) => async (
       );
       history.push(lastDeskPathname);
       const user = userRes.data.user;
+      console.log('nestedFetch of user', user);
       nestedFetch(
         {
           projectIds: user.projectIds,
@@ -694,7 +714,7 @@ export const uploadTextcontent = ({ textcontent, delta }, isPublic = true) => (
   text._id = spareIds['texts'][0];
   text.textcontent = textcontent;
   text.delta = delta;
-  text.projectIds = []; //2do
+  text.projectIds = user.projectIds[0] ? [user.projectIds[0]] : [];
   text.formatDelta = delta;
   text.editedBy = user._id ? [user._id] : [];
   text.accessFor = user._id ? [user._id] : []; //2do add sessionId / could be a spareId for user
@@ -716,14 +736,8 @@ export const uploadTextcontent = ({ textcontent, delta }, isPublic = true) => (
   });
 
   axios.put(
-    `/api/texts/${text._id}`,
-    ObjectKeepKeys(text, [
-      '_id',
-      'textcontent',
-      'delta',
-      'editedBy',
-      'accessFor'
-    ]),
+    `/api/common/text/${text._id}`,
+    { doc: text },
     tokenConfig(getState)
   );
 
@@ -740,7 +754,11 @@ export const updateText = (textId, textUpdate) => (dispatch, getState) => {
     payload: { text }
   });
 
-  axios.put(`/api/texts/${textId}`, textUpdate, tokenConfig(getState));
+  axios.put(
+    `/api/common/text/${textId}`,
+    { doc: textUpdate },
+    tokenConfig(getState)
+  );
 };
 
 export const clearAddTextPanel = () => dispatch => {
@@ -778,12 +796,16 @@ export const searchTextsInDatabase = (searchString, searchFields = 'all') => (
     });
 };
 
-export const deleteText = textId => (dispatch, getState) => {
-  const { texts, sections } = getState();
-
+export const deleteText = (textId, history) => (dispatch, getState) => {
+  const {
+    texts,
+    sections,
+    textsPanel: { openTextPanels }
+  } = getState();
+  const text = texts[textId];
   dispatch({
     type: types.DELETE_TEXT,
-    payload: { textId }
+    payload: { text: text, textId }
   });
   texts[textId].sectionIds.forEach(sectionId => {
     const section = sections[sectionId];
@@ -797,6 +819,20 @@ export const deleteText = textId => (dispatch, getState) => {
       }
     });
   });
+  dispatchAlert(
+    {
+      message: `Sucessfully deleted text '<strong>${text.title}</strong>'.`,
+      type: 'info'
+    },
+    4000,
+    dispatch,
+    getState
+  );
+
+  if (openTextPanels.includes(textId))
+    history.push(
+      regExpHistory(history.location.pathname, textId, 'close', 'text')
+    );
 
   axios.delete(`/api/common/text/${textId}`, {
     data: {
@@ -977,7 +1013,7 @@ export const closeTextPanel = ({ textPanelId, history }) => (
   } = getState();
   dispatch({
     type: types.CLOSE_TEXT,
-    payload: { textPanelId: textPanelId, last: openTextPanels.length === 1 }
+    payload: { textId: textPanelId, last: openTextPanels.length === 1 }
   });
   if (textPanelId !== 'addTextPanel') {
     console.log(
@@ -1024,7 +1060,7 @@ export const addSection = ({ categoryId, begin, end }) => (
     delta: null,
 
     textId: activeTextPanel,
-    projectIds: [], //2do
+    projectIds: user.projectIds[0] ? [user.projectIds[0]] : [],
 
     noteIds: [],
 
@@ -1160,9 +1196,9 @@ export const updateSection = update => (dispatch, getState) => {
 
   axios
     .put(
-      `/api/sections/${update._id}`,
+      `/api/common/section/${update._id}`,
       {
-        section: request,
+        doc: request,
         ...(previousTextSectionId && { previousTextSectionId })
       },
       tokenConfig(getState)
@@ -1484,7 +1520,7 @@ export const addNote = ({
 
     isAnnotation: isAnnotation || null,
     isReply: isReply || null,
-    projectIds: [], //2do
+    projectIds: user.projectIds[0] ? [user.projectIds[0]] : [],
 
     replies: [],
     directConnections: [],
