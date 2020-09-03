@@ -183,24 +183,21 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
 
   // addEventListeners: click
   useEffect(() => {
-    console.log(
-      'MOUNT_MOUNT_MOUNT_MOUNT_MOUNT_MOUNT_MOUNT_\n',
-      notes[noteId].title
-    );
+    console.log('Notepanel_MOUNT_MOUNT_\n', notes[noteId].title);
     documentBodyRef.current = document.getElementById(`root`);
     const cardBody = document.getElementById(`noteCardBody${noteId}`);
 
     cardBody.addEventListener('click', clickHandler);
 
-    functionsRef.current.focusIn = () => {
+    const focusIn = () => {
       if (cardBodyRef && cardBodyRef.current)
         cardBodyRef.current.classList.add('active-editor');
     };
-    functionsRef.current.focusOut = () => {
+    const focusOut = () => {
       if (cardBodyRef && cardBodyRef.current)
         cardBodyRef.current.classList.remove('active-editor');
     };
-    functionsRef.current.setCursorToQuillEnd = e => {
+    const setCursorToQuillEnd = e => {
       if (
         cardBodyRef &&
         cardBodyRef.current &&
@@ -214,26 +211,17 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
           0
         );
     };
-    cardBody.addEventListener('focusin', functionsRef.current.focusIn);
-    cardBody.addEventListener('focusout', functionsRef.current.focusOut);
-    cardBody.addEventListener(
-      'click',
-      functionsRef.current.setCursorToQuillEnd
-    );
+    cardBody.addEventListener('focusin', focusIn);
+    cardBody.addEventListener('focusout', focusOut);
+    cardBody.addEventListener('click', setCursorToQuillEnd);
 
     return () => {
       const cardBody = document.getElementById(`noteCardBody${noteId}`);
       cardBody.removeEventListener('click', clickHandler);
-      cardBody.removeEventListener('focusin', functionsRef.current.focusIn);
-      cardBody.removeEventListener('focusout', functionsRef.current.focusOut);
-      cardBody.removeEventListener(
-        'click',
-        functionsRef.current.setCursorToQuillEnd
-      );
-      console.log(
-        'DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_DISMOUNT_\n',
-        notes[noteId].title
-      );
+      cardBody.removeEventListener('focusin', focusIn);
+      cardBody.removeEventListener('focusout', focusOut);
+      cardBody.removeEventListener('click', setCursorToQuillEnd);
+      console.log('Notepanel_DISMOUNT_DISMOUNT_\n', notes[noteId].title);
     };
   }, []);
 
