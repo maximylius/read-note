@@ -7,7 +7,7 @@
 // 2do: somehow notes do not get saved as soon as a mention tag is included. Or Rather embeds get removed from saved note.
 // 2do: focus is jumping between editors
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import ReactQuill from 'react-quill';
@@ -32,19 +32,19 @@ import {
   addAlert
 } from '../../../../store/actions';
 import Navline from './Navline';
-import {
-  classNameIncludes,
-  embedSeperatorCreator,
-  preProcessDelta,
-  getNotesPath,
-  compareDisplayedNotesDelta,
-  mentionCharClickHandler,
-  deltaInconsistencyCheck
-} from './noteFunctions';
 import SaveStatus from './SaveStatus';
 import { AddBubble } from './AddBubble';
+import classNameIncludes from './noteFunctions/classNameIncludes';
+import mentionCharClickHandler from './noteFunctions/mentionCharClickHandler';
+import navlineClickHandler from './noteFunctions/navlineClickHandler';
+import mentionSpanClickHandler from './noteFunctions/mentionSpanClickHandler';
+import handleEditorChange from './noteFunctions/handleEditorChange';
+import onChangeHandler from './noteFunctions/onChangeHandler';
+import preProcessDelta from './noteFunctions/preProcessDelta';
+import selectionChangeHandler from './noteFunctions/selectionChangeHandler';
 
 ReactQuill.Quill.register(BlotEmbedSeperator);
+const g = {}; // serves as a ref container for component state to be passed into outsourced functions in Order to simplify their input parameters
 
 const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   console.log('NOTEPANEL RENDER. NOTEPANEL RENDER. NOTEPANEL RENDER. ');
@@ -80,8 +80,10 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const documentBodyRef = React.useRef();
   const quillNoteRef = React.useRef(null);
   const selectionIndexRef = React.useRef(-1);
-  const state = {
+  g.current = {
+    window,
     noteId,
+    informParentAboutChange,
     history,
     notes,
     notesRef,
@@ -105,9 +107,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     cardBodyRef,
     documentBodyRef,
     quillNoteRef,
-    selectionIndexRef
-  };
-  const store = {
+    selectionIndexRef,
     dispatch,
     loadText,
     setCommittedSections,
@@ -117,479 +117,25 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     addAlert
   };
 
-  const mentionModule = React.useCallback(mentionModuleCreator(atValues, []), [
+  const mentionModule = useCallback(mentionModuleCreator(atValues, []), [
     atValues
   ]);
 
-  const onChangeHandler = (
-    __HTML,
-    changeDelta,
-    source,
-    editor //, quillRef
-  ) => {
-    if (source === 'api') {
-      // console.log('api change....');
-      return;
-    }
-    const delta = editor.getContents();
-    // CHECK FOR INCONSINSTENCY
-    let isInconsistent = false;
-    // if (
-    //   changeDelta.ops.some(
-    //     op => op.delete || (op.attributes && op.attributes.embedSeperator)
-    //   ) // 2do: when copying embed seperator format gets lost.
-    // ) { // Problem: this would allow to type between mention span and embeded contents.
-    isInconsistent = deltaInconsistencyCheck(delta, noteId);
-    // }
-
-    if (isInconsistent) {
-      let inconsistencyMessage =
-        '<p><strong>Operation not allowed.</strong> <br />Emebed content cannot be removed partly. Collapse or remove completly. </p>';
-      console.log('deltadeltadeltadeltadeltaINCONSISTENT_---', delta);
-      //history not exposed for editor ref from change event
-      // quillNoteRef.editor.history.undo();
-      const editor = quillNoteRef.current.editor;
-      const newOps = [{ delete: editor.getLength() }, ...deltaRef.current.ops];
-      editor.updateContents({
-        ops: newOps
-      });
-      dispatch(
-        addAlert({
-          message: inconsistencyMessage,
-          type: 'warning'
-        })
-      );
-      return;
-    }
-    setChangedEditorCounter(prevState => prevState + 1);
-    deltaRef.current = delta;
-    if (informParentAboutChange) informParentAboutChange();
-  };
-
-  // check which notes to update.
-  // if update: update connectedWith for the note(s).
-  const handleEditorChange = () => {
-    // external vars: 1.editorRef, 2.{mainNoteId, begin, end} (if not noteId, then begin and end index are necessary), 3.notes (redux), 4.dispatch, 5.updateNote
-    console.log('handle change');
-    if (!quillNoteRef) return;
-    console.log(quillNoteRef, quillNoteRef.current.editor);
-    const editor = quillNoteRef.current.editor;
-    const delta = editor.getContents();
-    const { notesConnectedWith, displayedNotes } = getNotesPath(delta, noteId);
-    const noteUpdateArray = compareDisplayedNotesDelta(
-      delta,
-      displayedNotes,
-      notesConnectedWith,
-      notesRef.current
-    );
-    console.log('noteUpdateArray', noteUpdateArray);
-    noteUpdateArray.forEach(noteUpdateObj =>
-      dispatch(updateNote(noteUpdateObj))
-    );
-    savedRef.current = Date.now();
-    return;
-  };
-
-  // settimout handleEditorChange
-  useEffect(() => {
-    if (changedEditorCounter < 0) return;
-    if (!quillNoteRef) return;
-    savedRef.current = null;
-    const commitChangeTimer = setTimeout(() => {
-      handleEditorChange();
-    }, 5000);
-    return () => {
-      clearTimeout(commitChangeTimer);
-    };
-  }, [changedEditorCounter]);
-
-  useEffect(() => {
-    return () => {
-      handleEditorChange();
-    };
-  }, []);
-
-  const mentionSpanClickHandler = (
-    e,
-    editor,
-    notes,
-    noteId,
-    handleEditorChange
-  ) => {
-    // what about ref // can it be passed in?
-    const resInfo =
-      e.target.dataset.id ||
-      e.target.parentElement.dataset.id ||
-      e.target.parentElement.parentElement.dataset.id;
-    console.log(resInfo);
-    let dontOpen, closeIndexes;
-    const resType = extractAtValueResType(resInfo);
-    const resId = extractAtValueResId(resInfo);
-    if (resType !== 'note') {
-      if (resType === 'section') {
-        dispatch(
-          loadText({
-            textId: sections[resId].textId,
-            openText: true,
-            setToActive: true,
-            history: history
-          })
-        );
-        dispatch(setCommittedSections([resId], false));
-        dispatch(setTentativeSections([resId], false));
-      } else if (resType === 'text') {
-        dispatch(
-          loadText({
-            textId: resId,
-            openText: true,
-            setToActive: true,
-            history: history
-          })
-        );
-      }
-      return;
-    }
-    console.log('resId', resId, 'notes', notes, 'notes[resId]', notes[resId]);
-    let deltaToEmbed = notes[resId] && notes[resId].delta;
-    // 2do: if the note is not fetched, request it first, then continue!
-    const delta = editor.getContents();
-    console.log(
-      'delta------------------------------------------------------------------------------------\n',
-      delta
-    );
-    const flexPath = [noteId],
-      currentPath = [noteId],
-      allPaths = {
-        [noteId]: { begin: 0, embeds: [], end: delta.ops.length }
-      };
-    // colorPath: 0-0, 0-1, 1-0, 2-0, 2-1,
-    const selection = quillNoteRef.current.editor.getSelection();
-    if (!selection) return; // 2do check whether this early return is okay:
-    let deltaPosition = 0,
-      deltaIndex = 0,
-      seperatorIndexes = null;
-
-    //  here we can manipulate the color of the embeds
-    delta.ops.forEach((op, index) => {
-      if (op.attributes && op.attributes.embedSeperator) {
-        const resId = op.attributes.embedSeperator.resId;
-        if (op.attributes.embedSeperator.case === 'begin') {
-          allPaths[flexPath[flexPath.length - 1]].embeds.push(resId);
-          allPaths[resId] = {
-            begin: index,
-            embeds: []
-          };
-          flexPath.push(resId);
-          if (deltaPosition < selection.index) {
-            console.log('new currentPath:', flexPath);
-            currentPath.push(resId);
-          }
-        } else {
-          allPaths[resId].end = index;
-          flexPath.pop();
-          if (deltaPosition < selection.index) {
-            console.log('new currentPath:', flexPath);
-            currentPath.pop();
-          }
-        }
-      }
-      deltaPosition += op.insert.length || 1;
-      if (deltaPosition === selection.index) {
-        deltaIndex = index + 1; //2do: think: why +1?
-      }
-    });
-    // CHECK FOR ERROR
-    if (
-      Object.keys(allPaths).some(
-        key => allPaths[key].end && allPaths[key].end < allPaths[key].begin
-      )
-    )
-      throw new Error(
-        'error: embeds not closed propperly',
-        allPaths,
-        delta.ops
-      );
-
-    console.log('deltaIndex', deltaIndex, 'currentPath', currentPath);
-    console.log('d-1', delta.ops[deltaIndex - 1]);
-    console.log('d-0', delta.ops[deltaIndex - 0]);
-    console.log('d+1', delta.ops[deltaIndex + 1]);
-    console.log('d+2', delta.ops[deltaIndex + 2]);
-
-    // THROW ERROR WHEN SELECTION BUGGED OUT
-    if (
-      !delta.ops[deltaIndex].insert ||
-      !delta.ops[deltaIndex].insert.mention ||
-      delta.ops[deltaIndex].insert.mention.id !== resInfo
-    ) {
-      // 2do handle this case: if uncertain where clicked at, then just look for resId_isOpen and close this.
-      throw 'selection is not at clicked position. returned out of function';
-    }
-
-    // CLOSE and not open if followed by opening tag
-    if (
-      delta.ops[deltaIndex + 1] &&
-      delta.ops[deltaIndex + 1].attributes &&
-      delta.ops[deltaIndex + 1].attributes.embedSeperator &&
-      delta.ops[deltaIndex + 1].attributes.embedSeperator.resId === resId
-    ) {
-      const { begin, end } = allPaths[resId];
-      if (begin < 0 || end <= begin) {
-        throw new Error('NOT: embed 0<=begin<end ');
-      }
-      handleEditorChange(); // 2do: check whether change has occured in delta that are about to be closed
-
-      delta.ops[deltaIndex].insert.mention.id = updateMentionIdOpenStatus(
-        delta.ops[deltaIndex].insert.mention.id,
-        'false'
-      ); // close mention tag
-      seperatorIndexes = { begin, end };
-      const newOps = [
-        ...delta.ops.slice(0, begin),
-        ...delta.ops.slice(end + 1)
-      ];
-      editor.updateContents({
-        ops: [{ delete: editor.getLength() }, ...newOps]
-      });
-
-      console.log('newSelectionIndex', selection.index + 1);
-      editor.setSelection(selection.index + 1);
-
-      deltaRef.current = { ops: newOps };
-      console.log('close.', seperatorIndexes);
-      console.log(
-        'newOps',
-        newOps,
-        'closedOps',
-        delta.ops.slice(begin + 1, end + 1 - 1)
-      );
-      return;
-    }
-
-    // 2do: problem with current path: doesnt include the opening tag
-    // ALERT - ALREADY OPEN
-    if (currentPath.includes(resId)) {
-      // necessary only when not open.
-      dispatch(
-        addAlert({
-          message: `<p>You are <strong>already</strong> working within <strong>${notes[resId].title}</strong>.</p>`,
-          type: 'info'
-        })
-      );
-      return;
-    }
-
-    // OPEN (and close if necessary)
-    // if it is open before assign closeIndexes
-    if (Object.keys(allPaths).includes(resId)) {
-      closeIndexes = {
-        begin: allPaths[resId].begin,
-        end: allPaths[resId].end
-      };
-      delta.ops[
-        closeIndexes.begin - 1
-      ].insert.mention.id = updateMentionIdOpenStatus(
-        delta.ops[closeIndexes.begin - 1].insert.mention.id,
-        'false'
-      ); // close mention
-    }
-
-    if (closeIndexes) {
-      deltaToEmbed = {
-        ops: delta.ops.slice(closeIndexes.begin + 1, closeIndexes.end)
-      };
-      if (
-        // remove linebreak inherited from embedSeperator
-        typeof deltaToEmbed.ops[0].insert === 'string' &&
-        deltaToEmbed.ops[0].insert[0] === '\n'
-      ) {
-        console.log('chop of first char!');
-        deltaToEmbed.ops[0].insert = deltaToEmbed.ops[0].insert.slice(1);
-      }
-    } else {
-      if (!deltaToEmbed) {
-        dispatch(
-          addAlert({
-            message:
-              '<p>Ressource not found: Either deleted or not yet loaded</p>',
-            type: 'warning'
-          })
-        );
-        return;
-      }
-    }
-
-    console.log('open! close:', closeIndexes);
-    const closeBefore = closeIndexes && closeIndexes.begin < deltaIndex;
-    const closeAfter = closeIndexes && closeIndexes.begin > deltaIndex;
-    const newOps = [
-      ...(closeBefore
-        ? [
-            ...delta.ops.slice(0, closeIndexes.begin),
-            ...delta.ops.slice(closeIndexes.end + 1, deltaIndex + 1)
-          ]
-        : delta.ops.slice(0, deltaIndex + 1)),
-      ...(dontOpen
-        ? []
-        : [
-            embedSeperatorCreator(resType, resId, resInfo, 'begin'),
-            ...deltaToEmbed.ops,
-            embedSeperatorCreator(resType, resId, resInfo, 'end')
-          ]),
-      ...(closeAfter
-        ? [
-            ...delta.ops.slice(deltaIndex + 1, closeIndexes.begin),
-            ...delta.ops.slice(closeIndexes.end + 1, delta.ops.length)
-          ]
-        : delta.ops.slice(deltaIndex + 1, delta.ops.length))
-    ];
-    console.log('newOps before color', newOps);
-
-    // COLOR EMBEDS
-    const colorPath = {
-        [noteId]: {
-          begin: 0,
-          embeds: [],
-          end: delta.ops.length,
-          color_class: ''
-        }
-      },
-      currentColorPath = [noteId];
-    newOps.forEach((op, index) => {
-      if (!op.attributes || !op.attributes.embedSeperator) return;
-      const embedResId = op.attributes.embedSeperator.resId;
-      if (op.attributes.embedSeperator.case === 'begin') {
-        colorPath[currentColorPath[currentColorPath.length - 1]].embeds.push(
-          embedResId
-        );
-        let color_class =
-          'color_class-' +
-          currentColorPath
-            .map((el, index) => colorPath[el].embeds.length - 1)
-            .join('-');
-        colorPath[embedResId] = {
-          embeds: [],
-          color_class
-        };
-
-        newOps[index].attributes.embedSeperator.color_class =
-          colorPath[embedResId].color_class;
-        currentColorPath.push(embedResId);
-      } else {
-        currentColorPath.pop();
-        // 2do: error color_class of undefined.
-        try {
-          newOps[index].attributes.embedSeperator.color_class =
-            colorPath[embedResId].color_class;
-        } catch (error) {
-          console.log('newOps', newOps);
-          console.log('index', index);
-          console.log('newOps[index]', newOps[index]);
-          console.log('colorPath', colorPath);
-          console.log('embedResId', embedResId);
-          console.log('colorPath[embedResId]', colorPath[embedResId]);
-          throw new Error('CANNOT READ COLOR_CLASS OF UNDEFINED');
-        }
-      }
-    });
-
-    // update clicked mention with color_class
-    let newDeltaIndex = deltaIndex;
-    newDeltaIndex -=
-      closeIndexes && closeIndexes.begin < deltaIndex
-        ? closeIndexes.end + 1 - closeIndexes.begin
-        : 0;
-    newOps[newDeltaIndex].insert.mention.id = updateMentionIdOpenStatus(
-      newOps[newDeltaIndex].insert.mention.id,
-      colorPath[resId].color_class
-    );
-
-    console.log(newOps);
-    editor.updateContents({ ops: [{ delete: editor.getLength() }, ...newOps] });
-
-    const newSelectionIndex =
-      selection.index +
-      3 -
-      (!!closeBefore &&
-        delta.ops
-          .slice(closeIndexes.begin, closeIndexes.end + 1)
-          .reduce((a, b) => a + (b.insert && b.insert.length) || 1, 0));
-
-    console.log(
-      'closeBefore',
-      closeBefore,
-      !!closeBefore &&
-        delta.ops
-          .slice(closeIndexes.begin, closeIndexes.end + 1)
-          .reduce((a, b) => a + (b.insert && b.insert.length) || 1, 0)
-    );
-    console.log('newSelectionIndex', newSelectionIndex);
-
-    editor.setSelection(newSelectionIndex);
-
-    deltaRef.current = { ops: newOps };
-    if (closeIndexes) {
-      handleEditorChange();
-    }
-  };
-
-  const navlineClickHandler = (e, editor, handleEditorChange) => {
-    const resInfo = e.target.dataset.resInfo;
-    const delta = editor.getContents();
-    const begin = delta.ops.findIndex(
-      op =>
-        op.attributes &&
-        op.attributes.embedSeperator &&
-        op.attributes.embedSeperator.resInfo === resInfo &&
-        op.attributes.embedSeperator.case === 'begin'
-    );
-    const end =
-      begin +
-      delta.ops
-        .slice(begin)
-        .findIndex(
-          op =>
-            op.attributes &&
-            op.attributes.embedSeperator &&
-            op.attributes.embedSeperator.resInfo === resInfo &&
-            op.attributes.embedSeperator.case === 'end'
-        );
-    if (begin < 0 || end < 0) throw 'embed doesnt exist';
-    delta.ops[begin - 1].insert.mention.id = updateMentionIdOpenStatus(
-      delta.ops[begin - 1].insert.mention.id,
-      'false'
-    ); // close mention
-    handleEditorChange(); //2do check whether closed embeds or "grandchild" embeds need update
-    const newOps = [
-      { delete: editor.getLength() },
-      ...delta.ops.slice(0, begin),
-      ...delta.ops.slice(end + 1)
-    ];
-    editor.updateContents({
-      ops: newOps
-    });
-    deltaRef.current = {
-      ops: [...delta.ops.slice(0, begin), ...delta.ops.slice(end + 1)]
-    };
-  };
-
   // 2do include a paste sanitizer: should check embeds are included only partly.
-  const clickHandler = e => {
+  const clickHandler = useCallback((
+    e
+    // , g
+  ) => {
+    // const {
+    //   informParentAboutChange,
+    //   setEmbedClickCounter,
+    // } = g.current;
+
     // vars 1.e, 2.editor 3.handleChange,
-    const editor = quillNoteRef.current.editor;
     if (classNameIncludes(e.target.className, 'ql-mention-denotation-char')) {
-      mentionCharClickHandler(
-        e,
-        sections,
-        dispatch,
-        history,
-        loadText,
-        loadNotes,
-        setCommittedSections,
-        setTentativeSections
-      );
+      mentionCharClickHandler(e, g);
     } else if (classNameIncludes(e.target.className, 'navline')) {
-      navlineClickHandler(e, editor, handleEditorChange);
+      navlineClickHandler(e, g);
       setTimeout(() => {
         setEmbedClickCounter(prevState => prevState + 1);
       }, 10);
@@ -605,13 +151,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
         'mention'
       )
     ) {
-      mentionSpanClickHandler(
-        e,
-        editor,
-        notesRef.current,
-        noteId,
-        handleEditorChange
-      );
+      mentionSpanClickHandler(e, g);
       setTimeout(() => {
         setEmbedClickCounter(prevState => prevState + 1);
       }, 10);
@@ -620,155 +160,26 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
           informParentAboutChange();
         }, 200);
     }
-  };
+  }, []);
 
-  const selectionChangeHandler = (range, source, editorInstance) => {
-    console.log(range);
-    const selectionIncreased = range && range.index > selectionIndexRef.current;
-    selectionIndexRef.current = range && range.index;
-    if (!range) return;
-    if (source !== 'user' || !editorInstance || !quillNoteRef) {
-      if (addBubble) setAddBubble(null);
-      return;
-    }
+  // settimout handleEditorChange
+  useEffect(() => {
+    if (changedEditorCounter < 0) return;
+    if (!quillNoteRef) return;
+    savedRef.current = null;
+    const commitChangeTimer = setTimeout(() => {
+      handleEditorChange(g);
+    }, 5000);
+    return () => {
+      clearTimeout(commitChangeTimer);
+    };
+  }, [changedEditorCounter]);
 
-    const editor = quillNoteRef.current.editor;
-
-    if (range.length === 0) {
-      if (!quillNoteRef) {
-        if (addBubble) setAddBubble(null);
-        return;
-      }
-
-      console.log(editor);
-      const scroll = editor.scroll;
-      const scrollAtPos = scroll.path(range.index)[1][0];
-      const ops = editor.getContents().ops;
-      console.log('scrollAtPos', scrollAtPos);
-      const offsetSelection = (pos, neg) => {
-        const newIndex = range.index + (selectionIncreased ? pos : -neg);
-        const newLength =
-          range.length && range.length + (selectionIncreased ? -pos : neg);
-        editor.setSelection(newIndex, newLength);
-      };
-      const scrollClassList = [...(scrollAtPos.domNode.classList || [])];
-      const anchorOffset = window.getSelection().anchorOffset;
-      if (
-        // if directly after mention tag push away
-        scrollAtPos.domNode.tagName === 'SPAN' &&
-        scrollClassList.includes('mention') &&
-        anchorOffset === 1
-      ) {
-        offsetSelection(2, 1);
-        return;
-      }
-      if (
-        // if directly at embed seperator push away
-        scrollAtPos.domNode.tagName === 'HR' &&
-        scrollClassList.includes('embedSeperator')
-      ) {
-        if (scrollClassList.includes('case-begin')) {
-          offsetSelection(1, 2);
-        } else if (scrollClassList.includes('case-end')) {
-          offsetSelection(1 + 1 - anchorOffset, 1 + anchorOffset);
-        }
-        return;
-      }
-
-      // if at BR consider allowing new note embed
-      if (!scrollAtPos.text && scrollAtPos.domNode.tagName === 'BR') {
-        const boundingClientRect = scroll
-          .path(range.index)[1][0]
-          .domNode.getBoundingClientRect();
-
-        // search for last opening embedSeperator before range.index
-        // if any use this id, else use noteId
-        let parentNoteId = noteId,
-          charIndex = 0,
-          opBeginIndex = 0;
-        while (charIndex <= range.index && opBeginIndex < ops.length) {
-          const op = ops[opBeginIndex];
-          if (
-            op.attributes &&
-            op.attributes.embedSeperator &&
-            op.attributes.embedSeperator.case === 'begin'
-          ) {
-            parentNoteId = op.attributes.embedSeperator.resId;
-          }
-          charIndex += op.insert.length || 1;
-          opBeginIndex += 1;
-        }
-        opBeginIndex = Math.max(0, opBeginIndex - 1);
-        console.log('ops', ops, 'opBeginIndex', opBeginIndex);
-        console.log('editor', editor);
-
-        setAddBubble({
-          range: range,
-          boundingClientRect: boundingClientRect,
-          delta: null,
-          parentNoteId: parentNoteId,
-          opBeginIndex: opBeginIndex,
-          opEndIndex: null,
-          allow: []
-        });
-        return;
-      }
-      setAddBubble(null);
-      return;
-    }
-
-    // runs if range.length > 0
-    // check whether selection could be transformed into new note.
-    let allowNewNote = true,
-      opBegin = 0,
-      charIndex = 0;
-    const delta = editor.getContents();
-    const ops = delta.ops;
-    while (charIndex <= range.index && opBegin < ops.length) {
-      charIndex += ops[opBegin].insert.length || 1;
-      opBegin += 1;
-    }
-    opBegin = Math.max(0, opBegin - 1);
-    let opEnd = opBegin,
-      currentPath = [],
-      firstOp = ops[opBegin];
-    if (firstOp.attributes && firstOp.attributes.embedSeperator) {
-      allowNewNote = false;
-    } else {
-      while (charIndex <= range.index + range.length && opEnd < ops.length) {
-        let op = ops[opEnd];
-        if (op.attributes && op.attributes.embedSeperator) {
-          if (op.attributes.embedSeperator.case === 'begin') {
-            currentPath.push(1);
-          } else {
-            if (currentPath.length === 0) {
-              allowNewNote = false;
-              break;
-            }
-            currentPath.pop();
-          }
-        }
-        charIndex += ops[opEnd].insert.length || 1;
-        opEnd += 1;
-      }
-      if (allowNewNote) {
-        //  setAddBubble({
-        //  ...delta: {ops: selectedOps}
-        //  }) 2do
-        opEnd = Math.max(0, opEnd - 1);
-        let lastOp = ops[opEnd];
-        if (lastOp.attributes && lastOp.attributes.embedSeperator) {
-          allowNewNote = false;
-        }
-      } else {
-        if (addBubble) setAddBubble(null);
-      }
-    }
-
-    console.log(opBegin, opEnd, delta.ops, allowNewNote);
-
-    //     let selectedOps =
-  };
+  useEffect(() => {
+    return () => {
+      handleEditorChange(g);
+    };
+  }, []);
 
   // addEventListeners: click
   useEffect(() => {
@@ -902,8 +313,12 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       )}
       <ReactQuill
         ref={quillNoteRef}
-        onChange={onChangeHandler}
-        onChangeSelection={selectionChangeHandler}
+        onChange={(__HTML, changeDelta, source, editor) =>
+          onChangeHandler(__HTML, changeDelta, source, editor, g)
+        }
+        onChangeSelection={(range, source, editorInstance) =>
+          selectionChangeHandler(range, source, editorInstance, g)
+        }
         defaultValue={quillValue}
         theme={'snow' || 'bubble'}
         modules={{

@@ -1,8 +1,20 @@
-const onChangeHandler = (__HTML, changeDelta, source, editor, state, store) => {
+import deltaInconsistencyCheck from './deltaInconsistencyCheck';
+// ok
+
+const onChangeHandler = (__HTML, changeDelta, source, editor, g) => {
   if (source === 'api') {
     // console.log('api change....');
     return;
   }
+  const {
+    noteId,
+    quillNoteRef,
+    deltaRef,
+    addAlert,
+    dispatch,
+    setChangedEditorCounter,
+    informParentAboutChange
+  } = g.current;
   const delta = editor.getContents();
   // CHECK FOR INCONSINSTENCY
   let isInconsistent = false;
@@ -37,3 +49,4 @@ const onChangeHandler = (__HTML, changeDelta, source, editor, state, store) => {
   deltaRef.current = delta;
   if (informParentAboutChange) informParentAboutChange();
 };
+export default onChangeHandler;

@@ -1,12 +1,10 @@
 import handleEditorChange from './handleEditorChange';
+import { updateMentionIdOpenStatus } from '../../../../Metapanel/mentionModule';
+// ok
 
-export default navlineClickHandler = (
-  e,
-  editor,
-  handleEditorChange,
-  state,
-  store
-) => {
+const navlineClickHandler = (e, g) => {
+  const { quillNoteRef, deltaRef } = g.current;
+  const editor = quillNoteRef.current.editor;
   const resInfo = e.target.dataset.resInfo;
   const delta = editor.getContents();
   const begin = delta.ops.findIndex(
@@ -32,7 +30,7 @@ export default navlineClickHandler = (
     delta.ops[begin - 1].insert.mention.id,
     'false'
   ); // close mention
-  handleEditorChange(state, store); //2do check whether closed embeds or "grandchild" embeds need update
+  handleEditorChange(g); //2do check whether closed embeds or "grandchild" embeds need update
   const newOps = [
     { delete: editor.getLength() },
     ...delta.ops.slice(0, begin),
@@ -45,3 +43,5 @@ export default navlineClickHandler = (
     ops: [...delta.ops.slice(0, begin), ...delta.ops.slice(end + 1)]
   };
 };
+
+export default navlineClickHandler;
