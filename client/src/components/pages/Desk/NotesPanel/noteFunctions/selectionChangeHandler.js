@@ -10,10 +10,16 @@ const selectionChangeHandler = (range, source, editorInstance, g) => {
     quillNoteRef
   } = g.current;
   console.log(range);
-  const selectionIncreased = range && range.index > selectionIndexRef.current;
+  const selectionIndexIncreased =
+    range && range.index > selectionIndexRef.current;
   selectionIndexRef.current = range && range.index;
   if (!range) return;
-  if (source !== 'user' || !editorInstance || !quillNoteRef) {
+  if (
+    source !== 'user' ||
+    !editorInstance ||
+    !quillNoteRef ||
+    !quillNoteRef.current
+  ) {
     if (addBubble) setAddBubble(null);
     return;
   }
@@ -21,22 +27,19 @@ const selectionChangeHandler = (range, source, editorInstance, g) => {
   const editor = quillNoteRef.current.editor;
 
   if (range.length === 0) {
-    if (!quillNoteRef) {
-      if (addBubble) setAddBubble(null);
-      return;
-    }
-
     console.log(editor);
     const scroll = editor.scroll;
     const scrollAtPos = scroll.path(range.index)[1][0];
     const ops = editor.getContents().ops;
     console.log('scrollAtPos', scrollAtPos);
+
+    // 0. check whether selection needs to be bounced of. if needed return.
     const scrollClassList = [...(scrollAtPos.domNode.classList || [])];
     const anchorOffset = window.getSelection().anchorOffset;
     const offsetSelection = (pos, neg) => {
-      const newIndex = range.index + (selectionIncreased ? pos : -neg);
+      const newIndex = range.index + (selectionIndexIncreased ? pos : -neg);
       const newLength =
-        range.length && range.length + (selectionIncreased ? -pos : neg);
+        range.length && range.length + (selectionIndexIncreased ? -pos : neg);
       editor.setSelection(newIndex, newLength);
     };
     if (
@@ -61,7 +64,8 @@ const selectionChangeHandler = (range, source, editorInstance, g) => {
       return;
     }
 
-    // if at BR consider allowing new note embed
+    // 1. check whether dispaly add-bubble
+    // 1.0 if at BR consider allowing new note embed. if needed return.
     if (!scrollAtPos.text && scrollAtPos.domNode.tagName === 'BR') {
       const boundingClientRect = scroll
         .path(range.index)[1][0]
@@ -104,7 +108,7 @@ const selectionChangeHandler = (range, source, editorInstance, g) => {
   }
 
   // runs if range.length > 0
-  // check whether selection could be transformed into new note.
+  // 1.1 check whether selection could be transformed into new note.
   let allowNewNote = true,
     opBegin = 0,
     charIndex = 0;

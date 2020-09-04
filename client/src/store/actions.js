@@ -857,17 +857,17 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
     textsPanel: { openTexts }
   } = getState();
 
-  const notsToGet = [],
+  const notesToGet = [],
     notesById = {};
   noteIds.forEach(noteId =>
-    notsToGet.push(...(notes[noteId] && notes[noteId].title ? [] : [noteId]))
+    notesToGet.push(...(notes[noteId] && notes[noteId].title ? [] : [noteId]))
   );
 
-  if (notsToGet.length > 0) {
+  if (notesToGet.length > 0) {
     const notesRes = await axios.get(
       `/api/notes/${noteIds.join('+')}`,
       tokenConfig(getState)
-    ); // add auth
+    );
     console.log(notesRes);
 
     notesRes.data.forEach(note => (notesById[note._id] = note));
@@ -883,6 +883,8 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
         regExpHistory(history.location.pathname, noteId, 'open', 'note')
       )
     );
+
+  return Promise.resolve(notesById);
 };
 
 export const closeNote = ({ noteId, history }) => (dispatch, getState) => {

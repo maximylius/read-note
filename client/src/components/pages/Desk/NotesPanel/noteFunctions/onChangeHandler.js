@@ -1,5 +1,5 @@
 import deltaInconsistencyCheck from './deltaInconsistencyCheck';
-// ok
+import { addAlert } from '../../../../../store/actions'; // ok
 
 const onChangeHandler = (__HTML, changeDelta, source, editor, g) => {
   if (source === 'api') {
@@ -10,7 +10,6 @@ const onChangeHandler = (__HTML, changeDelta, source, editor, g) => {
     noteId,
     quillNoteRef,
     deltaRef,
-    addAlert,
     dispatch,
     setChangedEditorCounter,
     informParentAboutChange

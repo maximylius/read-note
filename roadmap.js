@@ -1,4 +1,12 @@
 /**
+
+// notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
+// embed color should just be defined by deepness of nest.
+// check whether embed seperator could be simplified into purely resInfo 
+// preprocess delta doesnt seem to reopen last state?
+// put to state which notes in notepanel are visible at the time to force updates (when content is changed or when note is loaded)
+// keep on working here: closesEmebed function shall be able to handle bugged out embeds. 
+
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 // section => noteIds
 // problem in textmain: sections get out of sync.
@@ -16,8 +24,10 @@ DELETE (MANY)    0         0         1
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
 @RECENT_BUGS :section item gets positioned badly. bug is recently introduced.
 // dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack.
+//user object gets spammed with more and more instances of same resIds
 @OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections
-
+handle if resource is deleted. handle if no resource is open (-1): -0. open any note?
+check load res functions
 
 @NOTE_PANEL
 5    reduce amount of rerenders for side notes when section attributes are changed. Probably due to useSelector listener for sections. maybe custom hook would solve this when configured that only changes in title, delta and creation / deletion are necessary to observe.
@@ -51,7 +61,7 @@ DELETE (MANY)    0         0         1
 5   while not in flowchar view connect connected section with simple arc on the right hand side
 6   set maximum height on section item - if exceeded 
 5   when section flow chart is opened reuse flowcahrt-item-preview and close notepanel
-6   improve scroll behaviour // alowing multiple scroll panes in side-panel
+6   improve scroll behaviour // alowing multiple scroll panes in side-panel // translate scroll to percentages. // think about whether to make side-panel independent from text scroll all together? 
 6   allow modes: structuring / note taking / standard (both = current)
 6   display note title somewhere.
 2   improve side-note-reply-count: just shows top level so far.

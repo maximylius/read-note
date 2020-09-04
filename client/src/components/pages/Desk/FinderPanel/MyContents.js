@@ -14,13 +14,15 @@ import {
 function MyContents() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const { user, notes, texts, ui } = useSelector(s => s);
-  const textsToDisplay = user.textIds.filter(id =>
-    Object.keys(texts).includes(id)
-  );
-  const notesToDisplay = user.noteIds.filter(id =>
-    Object.keys(notes).includes(id)
-  );
+  const { user, notes, texts, projects, ui } = useSelector(s => s);
+  const currentProject = projects[user.projectIds[0]];
+
+  const textsToDisplay = currentProject
+    ? currentProject.textIds.filter(id => Object.keys(texts).includes(id))
+    : [];
+  const notesToDisplay = currentProject
+    ? currentProject.noteIds.filter(id => Object.keys(notes).includes(id))
+    : [];
   const addNoteClickHandler = () => dispatch(addNote({ history }));
   const addTextClickHandler = () => dispatch(openAddTextPanel());
   const keepFinderOpenClickHandler = () => dispatch(toggleKeepFinderOpen());
@@ -32,7 +34,7 @@ function MyContents() {
           <p className='lead'>My Notes</p>
           {notesToDisplay.map(id => (
             <ContentItem
-              key={id}
+              key={'noteitem' + id}
               title={notes[id].title}
               onClickAction={() => dispatch(openNote({ noteId: id, history }))}
             />
@@ -50,7 +52,7 @@ function MyContents() {
           <p className='lead'>My Texts</p>
           {textsToDisplay.map(id => (
             <ContentItem
-              key={id}
+              key={'textitem' + id}
               title={texts[id].title}
               onClickAction={() =>
                 dispatch(loadText({ textId: id, openText: true, history }))

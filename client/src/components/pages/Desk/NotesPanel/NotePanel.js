@@ -16,21 +16,21 @@ import _isEqual from 'lodash/isEqual';
 import BlotEmbedSeperator from '../../../Metapanel/BlotEmbedSeperator';
 import {
   mentionModuleCreator,
-  atValuesCreator,
-  extractAtValueResType,
-  extractAtValueResId,
-  updateMentionIdOpenStatus,
-  mentionIdIsOpen,
-  mentionColorClass
+  atValuesCreator
+  // extractAtValueResType,
+  // extractAtValueResId,
+  // updateMentionIdOpenStatus,
+  // mentionIdIsOpen,
+  // mentionColorClass
 } from '../../../Metapanel/mentionModule';
-import {
-  loadText,
-  setCommittedSections,
-  setTentativeSections,
-  updateNote,
-  loadNotes,
-  addAlert
-} from '../../../../store/actions';
+// import {
+//   // loadText,
+//   // setCommittedSections,
+//   // setTentativeSections,
+//   // updateNote,
+//   // loadNotes,
+//   // addAlert
+// } from '../../../../store/actions';
 import Navline from './Navline';
 import SaveStatus from './SaveStatus';
 import { AddBubble } from './AddBubble';
@@ -51,8 +51,6 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const notes = useSelector(s => s.notes);
-  const notesRef = React.useRef(notes);
-  const functionsRef = React.useRef({});
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
@@ -86,8 +84,6 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     informParentAboutChange,
     history,
     notes,
-    notesRef,
-    functionsRef,
     texts,
     sections,
     mdNotesPanel,
@@ -108,13 +104,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     documentBodyRef,
     quillNoteRef,
     selectionIndexRef,
-    dispatch,
-    loadText,
-    setCommittedSections,
-    setTentativeSections,
-    updateNote,
-    loadNotes,
-    addAlert
+    dispatch
   };
 
   const mentionModule = useCallback(mentionModuleCreator(atValues, []), [
@@ -122,27 +112,11 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   ]);
 
   // 2do include a paste sanitizer: should check embeds are included only partly.
-  const clickHandler = useCallback((
-    e
-    // , g
-  ) => {
-    // const {
-    //   informParentAboutChange,
-    //   setEmbedClickCounter,
-    // } = g.current;
-
-    // vars 1.e, 2.editor 3.handleChange,
+  const clickHandler = useCallback(e => {
     if (classNameIncludes(e.target.className, 'ql-mention-denotation-char')) {
       mentionCharClickHandler(e, g);
     } else if (classNameIncludes(e.target.className, 'navline')) {
       navlineClickHandler(e, g);
-      setTimeout(() => {
-        setEmbedClickCounter(prevState => prevState + 1);
-      }, 10);
-      if (informParentAboutChange)
-        setTimeout(() => {
-          informParentAboutChange();
-        }, 200);
     } else if (
       classNameIncludes(e.target.className, 'mention') ||
       classNameIncludes(e.target.parentElement.className, 'mention') ||
@@ -187,15 +161,9 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     documentBodyRef.current = document.getElementById(`root`);
     const cardBody = document.getElementById(`noteCardBody${noteId}`);
 
-    cardBody.addEventListener('click', clickHandler);
-
-    const focusIn = () => {
+    const toggleFocusClass = () => {
       if (cardBodyRef && cardBodyRef.current)
-        cardBodyRef.current.classList.add('active-editor');
-    };
-    const focusOut = () => {
-      if (cardBodyRef && cardBodyRef.current)
-        cardBodyRef.current.classList.remove('active-editor');
+        cardBodyRef.current.classList.toggle('active-editor');
     };
     const setCursorToQuillEnd = e => {
       if (
@@ -211,15 +179,17 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
           0
         );
     };
-    cardBody.addEventListener('focusin', focusIn);
-    cardBody.addEventListener('focusout', focusOut);
+
+    cardBody.addEventListener('click', clickHandler);
+    cardBody.addEventListener('focusin', toggleFocusClass);
+    cardBody.addEventListener('focusout', toggleFocusClass);
     cardBody.addEventListener('click', setCursorToQuillEnd);
 
     return () => {
       const cardBody = document.getElementById(`noteCardBody${noteId}`);
       cardBody.removeEventListener('click', clickHandler);
-      cardBody.removeEventListener('focusin', focusIn);
-      cardBody.removeEventListener('focusout', focusOut);
+      cardBody.removeEventListener('focusin', toggleFocusClass);
+      cardBody.removeEventListener('focusout', toggleFocusClass);
       cardBody.removeEventListener('click', setCursorToQuillEnd);
       console.log('Notepanel_DISMOUNT_DISMOUNT_\n', notes[noteId].title);
     };
@@ -259,15 +229,15 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       ...Object.keys(sections)
     ];
     if (
-      currentKeys.length === atKeysRef.current &&
-      !currentKeys.some(key => !atKeysRef.current.includes(key))
+      // tiny optimzation opportunity here
+      currentKeys.length === atKeysRef.current.length &&
+      !currentKeys.some(key => !atKeysRef.current.includes(key)) &&
+      !atKeysRef.current.some(key => !currentKeys.includes(key))
     )
       return;
 
     atKeysRef.current = currentKeys;
     setAtValues(atValuesCreator(notes, texts, sections));
-
-    notesRef.current = notes;
 
     return () => {};
   }, [texts, sections, notes]);
@@ -304,9 +274,9 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
         onChange={(__HTML, changeDelta, source, editor) =>
           onChangeHandler(__HTML, changeDelta, source, editor, g)
         }
-        onChangeSelection={(range, source, editorInstance) =>
-          selectionChangeHandler(range, source, editorInstance, g)
-        }
+        onChangeSelection={(range, source, editorInstance) => {
+          selectionChangeHandler(range, source, editorInstance, g);
+        }}
         defaultValue={quillValue}
         theme={'snow' || 'bubble'}
         modules={{

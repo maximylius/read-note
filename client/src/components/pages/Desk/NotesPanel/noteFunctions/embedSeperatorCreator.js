@@ -1,12 +1,13 @@
-// ok
+import {
+  extractAtValueResId,
+  extractAtValueResType,
+  updateMentionIdOpenStatus
+} from '../../../../Metapanel/mentionModule';
 
-const embedSeperatorCreator = (
-  resType,
-  resId,
-  resInfo,
-  beginEnd,
-  color_class
-) => {
+const embedSeperatorCreator = (resInfo, beginEnd, color_class) => {
+  const resId = extractAtValueResId(resInfo);
+  const resType = extractAtValueResType(resInfo);
+
   return {
     insert: beginEnd === 'begin' ? ' \n' : ' ',
     attributes: {
@@ -14,7 +15,9 @@ const embedSeperatorCreator = (
         case: beginEnd,
         embedType: resType,
         resId: resId,
-        resInfo: resInfo,
+        resInfo: color_class
+          ? updateMentionIdOpenStatus(resInfo, color_class)
+          : resInfo,
         color_class: color_class || 'willBeAssignedBelow'
       }
     }

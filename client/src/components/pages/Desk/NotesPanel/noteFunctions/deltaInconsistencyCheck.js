@@ -49,8 +49,10 @@ const deltaInconsistencyCheck = (delta, noteId) => {
       return false;
     }
   });
+  // check whether there are still unclosed embeds:
+  if (currentPath.length !== 1 || currentPath[0] !== noteId)
+    isInconsistent = false;
 
-  isInconsistent = isInconsistent || !_isEqual(currentPath, [noteId]);
   return isInconsistent;
 };
 export default deltaInconsistencyCheck;

@@ -7,8 +7,7 @@ const compareDisplayedNotesDelta = (
   notesConnectedWith,
   g
 ) => {
-  const { notesRef } = g.current;
-  const notes = notesRef.current;
+  const { notes } = g.current;
 
   const noteUpdateArray = Object.keys(displayedNotes).flatMap(resId => {
     const displayedNote = displayedNotes[resId];

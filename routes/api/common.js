@@ -222,7 +222,7 @@ router.put('/:restype/:id', getUserId, (req, res) => {
           }`
         });
       const promises = [];
-
+      console.log('mongoDoc.created', mongoDoc.created);
       // if new document
       if (!mongoDoc.created && req.params.restype !== 'user') {
         mongoDoc.created = Date.now(); //add creation date.
