@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import {
   uncommitFromSection,
   setTentativeSections,
-  setCommittedSections,
   deleteSection
 } from '../../../../../../store/actions';
 import { BsDash, BsTrash } from 'react-icons/bs';

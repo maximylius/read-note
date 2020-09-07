@@ -1,4 +1,3 @@
-import _isEqual from 'lodash/isEqual';
 import { extractAtValueResId } from '../../../../Metapanel/mentionModule';
 // ok
 

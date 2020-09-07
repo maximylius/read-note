@@ -2,7 +2,8 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { BsPlus } from 'react-icons/bs';
 import { addNote } from '../../../../store/actions';
-import { embedSeperatorCreator, mentionCreator } from './noteFunctions';
+import embedSeperatorCreator from './noteFunctions/embedSeperatorCreator';
+import mentionCreator from './noteFunctions/mentionCreator';
 
 export const AddBubble = ({
   addBubble: { range, boundingClientRect, allow, parentNoteId, delta },

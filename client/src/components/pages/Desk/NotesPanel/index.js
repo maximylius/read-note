@@ -11,15 +11,11 @@ import SliderButton from '../../../Metapanel/SliderButton';
 
 const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
   const dispatch = useDispatch();
-  const {
-    annotations,
-    sections,
-    texts,
-    notes,
-    textsPanel: { activeTextPanel, committedSectionIds, expandAll },
-    notesPanel: { openNotes, activeNote },
-    ui
-  } = useSelector(s => s);
+  const notes = useSelector(s => s.notes);
+  const openNotes = useSelector(s => s.notesPanel.openNotes);
+  const activeNote = useSelector(s => s.notesPanel.activeNote);
+  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
+
   const [notesToRender, setNotesToRender] = useState(openNotes);
   // const notesInSync = (expandAll
   //   ? texts[activeTextPanel].sectionIds
@@ -42,7 +38,7 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
     );
 
   const onClickHandler = () => {
-    if (ui.mdTextsPanel === 0) {
+    if (mdTextsPanel === 0) {
       dispatch(expandTextsPanel());
     } else {
       dispatch(collapseNotesPanel());

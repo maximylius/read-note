@@ -8,18 +8,6 @@ const Tooltip = ({ quillTextRef, selection }) => {
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
-  // const bounds = quillTextRef.current.editor.getBounds();
-  // console.log(bounds);
-  const styleDiv = {
-    position: 'fixed',
-    zIndex: 1000,
-    left: `100px`
-    // left: `${validSelection.boundingClientRect.right + 10}px`,
-    // top: `${
-    //   validSelection.boundingClientRect.top * 0.6 +
-    //   validSelection.boundingClientRect.bottom * 0.4
-    // }px`
-  };
   const addSectionClickHandler = () => {
     dispatch(
       addSection({
@@ -115,7 +103,6 @@ const Tooltip = ({ quillTextRef, selection }) => {
         </button>
       </div>
       {/* </div> */}
-      //{' '}
     </div>
     // </div>
   );

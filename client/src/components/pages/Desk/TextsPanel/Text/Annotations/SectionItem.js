@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SideNote from './SideNote';
 import SectionTitle from './SectionTitle';
 import {
-  uncommitFromSection,
   setTentativeSections,
-  setCommittedSections,
-  deleteSection
+  setCommittedSections
 } from '../../../../../../store/actions';
 import SectionAttributes from './SectionAttributes';
 import AddNoteButton from './AddNoteButton';
@@ -16,7 +14,7 @@ import SectionOutsideBtn from './SectionOutsideBtn';
 
 const sectionItemClassName = 'section-item';
 const sectionItemIdPrepend = 'sec_';
-const [low, std, high] = [0.3, 0.7, 1];
+const [std, high] = [0.7, 1];
 
 /**
 
@@ -53,9 +51,9 @@ make notes only preview notes if they exceed certain height. only when they are 
 
 const SectionItem = ({
   sectionId,
-  sectionIndex,
+  // sectionIndex,
   // quillTextRef,
-  quillNoteRefs,
+  // quillNoteRefs,
   top,
   triggerRemeasure
 }) => {
@@ -63,7 +61,6 @@ const SectionItem = ({
   const sections = useSelector(s => s.sections);
   const notes = useSelector(s => s.notes);
   const categories = useSelector(s => s.categories);
-  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const expandAll = useSelector(s => s.textsPanel.expandAll);
   const committedSectionIds = useSelector(
     s => s.textsPanel.committedSectionIds

@@ -12,14 +12,14 @@ import SliderButton from '../../../Metapanel/SliderButton';
 
 function TextsPanel({ quillNoteRefs }) {
   const dispatch = useDispatch();
-  const {
-    ui,
-    texts,
-    textsPanel: { activeTextPanel }
-  } = useSelector(s => s);
+  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
+  const mdFinderPanel = useSelector(s => s.ui.mdFinderPanel);
+  const texts = useSelector(s => s.texts);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+
   const onClickHandlerBtn1 = () => dispatch(expandFinderPanel());
   const onClickHandlerBtn2 = () => {
-    if (ui.mdNotesPanel === 0) {
+    if (mdNotesPanel === 0) {
       return dispatch(expandNotesPanel());
     } else {
       return dispatch(collapseTextsPanel());
@@ -29,14 +29,14 @@ function TextsPanel({ quillNoteRefs }) {
   return (
     <div
       className={`row grow flex-row mx-0 
-      pl-${ui.mdFinderPanel === 0 ? '0' : '4'}
-      pr-${ui.mdNotesPanel === 0 ? '0' : '3'}`}
+      pl-${mdFinderPanel === 0 ? '0' : '4'}
+      pr-${mdNotesPanel === 0 ? '0' : '3'}`}
     >
       <SliderButton
         onClickHandler={onClickHandlerBtn1}
         direction='right'
         addClasses='btn-light'
-        display={ui.mdFinderPanel === 0 ? 'block' : ' none'}
+        display={mdFinderPanel === 0 ? 'block' : ' none'}
       />
 
       <div className='col px-0 mx-0 box'>

@@ -107,7 +107,7 @@ function TextMeta() {
         type='text'
         prepend='Published in'
         placeholder='Enter publication'
-        value={publishedInRef.current}
+        value={publishedIn}
         onEvent={{ onChange: e => setPublishedIn(e.target.value) }}
       />
       <InputWithPrepend

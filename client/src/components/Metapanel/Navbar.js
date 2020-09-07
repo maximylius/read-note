@@ -23,7 +23,7 @@ const Navbar = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(s => s.auth.isAuthenticated);
-  const welcomeOpen = useSelector(s => s.ui.welcomeOpen);
+  // const welcomeOpen = useSelector(s => s.ui.welcomeOpen);
   const aboutOpen = useSelector(s => s.ui.aboutOpen);
   const registerOpen = useSelector(s => s.ui.registerOpen);
   const signInOpen = useSelector(s => s.ui.signInOpen);

@@ -8,7 +8,7 @@ import SideNote from '../Desk/TextsPanel/Text/Annotations/SideNote';
 function About() {
   const history = useHistory();
   const dispatch = useDispatch();
-  const notes = useSelector(s => s.notes);
+  // const notes = useSelector(s => s.notes);
 
   return (
     <>

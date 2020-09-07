@@ -8,7 +8,6 @@ import {
 } from '../../../../store/actions';
 import NavTab from '../../../Metapanel/NavTab';
 import NavTabAdd from '../../../Metapanel/NavTabAdd';
-import { BsPlus } from 'react-icons/bs';
 
 function Nav() {
   const dispatch = useDispatch();

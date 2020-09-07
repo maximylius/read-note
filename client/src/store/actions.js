@@ -2,11 +2,9 @@ import axios from 'axios';
 import * as types from './types';
 import {
   defaultText,
-  filterObjectByKeys,
   ObjectRemoveKeys,
   ObjectKeepKeys,
   sortSectionIds,
-  deepCompare,
   regExpHistory
 } from '../functions/main';
 import _isEqual from 'lodash/isEqual';
@@ -24,7 +22,7 @@ import _isEqual from 'lodash/isEqual';
  *
  */
 const addToNestedFetch = (doc, r) => {
-  ['textIds', 'sectionIds', 'noteIds', 'replies'].map(key => {
+  ['textIds', 'sectionIds', 'noteIds', 'replies'].forEach(key => {
     if (Array.isArray(doc[key]) && Object.keys(r).includes(key)) {
       console.log('new key', key, doc[key]);
       r[key === 'replies' ? 'noteIds' : key].push(...doc[key]);

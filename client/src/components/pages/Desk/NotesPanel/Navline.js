@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BsInfoCircle, BsDashCircle } from 'react-icons/bs';
+import { BsInfoCircle } from 'react-icons/bs';
 import NoteInfo from './NoteInfo';
 import _isEqual from 'lodash/isEqual';
 import { extractAtValueResId } from '../../../Metapanel/mentionModule';

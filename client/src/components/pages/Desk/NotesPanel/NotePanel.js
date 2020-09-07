@@ -12,25 +12,11 @@ import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import ReactQuill from 'react-quill';
 import QuillMention from 'quill-mention';
-import _isEqual from 'lodash/isEqual';
 import BlotEmbedSeperator from '../../../Metapanel/BlotEmbedSeperator';
 import {
   mentionModuleCreator,
   atValuesCreator
-  // extractAtValueResType,
-  // extractAtValueResId,
-  // updateMentionIdOpenStatus,
-  // mentionIdIsOpen,
-  // mentionColorClass
 } from '../../../Metapanel/mentionModule';
-// import {
-//   // loadText,
-//   // setCommittedSections,
-//   // setTentativeSections,
-//   // updateNote,
-//   // loadNotes,
-//   // addAlert
-// } from '../../../../store/actions';
 import Navline from './Navline';
 import SaveStatus from './SaveStatus';
 import { AddBubble } from './AddBubble';

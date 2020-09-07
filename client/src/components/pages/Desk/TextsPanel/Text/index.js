@@ -12,6 +12,10 @@ import SpeedReader from './SpeedReader/';
 
 function Textpage({ quillNoteRefs }) {
   const dispatch = useDispatch();
+  const ui = useSelector(s => s.ui);
+  const speedReader = useSelector(s => s.textsPanel.speedReader);
+  const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
+
   const quillTextRef = React.useRef(null);
   const [boundingRect, setBoundingRect] = useState({
     top: 0,
@@ -20,10 +24,7 @@ function Textpage({ quillNoteRefs }) {
     right: 0
   });
   const [displayOverlayButtons, setDisplayOverlayButtons] = useState(false);
-  const {
-    ui,
-    textsPanel: { speedReader, activeTextPanel }
-  } = useSelector(s => s);
+
   const mouseMoveHandler = React.useCallback(
     e => {
       if (e.clientY > boundingRect.bottom) {

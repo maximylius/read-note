@@ -1,8 +1,7 @@
 import React from 'react';
-import _isEqual from 'lodash/isEqual';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSection } from '../../../../../../store/actions';
-import { BsInfoCircle, BsPlus } from 'react-icons/bs';
+import { BsPlus } from 'react-icons/bs';
 import TextMeta from './TextMeta';
 import ButtonToolbar from './ButtonToolbar';
 import Sections from './Sections';

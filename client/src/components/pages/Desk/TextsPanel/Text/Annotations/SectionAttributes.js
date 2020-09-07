@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  updateSection,
   addSectionConnection,
   removeSectionConnection,
   addSectionCategory,
@@ -16,11 +15,6 @@ import {
   BsArrowLeftShort,
   BsArrowRightShort,
   BsCheck,
-  BsChevronDown,
-  BsChevronUp,
-  BsStarFill,
-  BsStar,
-  BsStarHalf,
   BsPlus
 } from 'react-icons/bs';
 import Importance from './Importance';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BsStarFill, BsStar, BsStarHalf } from 'react-icons/bs';
 import { setSectionWeight } from '../../../../../../store/actions';
@@ -27,8 +27,8 @@ const Importance = ({ sectionId, preview }) => {
     (personalImportance || 0) &&
     importance.filter(el => el.userId === userId)[0].score;
   const importanceScore = importance.reduce((a, b) => a + b.score, 0);
-  const [tentativeScore, setTentativeScore] = useState(importanceScore);
-  const [mouseIsOver, setMouseIsOver] = useState(false);
+  // const [tentativeScore, setTentativeScore] = useState(importanceScore);
+  // const [mouseIsOver, setMouseIsOver] = useState(false);
 
   const setImportanceRating = value => {
     dispatch(setSectionWeight(sectionId, value));

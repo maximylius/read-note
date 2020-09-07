@@ -1,5 +1,4 @@
 import * as types from '../types';
-import _isEqual from 'lodash/isEqual';
 
 const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
   if (finderOpen) {
@@ -187,7 +186,6 @@ export default (state = initialState, action) => {
       };
     case types.EXPAND_TEXTS_PANEL:
     case types.OPEN_ADDTEXTPANEL:
-    case types.SWITCH_TO_OPEN_TEXTPANEL:
       return {
         ...state,
         ...mdResolver(
@@ -217,7 +215,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         ...mdResolver(
-          state.keepFinderOpen,
+          state.mdFinderPanel > 0 && state.keepFinderOpen,
           true,
           state.mdAnnotationsPanel > 0,
           state.mdNotesPanel > 0

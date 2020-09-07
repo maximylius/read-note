@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BsX, BsPlus } from 'react-icons/bs';
+import React from 'react';
+import { BsPlus } from 'react-icons/bs';
 
 const NavTab = ({ isActive, openAction }) => {
   const openClickHandler = e => openAction();

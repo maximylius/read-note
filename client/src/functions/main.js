@@ -137,7 +137,7 @@ export const regExpHistory = (
   let pathHasText = /texts=/.test(currentPath);
   let pathHasNote = /notes=/.test(currentPath);
   let splitPath = currentPath.split(
-    /^\/desk\/texts=|^\/desk\/notes\=|&notes=|^\/desk\//
+    /^\/desk\/texts=|^\/desk\/notes=|&notes=|^\/desk\//
   );
   const textsArr = pathHasText ? splitPath[1].split('+') : [];
   const notesArr = pathHasNote ? splitPath[pathHasText + 1].split('+') : [];
@@ -225,7 +225,6 @@ export const committChangesToAnnotation = (
   const noteUpdates = [];
 
   syncWith.forEach(noteId => {
-    let indexInNoteAnnotations = null;
     console.log(quillNoteRefs);
     const currentNoteDelta = quillNoteRefs.current[noteId].editor.getContents();
 

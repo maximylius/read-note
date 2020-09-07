@@ -1,5 +1,5 @@
 import React from 'react';
-import { BsCheck, BsArrowClockwise } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 
 const SaveStatus = ({ current }) => {
   return (

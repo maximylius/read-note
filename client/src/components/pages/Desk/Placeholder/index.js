@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconContext } from 'react-icons';
-import { BsBook, BsClipboard, BsPlus } from 'react-icons/bs';
+import { BsBook, BsClipboard } from 'react-icons/bs';
 
 function Placeholder() {
   return (

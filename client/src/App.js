@@ -13,6 +13,7 @@ import './styles/section.css';
 import './styles/note.css';
 import './styles/embed.css';
 import Navbar from './components/Metapanel/Navbar';
+import Footer from './components/Metapanel/Footer';
 import Alerts from './components/Metapanel/Alerts';
 // import Desk from './components/pages/Desk';
 // import About from './components/pages/About/';
@@ -21,8 +22,7 @@ import Alerts from './components/Metapanel/Alerts';
 // import SignIn from './components/pages/SignIn/';
 // import Logout from './components/pages/Logout';
 // import Welcome from './components/pages/Welcome';
-import Footer from './components/Metapanel/Footer';
-import MainPage from './components/pages';
+// import MainPage from './components/pages';
 import RouteWrapper from './components/pages/RouteWrapper';
 
 const App = () => {

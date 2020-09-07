@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   BsPlus,
@@ -6,10 +6,8 @@ import {
   BsChat,
   BsExclamation,
   BsFunnel,
-  BsFileText,
   BsLightning,
-  BsFile,
-  BsThreeDots
+  BsFile
 } from 'react-icons/bs';
 import { addNote } from '../../../../../../store/actions';
 

@@ -50,12 +50,12 @@ const NavTab = ({
   const titlePasteHandler = e => {
     e.target.innerText = e.target.innerText
       .replace(/<[^>]*/g, '')
-      .replace(/[^a-z0-9-_\ ]/gi, '');
+      .replace(/[^a-z0-9-_ ]/gi, '');
   };
   const onTitleEditBlur = e => {
     const innerText = e.target.innerText
       .replace(/<[^>]*/g, '')
-      .replace(/[^a-z0-9-_\ ]/gi, '');
+      .replace(/[^a-z0-9-_ ]/gi, '');
     if (title !== innerText) {
       titleEditAction(innerText);
       setTitle(innerText);

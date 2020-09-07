@@ -4,10 +4,14 @@ import {
   updateMentionIdOpenStatus,
   mentionIdIsOpen
 } from '../../../../Metapanel/mentionModule';
-import handleEditorChange from './handleEditorChange';
 import embedSeperatorCreator from './embedSeperatorCreator';
 import { loadNotes, addAlert } from '../../../../../store/actions';
 import alreadyInsideRes from './alreadyInsideRes';
+
+const isMentionResInfo = (op, resInfo) =>
+  op.insert && op.insert.mention && op.insert.mention.id === resInfo
+    ? true
+    : false;
 
 const embedOpen = (resInfo, g) => {
   const { noteId, notes, quillNoteRef, deltaRef, dispatch } = g.current;
@@ -41,12 +45,12 @@ const embedOpen = (resInfo, g) => {
   //    3: flexPath equals currentPath but continues afer mention
   //    flexpath can determine nestLevel!
   const arrIndexes = [];
+  let deltaOpPosition;
+
   delta.ops.forEach((op, index) => {
     if (op.insert && op.insert.mention) {
-      if (
-        resInfo === op.insert.mention.id ||
-        mentionIdIsOpen(op.insert.mention.id)
-      )
+      // tries to open any closes embed of id
+      if (mentionIdIsOpen(op.insert.mention.id))
         op.insert.mention.id = updateMentionIdOpenStatus(
           op.insert.mention.id,
           `color_class-${flexPath.length - 1}`
@@ -83,17 +87,35 @@ const embedOpen = (resInfo, g) => {
         }
       }
     }
-    // PROBLEM: trouble to find the correct spot: more like luck
+    // irregularities arising from previous selection index and (nested) formatting
     deltaPosition += op.insert.length || 1;
-    arrIndexes.push({ [deltaPosition]: op });
+    arrIndexes.push({ [deltaPosition]: { l: op.insert.length || 1, ...op } });
     if (deltaPosition < selection.index) {
-      deltaIndex = index; //2do: think: why +1? // does this work reliably?
+      deltaOpPosition = deltaPosition;
+      deltaIndex = index + 0;
     } else if (deltaPosition === selection.index) {
-      deltaIndex = index + 1; //2do: think: why +1? // does this work reliably?
+      deltaOpPosition = deltaPosition;
+      deltaIndex = isMentionResInfo(delta.ops[index + 2], resInfo)
+        ? index + 2
+        : index + 1; // possible errors due to nested formatting.
+      console.log('oC +2');
     }
   });
 
-  console.log(selection.index, arrIndexes, deltaIndex);
+  // problematic when embed is open afterwards
+  console.log(
+    'oC deltaIndex',
+    deltaIndex,
+    'selection.index',
+    selection.index,
+    arrIndexes
+  );
+  console.log(
+    'oC',
+    selection.index,
+    deltaOpPosition,
+    selection.index - deltaOpPosition // 1  ok // 0 when not okay.
+  );
   if (deltaPosition !== editor.getLength())
     alert('character count doesnt match', deltaPosition, editor.getLength());
   console.log('deltaIndex', deltaIndex, 'currentPath', currentPath);
@@ -138,6 +160,12 @@ const embedOpen = (resInfo, g) => {
 
   // prepare delta to be embeded
   const currentNestLevel = currentPath.length - 1;
+  // update mention span
+  delta.ops[deltaIndex].insert.mention.id = updateMentionIdOpenStatus(
+    resInfo,
+    `color_class-${currentNestLevel}`
+  );
+
   let deltaToEmbed;
   if (closeIndexes) {
     deltaToEmbed = {
@@ -148,7 +176,6 @@ const embedOpen = (resInfo, g) => {
       typeof deltaToEmbed.ops[0].insert === 'string' &&
       deltaToEmbed.ops[0].insert[0] === '\n'
     ) {
-      console.log('chop of first char!');
       deltaToEmbed.ops[0].insert = deltaToEmbed.ops[0].insert.slice(1);
 
       // update color class of embed that is now beeing moved - if nestLevel has changed
@@ -204,7 +231,6 @@ const embedOpen = (resInfo, g) => {
     'deltaToEmbed',
     deltaToEmbed
   );
-  console.log('open! close:', closeIndexes);
 
   // Update Editor contents
   const closeBefore = closeIndexes && closeIndexes.begin < deltaIndex;
