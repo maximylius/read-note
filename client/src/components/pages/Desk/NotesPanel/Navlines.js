@@ -6,18 +6,18 @@ import NavlineButton from './NavlineButton';
 // further cleanup: move [noteInfo, setNoteInfo] to redux. move whole navline not just navlineButton to seperate component that just renders.
 const adjust = 18;
 
-const Navlines = ({ noteId, cardBodyRef, mdNotesPanel }) => {
+const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
   const mdNotesPanelRef = React.useRef(mdNotesPanel);
   const [noteInfo, setNoteInfo] = useState(null);
   const [_, setForceRenderCounter] = useState(0);
-  const cardBodyRect = cardBodyRef.current.getBoundingClientRect();
+  const cardBodyRect = cardBody.getBoundingClientRect();
   let maxIndentLevel = 4;
   if (mdNotesPanel !== mdNotesPanelRef.current) {
     setTimeout(() => setForceRenderCounter(prevS => prevS + 1), 30);
     mdNotesPanelRef.current = mdNotesPanel;
   }
   const embedSeperatorsDOM = Array.from(
-      cardBodyRef.current.querySelectorAll('.embedSeperator')
+      cardBody.querySelectorAll('.embedSeperator')
     ),
     lines = [];
 

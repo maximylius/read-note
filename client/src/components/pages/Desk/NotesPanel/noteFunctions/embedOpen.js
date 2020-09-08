@@ -5,8 +5,9 @@ import {
   mentionIdIsOpen
 } from '../../../../Metapanel/mentionModule';
 import embedSeperatorCreator from './embedSeperatorCreator';
-import { loadNotes, addAlert } from '../../../../../store/actions';
 import alreadyInsideRes from './alreadyInsideRes';
+import preProcessDelta from './preProcessDelta';
+import returnDeltaToEmbed from './returnDeltaToEmbed';
 
 const isMentionResInfo = (op, resInfo) =>
   op.insert && op.insert.mention && op.insert.mention.id === resInfo
@@ -132,6 +133,7 @@ const embedOpen = (resInfo, g) => {
 
   // THROW ERROR WHEN SELECTION BUGGED OUT
   if (
+    !delta.ops[deltaIndex] ||
     !delta.ops[deltaIndex].insert ||
     !delta.ops[deltaIndex].insert.mention ||
     extractAtValueResId(delta.ops[deltaIndex].insert.mention.id) !== resId
@@ -213,23 +215,22 @@ const embedOpen = (resInfo, g) => {
         });
       }
     }
-  }
-  if (!deltaToEmbed) deltaToEmbed = notes[resId] && notes[resId].delta;
-  if (!deltaToEmbed) {
-    dispatch(loadNotes({ noteIds: [resId] })).then(
-      notesById =>
-        (deltaToEmbed = notesById && notesById[resId] && notesById[resId].delta)
+  } else {
+    deltaToEmbed = returnDeltaToEmbed(resId, g);
+    if (!deltaToEmbed) {
+      console.log('no data from promise', deltaToEmbed);
+      return;
+    }
+    // 2do: preprocess this delta
+    console.log('currentNestLevel', currentNestLevel);
+    deltaToEmbed = preProcessDelta(
+      deltaToEmbed,
+      11 - currentNestLevel,
+      Object.keys(allPaths),
+      [...new Array(currentNestLevel + 2)],
+      g
     );
-
-    if (!deltaToEmbed)
-      return dispatch(
-        addAlert({
-          message:
-            '<p>Ressource not found: Either deleted or not yet loaded</p>',
-          type: 'warning'
-        })
-      );
-  } // 2do this function probably runs synchronisely - performace issue.
+  }
   console.log(
     'resId',
     resId,
@@ -244,6 +245,7 @@ const embedOpen = (resInfo, g) => {
   // Update Editor contents
   const closeBefore = closeIndexes && closeIndexes.begin < deltaIndex;
   const closeAfter = closeIndexes && closeIndexes.begin > deltaIndex;
+
   const newOps = [
     ...(closeBefore
       ? [
@@ -280,11 +282,11 @@ const embedOpen = (resInfo, g) => {
   const newSelectionIndex =
     selection.index +
     3 -
-    (!!closeBefore &&
-      delta.ops
-        .slice(closeIndexes.begin, closeIndexes.end + 1)
-        .reduce((a, b) => a + (b.insert && b.insert.length) || 1, 0));
-
+    (!!closeBefore
+      ? delta.ops
+          .slice(closeIndexes.begin, closeIndexes.end + 1)
+          .reduce((a, b) => a + ((b.insert && b.insert.length) || 1), 0)
+      : 0);
   editor.setSelection(newSelectionIndex);
 };
 export default embedOpen;
@@ -309,14 +311,6 @@ export default embedOpen;
 //     );
 
 // const embedIsOpenElsewhere = indexesOfResIdEmbedBegins.length > 0;
-
-// console.log(
-//   'isUnique',
-//   embedIsUnique,
-//   embedIsOpenElsewhere,
-//   indexesOfResIdMentions,
-//   indexesOfResIdEmbedBegins
-// );
 
 // // simplify function: unique embed should return newDelta
 // // early return

@@ -43,10 +43,13 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const note = notes[noteId];
   const [quillValue, setQuillValue] = useState(
     note.delta && note.delta.ops
-      ? preProcessDelta(note.delta, notes, texts, sections, 4, [noteId], null)
+      ? preProcessDelta(note.delta, 12, [noteId], null, {
+          current: { notes, texts, sections, dispatch }
+        })
       : ''
   );
   const [addBubble, setAddBubble] = useState(null);
+  const [hasMounted, setHasMounted] = useState(false);
   const [changedEditorCounter, setChangedEditorCounter] = useState(-1);
   // const [embedSeperatorsDOM, setEmbedSeperatorsDOM] = useState([]);
   const [embedClickCounter, setEmbedClickCounter] = useState(-1);
@@ -61,7 +64,6 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const deltaRef = React.useRef(note.delta);
   const savedRef = React.useRef(Date.now());
   const cardBodyRef = React.useRef();
-  const documentBodyRef = React.useRef();
   const quillNoteRef = React.useRef(null);
   const selectionIndexRef = React.useRef(-1);
   g.current = {
@@ -87,7 +89,6 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     deltaRef,
     savedRef,
     cardBodyRef,
-    documentBodyRef,
     quillNoteRef,
     selectionIndexRef,
     dispatch
@@ -143,18 +144,20 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
 
   // addEventListeners: click
   useEffect(() => {
-    console.log('Notepanel_MOUNT_MOUNT_\n', notes[noteId].title);
-    documentBodyRef.current = document.getElementById(`root`);
-    const cardBody = document.getElementById(`noteCardBody${noteId}`);
+    console.log(
+      'Notepanel_MOUNT_MOUNT_\n',
+      notes[noteId].title,
+      cardBodyRef.current
+    );
+    const cardBody = cardBodyRef.current;
 
+    if (!cardBody) alert('no cardbody'); // 2do remove
     const toggleFocusClass = () => {
-      if (cardBodyRef && cardBodyRef.current)
-        cardBodyRef.current.classList.toggle('active-editor');
+      if (cardBody) cardBodyRef.current.classList.toggle('active-editor');
     };
     const setCursorToQuillEnd = e => {
       if (
-        cardBodyRef &&
-        cardBodyRef.current &&
+        cardBody &&
         quillNoteRef &&
         quillNoteRef.current &&
         e.target === cardBodyRef.current &&
@@ -171,6 +174,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
     cardBody.addEventListener('focusout', toggleFocusClass);
     cardBody.addEventListener('click', setCursorToQuillEnd);
 
+    if (!hasMounted) setHasMounted(true);
     return () => {
       const cardBody = document.getElementById(`noteCardBody${noteId}`);
       cardBody.removeEventListener('click', clickHandler);
@@ -248,7 +252,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
       {cardBodyRef.current && (
         <Navlines
           noteId={noteId}
-          cardBodyRef={cardBodyRef}
+          cardBody={cardBodyRef.current}
           changedEditorCounter={changedEditorCounter}
           embedClickCounter={embedClickCounter}
           mdNotesPanel={mdNotesPanel}
