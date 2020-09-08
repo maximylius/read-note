@@ -36,7 +36,7 @@ const embedOpen = (resInfo, g) => {
   const selection = editor.getSelection();
   if (!selection) return; // 2do check whether this early return is okay: //2do if embed is unique then its not okay.
   let deltaPosition = 0,
-    deltaIndex = 0;
+    deltaIndex = -1;
 
   //  here we can manipulate the color of the embeds
   // within for Each:
@@ -44,7 +44,7 @@ const embedOpen = (resInfo, g) => {
   //    2: currentPath (until mention) to check whether already working within resource
   //    3: flexPath equals currentPath but continues afer mention
   //    flexpath can determine nestLevel!
-  const arrIndexes = [];
+  const arrIndexes = []; // 2do remove this. only purpose is to console log its result.
   let deltaOpPosition;
 
   delta.ops.forEach((op, index) => {
@@ -87,6 +87,7 @@ const embedOpen = (resInfo, g) => {
         }
       }
     }
+    // Problem many times the position is not registered correctly
     // irregularities arising from previous selection index and (nested) formatting
     deltaPosition += op.insert.length || 1;
     arrIndexes.push({ [deltaPosition]: { l: op.insert.length || 1, ...op } });
@@ -95,9 +96,14 @@ const embedOpen = (resInfo, g) => {
       deltaIndex = index + 0;
     } else if (deltaPosition === selection.index) {
       deltaOpPosition = deltaPosition;
+
       deltaIndex = isMentionResInfo(delta.ops[index + 2], resInfo)
         ? index + 2
-        : index + 1; // possible errors due to nested formatting.
+        : isMentionResInfo(delta.ops[index + 1], resInfo)
+        ? index + 1
+        : isMentionResInfo(delta.ops[index + 3], resInfo)
+        ? index + 3
+        : index + 4; // possible errors due to nested formatting.
       console.log('oC +2');
     }
   });
@@ -180,8 +186,8 @@ const embedOpen = (resInfo, g) => {
 
       // update color class of embed that is now beeing moved - if nestLevel has changed
       if (allPaths[resId].nestLevel !== currentNestLevel) {
-        let adjustedLevel = currentNestLevel;
-        deltaToEmbed.forEach((op, index) => {
+        let adjustedLevel = currentNestLevel + 1;
+        deltaToEmbed.ops.forEach(op => {
           if (op.insert && op.insert.mention) {
             op.insert.mention.id = updateMentionIdOpenStatus(
               op.insert.mention.id,
@@ -189,6 +195,7 @@ const embedOpen = (resInfo, g) => {
             );
           } else if (op.attributes && op.attributes.embedSeperator) {
             const sep = op.attributes.embedSeperator;
+            console.log('adjustedLevel sep', sep);
             const nestLevel = adjustedLevel - (sep.case === 'end');
             sep.resInfo = updateMentionIdOpenStatus(
               sep.resInfo,
@@ -196,8 +203,10 @@ const embedOpen = (resInfo, g) => {
             );
             sep.color_class = `color_class-${nestLevel}`;
             if (sep.case === 'begin') {
+              console.log('adjustedLevel', adjustedLevel, '+1');
               adjustedLevel++;
             } else {
+              console.log('adjustedLevel', adjustedLevel, '-1');
               adjustedLevel--;
             }
           }

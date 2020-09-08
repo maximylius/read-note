@@ -16,27 +16,24 @@ export const AddBubble = ({
   const editor = noteRef.current.editor;
   const cardBodyRect = cardBodyRef.current.getBoundingClientRect();
   const addClickHandler = () => {
+    let nextLevel = 4; // 2do: this needs to flexible
     console.log('update contents of this editor', editor);
     const retain = { retain: range.index };
     const mentionOp = mentionCreator(
       'note',
       spareIds['notes'][0],
       null,
-      'color_class-2-2'
+      `color_class-${nextLevel}`
     );
     const embedSeperatorBegin = embedSeperatorCreator(
-      'note',
-      spareIds['notes'][0],
-      `note=${spareIds['notes'][0]}_isOpen=color_class-2-2`,
+      `note=${spareIds['notes'][0]}_isOpen=color_class-4`,
       'begin',
-      'color_class-2-2'
+      `color_class-${nextLevel}`
     );
     const embedSeperatorEnd = embedSeperatorCreator(
-      'note',
-      spareIds['notes'][0],
-      `note=${spareIds['notes'][0]}_isOpen=color_class-2-2`,
+      `note=${spareIds['notes'][0]}_isOpen=color_class-4`,
       'end',
-      'color_class-2-2'
+      `color_class-${nextLevel}`
     );
     console.log('retain', retain, 'mentionOp', mentionOp);
     const newDelta = {

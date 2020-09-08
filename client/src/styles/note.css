@@ -1,24 +1,17 @@
 :root {
-  --ccc-0: rgb(131, 216, 255);
-  --ccc-0-0: rgb(68, 196, 255);
-  /* --ccc-0-0-0: rgb(27, 228, 255);
-  --ccc-0-0-1: rgb(27, 107, 255);
-  --ccc-0-0-2: rgb(19, 115, 179); */
-  --ccc-0-1: rgb(95, 244, 255);
-  --ccc-0-2: rgb(81, 142, 255);
-  --ccc-1: rgb(131, 255, 137);
-  --ccc-1-0: rgb(79, 255, 88);
-  --ccc-1-1: rgb(36, 218, 75);
-  --ccc-1-2: rgb(159, 250, 56);
-  --ccc-2: rgb(255, 222, 131);
-  --ccc-2-0: rgb(255, 205, 67);
-  --ccc-2-1: rgb(255, 130, 72);
-  --ccc-2-2: rgb(255, 247, 131);
-  --ccc-3: rgb(255, 194, 194);
-  --ccc-3-0: rgb(255, 151, 151);
-  --ccc-3-1: rgb(224, 121, 121);
-  --ccc-3-2: rgb(228, 96, 166);
-  --ccc-3-3: rgb(248, 105, 217);
+  --ccc-0: rgb(172, 229, 255);
+  --ccc-1: rgb(66, 148, 255);
+  --ccc-2: rgb(66, 255, 230);
+  --ccc-3: rgb(28, 238, 63);
+  --ccc-4: rgb(232, 255, 29);
+  --ccc-5: rgb(255, 197, 73);
+  --ccc-6: rgb(255, 161, 73);
+  --ccc-7: rgb(224, 169, 152);
+  --ccc-8: rgb(235, 128, 163);
+  --ccc-9: rgb(177, 47, 134);
+  --ccc-10: rgb(131, 70, 172);
+  --ccc-11: rgb(90, 63, 211);
+  --ccc-12: rgb(63, 50, 255);
 }
 
 .ql-editor {
@@ -150,26 +143,13 @@
   color: white;
 }
 /* BACKGROUND AND NAVLINE */
-.note-indent-container {
-  position: absolute;
-  top: 0;
-  left: -0px;
-  height: 100%;
-  width: 40px;
-}
-.note-indent {
-  position: absolute;
-  height: 100%;
-  border-right: 1px solid rgba(0, 0, 0, 0.781);
-  /* background-color: rgba(255, 255, 255, 0); */
-}
 .note-bg-container {
   position: absolute;
   left: 0;
   top: 0;
   height: 100%;
   width: --height;
-  /* width: calc(100% - 20px); */
+  width: calc(100% - 14px);
 }
 .note-bg-outer {
   position: absolute;
@@ -178,30 +158,69 @@
   border-left: 1px solid rgba(0, 0, 0, 0.781);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  /* border-radius: 0.5rem 0rem 0rem 0.5rem; */
+}
+
+.note-bg-inner:hover {
+  border-left: 1px solid rgb(0, 0, 0);
+  border-top: 1px solid rgb(0, 0, 0);
+  border-bottom: 1px solid rgb(0, 0, 0);
 }
 .note-bg-inner {
   height: 100%;
   width: 100%;
   background-color: rgba(255, 255, 255, 0.85);
-  /* border-radius: 0.5rem 0rem 0rem 0.5rem; */
+}
+.note-bg-inner .navline {
+  position: absolute;
+  top: -14px;
+  right: -4px;
+  width: 20px;
+  height: calc(100% + 28px);
+  z-index: 20;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5rem 0 0 5rem;
+  background-color: #f00;
+  background-color: var(--note-bg-color);
+  cursor: zoom-out;
+}
+.main-navline {
+  position: absolute;
+  right: 0;
+  width: 20px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  cursor: default;
+}
+.note-panel .main-navline {
+  top: 0;
+  bottom: 0;
+}
+.side-note .main-navline {
+  right: 0px;
+  border-radius: 0.5rem;
+}
+.note-bg-inner:hover .navline {
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.8);
 }
 
-div.main-navline-button-container {
+/* NAVLINE BUTTONS */
+.navline-button-container {
   position: absolute;
   padding-left: 1px;
+}
+.main-navline .navline-button-container {
   top: 5px;
   z-index: 20;
 }
-div.navline-button-container {
-  position: absolute;
-  padding-left: 1px;
-  top: 10px;
+.note-bg-inner .navline-button-container {
+  margin-top: 10px;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s 0.1s, opacity 0.1s linear;
 }
-div.navline-button-container.visible {
+.note-bg-inner:hover .navline-button-container {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.15s linear;
@@ -218,103 +237,62 @@ button.navline-button {
 button.navline-button:hover {
   color: rgba(0, 0, 0);
 }
-.mainNavline {
-  position: absolute;
-  z-index: 10;
-  width: 20px;
-  background-color: rgba(0, 0, 0, 0.1);
-  cursor: default;
+
+/* BACKGROUND COLOR */
+.note-bg-color-0 {
+  --note-bg-color: var(--ccc-0);
+  background-color: var(--note-bg-color);
 }
-.note-panel .mainNavline {
-  top: 0;
-  bottom: 0;
-  right: 16px;
-  border-radius: 0.5rem;
+.note-bg-color-1 {
+  --note-bg-color: var(--ccc-1);
+  background-color: var(--note-bg-color);
 }
-.side-note .mainNavline {
-  right: 0px;
-  border-radius: 0.5rem;
+.note-bg-color-2 {
+  --note-bg-color: var(--ccc-2);
+  background-color: var(--note-bg-color);
 }
-.navline {
-  position: absolute;
-  z-index: 20;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  /* border-top: 0.5px solid rgba(255, 255, 255, 0.9); */
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 5rem 0 0 5rem;
-  width: 100%;
-  background-color: #f00;
-  cursor: zoom-out;
+.note-bg-color-3 {
+  --note-bg-color: var(--ccc-3);
+  background-color: var(--note-bg-color);
 }
-.navline-0 {
-  background-color: var(--ccc-0);
+.note-bg-color-4 {
+  --note-bg-color: var(--ccc-4);
+  background-color: var(--note-bg-color);
 }
-.navline-0-0 {
-  background-color: var(--ccc-0-0);
+.note-bg-color-5 {
+  --note-bg-color: var(--ccc-5);
+  background-color: var(--note-bg-color);
 }
-.navline-0-1 {
-  background-color: var(--ccc-0-1);
+.note-bg-color-6 {
+  --note-bg-color: var(--ccc-6);
+  background-color: var(--note-bg-color);
 }
-.navline-0-2 {
-  background-color: var(--ccc-0-2);
+.note-bg-color-7 {
+  --note-bg-color: var(--ccc-7);
+  background-color: var(--note-bg-color);
 }
-.navline-0-3 {
-  background-color: var(--ccc-0-3);
+.note-bg-color-8 {
+  --note-bg-color: var(--ccc-8);
+  background-color: var(--note-bg-color);
 }
-.navline-0-4 {
-  background-color: var(--ccc-0-4);
+.note-bg-color-9 {
+  --note-bg-color: var(--ccc-9);
+  background-color: var(--note-bg-color);
 }
-.navline-1 {
-  background-color: var(--ccc-1);
+.note-bg-color-10 {
+  --note-bg-color: var(--ccc-10);
+  background-color: var(--note-bg-color);
 }
-.navline-1-0 {
-  background-color: var(--ccc-1-0);
+.note-bg-color-11 {
+  --note-bg-color: var(--ccc-11);
+  background-color: var(--note-bg-color);
 }
-.navline-1-1 {
-  background-color: var(--ccc-1-1);
+.note-bg-color-12 {
+  --note-bg-color: var(--ccc-12);
+  background-color: var(--note-bg-color);
 }
-.navline-1-2 {
-  background-color: var(--ccc-1-2);
-}
-.navline-1-3 {
-  background-color: var(--ccc-1-3);
-}
-.navline-2 {
-  background-color: var(--ccc-2);
-}
-.navline-2-0 {
-  background-color: var(--ccc-2-0);
-}
-.navline-2-1 {
-  background-color: var(--ccc-2-1);
-}
-.navline-2-2 {
-  background-color: var(--ccc-2-2);
-}
-.navline-3 {
-  background-color: var(--ccc-3);
-}
-.navline-3-0 {
-  background-color: var(--ccc-3-0);
-}
-.navline-3-1 {
-  background-color: var(--ccc-3-1);
-}
-.navline-3-2 {
-  background-color: var(--ccc-3-2);
-}
-.navline-4 {
-  background-color: var(--ccc-4);
-}
-.navline-4-0 {
-  background-color: var(--ccc-4-0);
-}
-.navline-4-1 {
-  background-color: var(--ccc-4-1);
-}
-.navline-4-2 {
-  background-color: var(--ccc-4-2);
-}
+
+/* EDITOR CONTENT */
 .embedSeperator {
   background-color: transparent;
   /* border: none; */
@@ -322,8 +300,6 @@ button.navline-button:hover {
   margin: 0; */
   z-index: 0;
 }
-
-/* EDITOR CONTENT */
 li.escape-tag::before {
   color: transparent !important;
 }
@@ -345,66 +321,46 @@ span.mention[data-id^='note']:hover {
 span.mention[data-id$='_isOpen=false'] {
   font-size: unset;
   cursor: zoom-in;
+  width: auto;
 }
 span.mention[data-id$='_isOpen=color_class-0'] {
   background-color: var(--ccc-0);
 }
-span.mention[data-id$='_isOpen=color_class-0-0'] {
-  background-color: var(--ccc-0-0);
-}
-span.mention[data-id$='_isOpen=color_class-0-1'] {
-  background-color: var(--ccc-0-1);
-}
-span.mention[data-id$='_isOpen=color_class-0-2'] {
-  background-color: var(--ccc-0-2);
-}
 span.mention[data-id$='_isOpen=color_class-1'] {
   background-color: var(--ccc-1);
-}
-span.mention[data-id$='_isOpen=color_class-1-0'] {
-  background-color: var(--ccc-1-0);
-}
-span.mention[data-id$='_isOpen=color_class-1-1'] {
-  background-color: var(--ccc-1-1);
-}
-span.mention[data-id$='_isOpen=color_class-1-2'] {
-  background-color: var(--ccc-1-2);
 }
 span.mention[data-id$='_isOpen=color_class-2'] {
   background-color: var(--ccc-2);
 }
-span.mention[data-id$='_isOpen=color_class-2-0'] {
-  background-color: var(--ccc-2-0);
-}
-span.mention[data-id$='_isOpen=color_class-2-1'] {
-  background-color: var(--ccc-2-1);
-}
-span.mention[data-id$='_isOpen=color_class-2-2'] {
-  background-color: var(--ccc-2-2);
-}
 span.mention[data-id$='_isOpen=color_class-3'] {
   background-color: var(--ccc-3);
-}
-span.mention[data-id$='_isOpen=color_class-3-0'] {
-  background-color: var(--ccc-3-0);
-}
-span.mention[data-id$='_isOpen=color_class-3-1'] {
-  background-color: var(--ccc-3-1);
-}
-span.mention[data-id$='_isOpen=color_class-3-2'] {
-  background-color: var(--ccc-3-2);
 }
 span.mention[data-id$='_isOpen=color_class-4'] {
   background-color: var(--ccc-4);
 }
-span.mention[data-id$='_isOpen=color_class-4-0'] {
-  background-color: var(--ccc-4-0);
+span.mention[data-id$='_isOpen=color_class-5'] {
+  background-color: var(--ccc-4);
 }
-span.mention[data-id$='_isOpen=color_class-4-1'] {
-  background-color: var(--ccc-4-1);
+span.mention[data-id$='_isOpen=color_class-6'] {
+  background-color: var(--ccc-4);
 }
-span.mention[data-id$='_isOpen=color_class-4-2'] {
-  background-color: var(--ccc-4-2);
+span.mention[data-id$='_isOpen=color_class-7'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-8'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-9'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-10'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-11'] {
+  background-color: var(--ccc-4);
+}
+span.mention[data-id$='_isOpen=color_class-12'] {
+  background-color: var(--ccc-4);
 }
 span.mention[data-id^='text'] {
   cursor: alias;

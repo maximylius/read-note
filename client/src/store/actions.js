@@ -1510,11 +1510,15 @@ export const addNote = ({
   isReply,
   delta
 }) => (dispatch, getState) => {
-  const { notes, spareIds, user } = getState();
+  const { notes, sections, spareIds, user } = getState();
+  if (!guessTitle && (isAnnotation || isReply))
+    guessTitle = isReply
+      ? notes[isReply.noteId].title
+      : sections[isAnnotation.sectionId].title;
 
   const note = {
     _id: spareIds['notes'][0],
-    title: guessTitle || 'Note 1',
+    title: isAnnotation || isReply ? `${guessTitle}-1` : guessTitle || 'Note 1',
     delta: delta || { ops: [{ insert: '\n' }] },
     plainText: '',
 
@@ -1539,12 +1543,17 @@ export const addNote = ({
 
   // add a placeholder title
   const titlePlaceholder = guessTitle || 'Note';
-  const allNoteTitles = [...Object.keys(notes).map(id => notes[id].title)];
+  const allNoteTitles = [
+    ...Object.keys(notes).map(id => notes[id].title),
+    ...Object.keys(sections).map(id => sections[id].title)
+  ];
+  let sep = isAnnotation ? '-' : isReply ? '.' : ' ';
   let i = 2;
   while (allNoteTitles.includes(note.title)) {
-    note.title = `${titlePlaceholder} ${i}`;
+    note.title = `${titlePlaceholder}${sep}${i}`;
     i++;
   }
+
   console.log('addNote');
   console.log(note);
   dispatch({

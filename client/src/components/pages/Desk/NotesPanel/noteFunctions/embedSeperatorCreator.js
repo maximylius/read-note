@@ -4,6 +4,8 @@ import {
   updateMentionIdOpenStatus
 } from '../../../../Metapanel/mentionModule';
 
+// check whether embed seperator could be simplified into purely resInfo
+
 const embedSeperatorCreator = (resInfo, beginEnd, color_class) => {
   const resId = extractAtValueResId(resInfo);
   const resType = extractAtValueResType(resInfo);

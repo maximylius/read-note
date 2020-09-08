@@ -33,7 +33,7 @@ const preProcessDelta = (
           allEmbeds.push(resId);
           op.insert.mention.id = updateMentionIdOpenStatus(
             op.insert.mention.id,
-            `color_class-${colorPath.join('-')}`
+            `color_class-${colorPath.length - 1}`
           );
 
           const embedDelta = preProcessDelta(
@@ -49,16 +49,12 @@ const preProcessDelta = (
           return [
             op, //add cp
             embedSeperatorCreator(
-              resType,
-              resId,
               op.insert.mention.id,
               'begin',
               mentionColorClass(op.insert.mention.id)
             ),
             ...embedDelta.ops,
             embedSeperatorCreator(
-              resType,
-              resId,
               op.insert.mention.id,
               'end',
               mentionColorClass(op.insert.mention.id)

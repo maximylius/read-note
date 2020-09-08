@@ -17,7 +17,7 @@ import {
   mentionModuleCreator,
   atValuesCreator
 } from '../../../Metapanel/mentionModule';
-import Navline from './Navline';
+import Navlines from './Navlines';
 import SaveStatus from './SaveStatus';
 import { AddBubble } from './AddBubble';
 import classNameIncludes from './noteFunctions/classNameIncludes';
@@ -246,7 +246,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
         />
       )}
       {cardBodyRef.current && (
-        <Navline
+        <Navlines
           noteId={noteId}
           cardBodyRef={cardBodyRef}
           changedEditorCounter={changedEditorCounter}

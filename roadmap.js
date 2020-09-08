@@ -1,11 +1,17 @@
 /**
 
+// 2dos: fix opening close behaviour
+
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
 // embed color should just be defined by deepness of nest.
 // check whether embed seperator could be simplified into purely resInfo 
 // preprocess delta doesnt seem to reopen last state?
 // put to state which notes in notepanel are visible at the time to force updates (when content is changed or when note is loaded)
 // keep on working here: closesEmebed function shall be able to handle bugged out embeds. 
+
+// navline of embed render only after change.
+// when opening an embed and loading a note the state of embeded notes shall be recreated. 
+// closing 
 
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 // section => noteIds
@@ -34,14 +40,6 @@ check load res functions
 2DAY- 6     issue embeded notes can sometimes not be collapsed. happens with notes embed in other notes
 2DAY- 6     when are and should notes be remounted? // will this delete history? Can you transfer history // Can you duplicate the editor to allow editing from multiple places? // due to embeds this still would not be possible.
 2DAY- 6     trigger note update before switching into that notebook
-9     define object as function input => props = {state:{}, actions:{},input:{}} => pass props to next level and add new inputs to input.
-{
-  state: {},
-  redux: {},
-  actions: {}
-  references: {},
-  input: {}
-}
 
 
 @LOADING
@@ -70,6 +68,7 @@ check load res functions
 @QUILL
 3     make quill stop jumping to bottom when loaded.
 2DAY- 2     give focus (only) when new note is created.
+3     layout mentions span so that it mimics a heading
 
 @OTHER_SIMPLE
 3     sidepanel takes to long to expand. <- because expanding doesnt trigger a rerender. fix that!
