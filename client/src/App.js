@@ -8,6 +8,7 @@ import 'react-quill/dist/quill.bubble.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'quill-mention/dist/quill.mention.css';
 import './App.css';
+import './styles/inspect.css';
 import './styles/flowchart.css';
 import './styles/flowsections.css';
 import './styles/section.css';

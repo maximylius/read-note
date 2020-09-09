@@ -168,8 +168,6 @@ export default (state = initialState, action) => {
         tentativeSectionIds:
           payload.add === true
             ? [...state.tentativeSectionIds, ...payload.sectionIds]
-            : payload.id === null
-            ? []
             : [...payload.sectionIds]
       };
     case types.START_EDIT_SECTION:

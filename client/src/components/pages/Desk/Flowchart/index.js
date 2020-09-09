@@ -5,6 +5,7 @@ import dagre from 'dagre';
 import TextNode from './CustomNodes/TextNode';
 import SectionNode from './CustomNodes/SectionNode';
 import AnnotationNode from './CustomNodes/AnnotationNode';
+import ReplyNode from './CustomNodes/ReplyNode';
 import NoteNode from './CustomNodes/NoteNode';
 import FlowchartSidepanel from './Sidepanel/';
 import {
@@ -105,19 +106,23 @@ const onLoad = reactFlowInstance => {
 const miniMapSwitch = node => {
   switch (node.type) {
     case 'text':
-      return `rgba(18, 44, 90, ${
+      return `rgba(12, 100, 16, ${
         node.className.includes('customOpacity') ? 0.3 : 1
       })`;
     case 'section':
-      return `rgba(64, 87, 126, ${
+      return `rgba(198, 235, 210, ${
         node.className.includes('customOpacity') ? 0.3 : 1
       })`;
-    case 'annotation-note':
-      return `rgba(243, 165, 195, ${
+    case 'annotation':
+      return `rgba(209, 54, 106, ${
+        node.className.includes('customOpacity') ? 0.3 : 1
+      })`;
+    case 'reply':
+      return `rgba(209, 209, 209, ${
         node.className.includes('customOpacity') ? 0.3 : 1
       })`;
     case 'note':
-      return `rgba(236, 133, 101, ${
+      return `rgba(197, 73, 24, ${
         node.className.includes('customOpacity') ? 0.2 : 1
       })`;
     default:
@@ -132,15 +137,15 @@ const Flowchart = () => {
   const sections = useSelector(s => s.sections);
   const texts = useSelector(s => s.texts);
   const notes = useSelector(s => s.notes);
-  const isOpen = useSelector(s => s.flowchart.isOpen);
-  const sidepanelOpen = useSelector(s => s.flowchart.sidepanelOpen);
-  const elements = useSelector(s => s.flowchart.elements);
-  const nonLayoutedElements = useSelector(s => s.flowchart.nonLayoutedElements);
-  const strictSearchResults = useSelector(s => s.flowchart.strictSearchResults);
-  const displayNonMatches = useSelector(s => s.flowchart.displayNonMatches);
-  const filterTypes = useSelector(s => s.flowchart.filterTypes);
-  const filterAncestors = useSelector(s => s.flowchart.filterAncestors);
-  const filterDescendants = useSelector(s => s.flowchart.filterDescendants);
+  const flowchartIsOpen = useSelector(s => s.panel.flowchartIsOpen);
+  const inspectIsOpen = useSelector(s => s.panel.inspectIsOpen);
+  const elements = useSelector(s => s.inspect.elements);
+  const nonLayoutedElements = useSelector(s => s.inspect.nonLayoutedElements);
+  const strictSearchResults = useSelector(s => s.inspect.strictSearchResults);
+  const displayNonMatches = useSelector(s => s.inspect.displayNonMatches);
+  const filterTypes = useSelector(s => s.inspect.filterTypes);
+  const filterAncestors = useSelector(s => s.inspect.filterAncestors);
+  const filterDescendants = useSelector(s => s.inspect.filterDescendants);
 
   const openFlowchart = () => {
     dispatch(toggleFlowchart());
@@ -152,30 +157,43 @@ const Flowchart = () => {
   useEffect(
     () => {
       // 2do: only trigger update when necessary
-      // if (!isOpen) return;
+      // if (!flowchartIsOpen) return;
       const connectedTexts = Object.keys(texts).map(id => ({
         name: id,
         type: 'text',
         className: 'flowchartText',
         label: texts[id].title,
-        links: texts[id].sectionIds.map(id => ({ name: id }))
+        links: [
+          ...texts[id].sectionIds.map(id => ({ name: id })),
+          ...texts[id].directConnections.map(c => ({ name: c.resId }))
+        ]
       }));
       const connectedSections = Object.keys(sections).map(id => ({
         name: id,
         type: 'section',
         className: 'flowchartSection',
         label: sections[id].title,
-        links: sections[id].directConnections.map(el => ({ name: el.resId }))
+        links: [
+          ...sections[id].directConnections.map(c => ({ name: c.resId })),
+          ...sections[id].noteIds.map(id => ({ name: id }))
+        ]
       }));
       const connectedNotes = Object.keys(notes).map(id => {
         const note = notes[id];
         console.log('note', note);
         return {
           name: id,
-          type: note.isAnnotation ? 'annotation-note' : 'note',
+          type: note.isAnnotation
+            ? 'annotation'
+            : note.isReply
+            ? 'reply'
+            : 'note',
           className: 'flowchartNote',
           label: note.title,
-          links: note.directConnections.map(el => ({ name: el.resId }))
+          links: [
+            ...note.directConnections.map(c => ({ name: c.resId })),
+            ...note.replies.map(id => ({ name: id }))
+          ]
         };
       });
       dispatch(
@@ -187,7 +205,7 @@ const Flowchart = () => {
       );
       return () => {};
     },
-    // [isOpen]
+    // [flowchartIsOpen]
     [sections, texts, notes]
   );
 
@@ -252,40 +270,29 @@ const Flowchart = () => {
   ]);
 
   return (
-    <div
-      {...(!isOpen && { onClick: openFlowchart })}
-      className={`row flowchartContainer ${
-        isOpen ? 'flowchartOpen' : 'flowchartPreview'
-      }`}
-    >
-      <div
-        className={`col${isOpen && sidepanelOpen ? '-9' : '-12'} flowchartArea`}
-      >
+    <div className={`row growContent flex-row flowchart-container`}>
+      <div className={`col-${inspectIsOpen ? '8' : '12'} flowchart-area`}>
         <ReactFlow
           key='reactFlowchartMainComponent'
           onLoad={onLoad}
           elements={elements}
           nodeTypes={{
             text: TextNode,
-            annotation: AnnotationNode,
             section: SectionNode,
+            annotation: AnnotationNode,
+            reply: ReplyNode,
             note: NoteNode
           }}
           // onElementClick={e => console.log(e)}
           onSelectionChange={e => console.log(e)}
-          isInteractive={isOpen}
           minZoom={0.15}
         >
-          {isOpen && (
-            <>
-              <Controls />
-              <MiniMap nodeColor={miniMapSwitch} />
-              <Background variant='dots' gap={50} size={0.7} />
-            </>
-          )}
+          <Controls />
+          <MiniMap nodeColor={miniMapSwitch} />
+          <Background variant='dots' gap={50} size={0.7} />
         </ReactFlow>
       </div>
-      {isOpen && sidepanelOpen && (
+      {inspectIsOpen && (
         <FlowchartSidepanel flowchartInstance={flowchartInstance} />
       )}
     </div>

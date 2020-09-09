@@ -20,38 +20,11 @@
   width: 150px;
   border: 2px solid rgb(45, 223, 255);
 }
-.flowchartArea {
+
+.flowchart-area {
   padding-right: 0;
 }
-.flowchartSidepanel {
-  /* resize: horizontal; */
-  background-color: rgb(106, 126, 139);
-}
-.flowchartSearchContainer {
-  width: 100%;
-  padding: 0 0.5rem;
-  border-radius: 1rem 1rem 1rem 1rem;
-  background-color: #fff;
-}
-.flowchartSearchContainer .mention,
-.flowchartSearchContainer .ql-mention-denotation-char {
-  cursor: auto;
-}
-.flowchartInspectElContainer {
-  background-color: #fff;
-  width: 100%;
-  margin: 8px 0px 4px 0px;
-  padding: 4px 4px 4px 2px;
-  border-radius: 4px;
-}
-span.flowchartInspectElToolbar {
-  position: absolute;
-  right: 2rem;
-}
-p.flowchartInspectElToolbar {
-  margin-top: -0.25rem;
-  margin-bottom: 2rem;
-}
+
 .resizeMe {
   resize: both;
   min-width: 0px;
@@ -63,20 +36,34 @@ p.flowchartInspectElToolbar {
 /* NODES AND EDGES */
 .react-flow__node {
   border-radius: 0.5rem;
+  border: 2px solid transparent;
+}
+.react-flow__node:hover {
+  border: 2px solid rgb(0, 0, 0, 0.5);
+}
+.react-flow__node.selected {
+  border: 2px solid rgb(0, 0, 0, 1);
+}
+.react-flow__handle {
+  pointer-events: none;
 }
 .react-flow__node-text {
-  background-color: rgb(18, 44, 90) !important;
+  background-color: rgb(12, 100, 16) !important;
   color: #fff !important;
 }
 .react-flow__node-section {
-  background-color: rgb(64, 87, 126) !important;
+  background-color: rgb(198, 235, 210) !important;
+}
+.react-flow__node-annotation {
+  background-color: rgb(209, 54, 106) !important;
   color: #fff !important;
 }
-.react-flow__node-annotation-note {
-  background-color: rgb(243, 165, 195) !important;
+.react-flow__node-reply {
+  background-color: rgb(209, 209, 209) !important;
 }
 .react-flow__node-note {
-  background-color: rgb(236, 133, 101) !important;
+  background-color: rgb(197, 73, 24) !important;
+  color: #fff !important;
 }
 .react-flow__node.customOpacity {
   opacity: 0.3;

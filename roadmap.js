@@ -1,5 +1,5 @@
 /**
-// improve flowchart layout: add isReply "class".
+// finish flowSections: add titles. align correctly. add connecting arrows.
 // add categories
 
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
@@ -35,7 +35,7 @@ DELETE (MANY)    0         0         1
 // closing embed in side-note via navClick didnt work.
 // when closing embed in note-panel that is open in side-panel it gets closed in side-panel first.
 // section item gets positioned badly. bug is recently introduced.
-// dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack.
+// dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack. // lastPathname does not work: should update as soon as a link is used. when closing a modal still modal prevails.
 //user object gets spammed with more and more instances of same resIds
 @OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections
 handle if resource is deleted. handle if no resource is open (-1): -0. open any note?
@@ -65,7 +65,7 @@ check load res functions
 5   while not in flowchar view connect connected section with simple arc on the right hand side
 6   set maximum height on section item - if exceeded 
 5   when section flow chart is opened reuse flowcahrt-item-preview and close notepanel
-6   improve scroll behaviour // alowing multiple scroll panes in side-panel // translate scroll to percentages. // think about whether to make side-panel independent from text scroll all together? 
+6   improve scroll behaviour // alowing multiple scroll panes in side-panel // translate scroll to percentages. // think about whether to make side-panel independent from text scroll all together? // $0.scrollTo(x,y)
 6   allow modes: structuring / note taking / standard (both = current)
 6   display note title somewhere.
 2   improve side-note-reply-count: just shows top level so far.

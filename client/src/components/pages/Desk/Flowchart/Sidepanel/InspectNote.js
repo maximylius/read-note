@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import ReactQuill from 'react-quill';
-import { BsLink, BsToggleOn, BsX, BsXCircle, BsTrash } from 'react-icons/bs';
+import { BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadNotes } from '../../../../../store/actions';
 
 const InspectNote = ({ id }) => {
@@ -25,8 +25,8 @@ const InspectNote = ({ id }) => {
   return (
     <div>
       <h5>{note.title}</h5>
-      <p className='flowchartInspectElToolbar'>
-        <span className='flowchartInspectElToolbar'>
+      <p className='inspect-toolbar'>
+        <span className='inspect-toolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
             open
           </button>

@@ -13,7 +13,7 @@ import { ObjectKeepKeys, colorGenerator } from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
 // it does not push section updates into view.
-// 2do: TextSectionsBlots get somehow wrapped by another span holding the backgroundcolor. Problematic in case of mixed (multiple sectionIds) Blots, as the latest seems to set the backgroundcolor for both/all sections.
+// 2do: TextSectionsBlots get somehow wrapped by another span holding the backgroundcolor. Problematic in case of mixed (multiple sectionIds) Blots, as the latest seems to set the backgroundcolor for both/all sections. Also weird behaviour when hovering overlapping sections.
 const TextMain = ({}) => {
   const dispatch = useDispatch();
   const quillTextRef = React.useRef();

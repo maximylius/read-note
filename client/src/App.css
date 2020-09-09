@@ -12,13 +12,6 @@ body,
   color: auto;
 }
 
-.footer-version {
-  margin-left: 10%;
-}
-/* .footer-shared-toolbar-container {
-  background-color: var(--secondary);
-} */
-
 .page-modal-outer {
   position: absolute;
   z-index: 2999;
@@ -265,7 +258,9 @@ button.closeAlertElement {
   min-height: 100%;
   max-height: 100%;
 }
-
+.nav-link {
+  cursor: pointer;
+}
 .nav-main {
   padding: 0.4rem 2rem 0.4rem 2rem;
   font-size: 1em;
@@ -282,10 +277,13 @@ button.closeAlertElement {
 .footer {
   justify-content: center;
   width: 100vw;
+  margin: 0;
   background-color: var(--secondary);
   color: white;
 }
-
+.footer-version {
+  margin-left: 20%;
+}
 /* @media (max-height: 600px) {
   .box .row.footer {
     display: none;

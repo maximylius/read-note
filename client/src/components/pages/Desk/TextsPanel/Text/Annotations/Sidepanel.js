@@ -5,7 +5,7 @@ import { BsPlus } from 'react-icons/bs';
 import TextMeta from './TextMeta';
 import ButtonToolbar from './ButtonToolbar';
 import Sections from './Sections';
-import FlowSections from './FlowSections';
+import FlowSectionView from './FlowSectionView';
 
 const Sidepanel = ({}) => {
   const dispatch = useDispatch();
@@ -37,7 +37,7 @@ const Sidepanel = ({}) => {
 
       {!displayTextMeta ? (
         <>
-          {flowSectionView ? <FlowSections /> : <Sections />}
+          {flowSectionView ? <FlowSectionView /> : <Sections />}
           {speedReader.isOpenFor.includes(activeTextPanel) && (
             <button
               className='btn btn-light btn-block btn-lg'

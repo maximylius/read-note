@@ -8,7 +8,8 @@ import {
   toggleRegisterModal,
   toggleSignInModal,
   toggleLogoutModal,
-  closeAllModals
+  closeAllModals,
+  toggleFlowchart
 } from '../../store/actions';
 import { Link } from 'react-router-dom';
 import {
@@ -16,7 +17,8 @@ import {
   BsLaptop,
   BsPerson,
   BsCollection,
-  BsCollectionFill
+  BsCollectionFill,
+  BsMap
 } from 'react-icons/bs';
 
 const Navbar = () => {
@@ -28,6 +30,7 @@ const Navbar = () => {
   const registerOpen = useSelector(s => s.modal.registerOpen);
   const signInOpen = useSelector(s => s.modal.signInOpen);
   const logoutOpen = useSelector(s => s.modal.logoutOpen);
+  const flowchartIsOpen = useSelector(s => s.panel.flowchartIsOpen);
   const projects = useSelector(s => s.projects);
   const deskOpen = !aboutOpen && !registerOpen && !signInOpen && !logoutOpen;
   const lastDeskPathname = useSelector(s => s.modal.lastDeskPathname);
@@ -66,10 +69,31 @@ const Navbar = () => {
               </span>
             </li>
           ))}
+
+          <li className='nav-item'>
+            <span
+              className={`nav-link ${
+                deskOpen && flowchartIsOpen ? 'active' : ''
+              }`}
+              onClick={() => {
+                dispatch(closeAllModals(history));
+                dispatch(toggleFlowchart());
+              }}
+            >
+              <BsMap />
+              Network-Graph
+            </span>
+          </li>
+
           <li className='nav-item'>
             <Link
-              className={`nav-link ${deskOpen ? 'active' : ''}`}
-              onClick={() => dispatch(closeAllModals(history))}
+              className={`nav-link ${
+                deskOpen && !flowchartIsOpen ? 'active' : ''
+              }`}
+              onClick={() => {
+                dispatch(closeAllModals(history));
+                if (flowchartIsOpen) dispatch(toggleFlowchart());
+              }}
               to={lastDeskPathname}
             >
               <BsLaptop />

@@ -10,10 +10,10 @@ import { BsFilter } from 'react-icons/bs';
 
 const FilterOptions = () => {
   const dispatch = useDispatch();
-  const displayNonMatches = useSelector(s => s.flowchart.displayNonMatches);
-  const filterTypes = useSelector(s => s.flowchart.filterTypes);
-  const filterAncestors = useSelector(s => s.flowchart.filterAncestors);
-  const filterDescendants = useSelector(s => s.flowchart.filterDescendants);
+  const displayNonMatches = useSelector(s => s.inspect.displayNonMatches);
+  const filterTypes = useSelector(s => s.inspect.filterTypes);
+  const filterAncestors = useSelector(s => s.inspect.filterAncestors);
+  const filterDescendants = useSelector(s => s.inspect.filterDescendants);
   return (
     <details>
       <summary>
@@ -60,6 +60,22 @@ const FilterOptions = () => {
             onClick={() => dispatch(toggleTypesFilterFlowchart('notes'))}
           >
             notes
+          </button>
+          <button
+            className={`btn btn-sm btn-secondary ${
+              filterTypes.includes('notes') ? 'active' : ''
+            }`}
+            onClick={() => dispatch(toggleTypesFilterFlowchart('notes'))}
+          >
+            annotations
+          </button>
+          <button
+            className={`btn btn-sm btn-secondary ${
+              filterTypes.includes('notes') ? 'active' : ''
+            }`}
+            onClick={() => dispatch(toggleTypesFilterFlowchart('notes'))}
+          >
+            replies
           </button>
         </div>
       </div>

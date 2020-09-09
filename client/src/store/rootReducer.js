@@ -10,7 +10,7 @@ import spareIdsReducer from './reducers/spareIdsReducer';
 import authReducer from './reducers/authReducer';
 import userReducer from './reducers/userReducer';
 import categoriesReducer from './reducers/categoriesReducer';
-import flowchartReducer from './reducers/flowchartReducer';
+import inspectReducer from './reducers/inspectReducer';
 import panelReducer from './reducers/panelReducer';
 import modalReducer from './reducers/modalReducer';
 
@@ -27,6 +27,6 @@ export default combineReducers({
   texts: textsReducer,
   sections: sectionsReducer,
   notes: notesReducer,
-  flowchart: flowchartReducer,
+  inspect: inspectReducer,
   categories: categoriesReducer
 });

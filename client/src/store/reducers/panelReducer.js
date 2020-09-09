@@ -1,6 +1,12 @@
 import * as types from '../types';
 
-const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
+const mdResolver = (
+  finderOpen,
+  textsOpen,
+  annotationsOpen,
+  notesOpen,
+  flowChartView
+) => {
   if (finderOpen) {
     if (textsOpen) {
       if (annotationsOpen) {
@@ -67,7 +73,7 @@ const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
           return {
             mdFinderPanel: 0,
             mdTextsPanel: 12,
-            mdAnnotationsPanel: 5,
+            mdAnnotationsPanel: flowChartView ? 7 : 5,
             mdNotesPanel: 0
           };
         }
@@ -107,10 +113,17 @@ const mdResolver = (finderOpen, textsOpen, annotationsOpen, notesOpen) => {
     }
   }
 };
-
+// integrate flowchart in panels: left hand side: 2/3 flowchart. right 1/3 insepect elements
+// when text is open:
+// - 3/5 texts, 2/5 sidepanel-sidenotes.
+// - 3/5 texts, 2/5 notes.
+// - 2/5 texts, 1/5 annotation 2/5 notes.
+// - text(3/5) sidepanel-flowchart (2/5).
+// - text(2/5) sidepanel-flowchart (2/5) inspect (1/5).
 const initialState = {
   mdFinderPanel: 2,
   mdTextsPanel: 6,
+  mdTextsPanelLast: 6,
   mdAnnotationsPanel: 4,
   mdAnnotationsPanelLast: 4,
   mdNotesPanel: 4,
@@ -118,6 +131,8 @@ const initialState = {
   mdFlowchartPanel: 8,
   mdInspectPanel: 4,
   flowSectionView: false,
+  flowchartIsOpen: false,
+  inspectIsOpen: true,
   keepFinderOpen: false
 };
 
@@ -131,7 +146,8 @@ export default (state = initialState, action) => {
           true,
           state.mdTextsPanel > 0,
           false,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         ),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
@@ -143,7 +159,8 @@ export default (state = initialState, action) => {
           false,
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanelLast > 0,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         )
       };
     case types.UPDATE_NOTE:
@@ -159,7 +176,8 @@ export default (state = initialState, action) => {
           false,
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanelLast > 0,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         )
       };
     case types.EXPAND_TEXTS_PANEL:
@@ -170,7 +188,8 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           true,
           state.mdAnnotationsPanel > 0,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         )
       };
     // OPEN TEXT AND COLLAPSE FINDER
@@ -182,7 +201,8 @@ export default (state = initialState, action) => {
               state.keepFinderOpen,
               true,
               state.mdAnnotationsPanel > 0,
-              state.mdNotesPanel > 0
+              state.mdNotesPanel > 0,
+              state.flowSectionView
             )
           }
         : state;
@@ -196,7 +216,8 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0 && state.keepFinderOpen,
           true,
           state.mdAnnotationsPanel > 0,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         )
       };
 
@@ -207,7 +228,8 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           false,
           state.mdAnnotationsPanel > 0,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         ),
         mdAnnotationsPanelLast: state.mdAnnotationsPanel
       };
@@ -221,7 +243,8 @@ export default (state = initialState, action) => {
             state.mdFinderPanel > 0,
             false,
             state.mdAnnotationsPanel > 0,
-            state.mdNotesPanel > 0
+            state.mdNotesPanel > 0,
+            state.flowSectionView
           )
         };
       }
@@ -233,7 +256,8 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           true,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         ),
         mdAnnotationsPanelLast: 1
       };
@@ -247,7 +271,8 @@ export default (state = initialState, action) => {
           state.keepFinderOpen,
           state.mdTextsPanel > 0,
           true,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         ),
         mdAnnotationsPanelLast: 1
       };
@@ -258,7 +283,8 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           false,
-          state.mdNotesPanel > 0
+          state.mdNotesPanel > 0,
+          state.flowSectionView
         ),
         mdAnnotationsPanelLast: 0
       };
@@ -270,17 +296,19 @@ export default (state = initialState, action) => {
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanel > 0,
-          true
+          true,
+          state.flowSectionView
         )
       };
-    case types.COLLAPSE_NOTES_PANEL: //2do: why not exported?
+    case types.COLLAPSE_NOTES_PANEL:
       return {
         ...state,
         ...mdResolver(
           state.mdFinderPanel > 0,
           state.mdTextsPanel > 0,
           state.mdAnnotationsPanel > 0,
-          false
+          false,
+          state.flowSectionView
         ),
         mdNotesPanelLast: 0
       };
@@ -294,7 +322,8 @@ export default (state = initialState, action) => {
             state.mdFinderPanel > 0,
             state.mdTextsPanel > 0,
             state.mdAnnotationsPanel > 0,
-            false
+            false,
+            state.flowSectionView
           ),
           mdNotesPanelLast: 0
         };
@@ -314,15 +343,6 @@ export default (state = initialState, action) => {
         mdNotesPanelLast: state.mdNotesPanel
       };
     case types.PAUSE_SPEED_READER:
-      return {
-        ...state,
-        ...mdResolver(
-          false,
-          true,
-          state.mdAnnotationsPanelLast,
-          state.mdNotesPanelLast
-        )
-      };
     case types.CLOSE_SPEED_READER:
       return {
         ...state,
@@ -333,11 +353,61 @@ export default (state = initialState, action) => {
           state.mdNotesPanelLast
         )
       };
-    case types.TOGGLE_FLOW_SECTION_VIEW:
+    case types.OPEN_FLOW_SECTION_VIEW:
       return {
         ...state,
-        flowSectionView: !state.flowSectionView
+        ...mdResolver(false, true, true, false, true),
+        mdNotesPanelLast: state.mdNotesPanel,
+        flowSectionView: true
       };
+    case types.CLOSE_FLOW_SECTION_VIEW:
+      return {
+        ...state,
+        ...mdResolver(false, true, true, state.mdNotesPanelLast),
+        flowSectionView: false
+      };
+    case types.OPEN_FLOWCHART:
+      return {
+        ...state,
+        mdTextsPanelLast: state.mdTextsPanel,
+        mdAnnotationsPanelLast: state.mdAnnotationsPanel,
+        mdNotesPanelLast: state.mdNotesPanel,
+        flowchartIsOpen: true,
+        inspectIsOpen: true
+      };
+    case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
+    case types.ADD_AND_OPEN_TEXT:
+    case types.OPEN_TEXT:
+    case types.GET_NOTES:
+    case types.CLOSE_FLOWCHART:
+      return {
+        ...state,
+        ...mdResolver(
+          false,
+          state.mdTextsPanelLast,
+          state.mdAnnotationsPanelLast,
+          state.mdNotesPanelLast,
+          state.flowSectionView
+        ),
+        flowchartIsOpen: false,
+        inspectIsOpen: true
+      };
+    case types.OPEN_FLOWCHART_SIDEPANEL:
+      return {
+        ...state,
+        inspectIsOpen: true
+      };
+    case types.CLOSE_FLOWCHART_SIDEPANEL:
+      return {
+        ...state,
+        inspectIsOpen: false
+      };
+    case types.INSPECT_ELEMENT_IN_FLOWCHART:
+      return {
+        ...state,
+        inspectIsOpen: true
+      };
+
     case types.TOGGLE_KEEP_FINDER_OPEN:
       return {
         ...state,

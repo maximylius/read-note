@@ -624,12 +624,25 @@ export const setAllCommittedSections = () => (dispatch, getState) => {
   });
 };
 
-export const setTentativeSections = (sectionIds, add) => dispatch =>
+export const setTentativeSections = (sectionIds = [], add) => (
+  dispatch,
+  getState
+) => {
+  if (!add) {
+    const {
+      textsPanel: { tentativeSectionIds }
+    } = getState();
+    if (
+      !tentativeSectionIds.some(id => !sectionIds.includes(id)) &&
+      !sectionIds.some(id => !tentativeSectionIds.includes(id))
+    )
+      return;
+  }
   dispatch({
     type: types.SET_TENTATIVE_SECTIONS,
     payload: { sectionIds, add }
   });
-
+};
 export const changeSectionEditState = (changeTo, id) => dispatch => {
   if (changeTo === 'edit') {
     dispatch({
@@ -1404,9 +1417,13 @@ export const deleteSection = sectionId => (dispatch, getState) => {
 };
 
 // FLOWCHART
-export const toggleFlowchart = () => dispatch => {
+export const toggleFlowchart = () => (dispatch, getState) => {
+  const {
+    panel: { flowchartIsOpen }
+  } = getState();
+  console.log('flowchartIsOpen', flowchartIsOpen);
   dispatch({
-    type: types.TOGGLE_FLOWCHART
+    type: flowchartIsOpen ? types.CLOSE_FLOWCHART : types.OPEN_FLOWCHART
   });
 };
 export const openFlowchartSidepanel = () => dispatch => {
@@ -1449,6 +1466,12 @@ export const inspectSectionInFlowchart = id => dispatch => {
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,
     payload: { id, type: 'section' }
+  });
+};
+export const setInspectFlowSection = setTo => dispatch => {
+  dispatch({
+    type: types.SET_INSPECT_FLOW_SECTION,
+    payload: { setTo }
   });
 };
 export const inspectNoteInFlowchart = id => dispatch => {
@@ -1685,6 +1708,13 @@ export const toggleShowNoteReplies = noteId => (dispatch, getState) => {
   });
 };
 
-export const toggleFlowSectionView = () => dispatch => {
-  dispatch({ type: types.TOGGLE_FLOW_SECTION_VIEW });
+export const toggleFlowSectionView = () => (dispatch, getState) => {
+  const {
+    panel: { flowSectionView }
+  } = getState();
+  dispatch({
+    type: flowSectionView
+      ? types.CLOSE_FLOW_SECTION_VIEW
+      : types.OPEN_FLOW_SECTION_VIEW
+  });
 };

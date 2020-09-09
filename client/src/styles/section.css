@@ -32,6 +32,7 @@
   right: 2px;
   top: -31px;
   border-radius: 0.5rem 0.5rem 0rem 0rem;
+  background-color: #fff;
 }
 .section-outside-btn {
   background-color: var(--light);

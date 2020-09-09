@@ -26,9 +26,9 @@ const searchPlaceholder =
 export const Search = () => {
   const dispatch = useDispatch();
   const searchWithinTextcontent = useSelector(
-    s => s.flowchart.searchWithinTextcontent
+    s => s.inspect.searchWithinTextcontent
   );
-  const strictSearchResults = useSelector(s => s.flowchart.strictSearchResults);
+  const strictSearchResults = useSelector(s => s.inspect.strictSearchResults);
   const notes = useSelector(s => s.notes);
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
@@ -168,7 +168,7 @@ export const Search = () => {
 
   return (
     <>
-      <div className='flowchartSearchContainer'>
+      <div className='flowchart-search-container'>
         <ReactQuill
           ref={searchQuillRef}
           onChange={onChangeHandler}

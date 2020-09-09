@@ -1,0 +1,31 @@
+.flowchart-sidepanel {
+  /* resize: horizontal; */
+  overflow-y: auto;
+  background-color: rgb(106, 126, 139);
+  padding-right: 0px;
+}
+.flowchart-search-container {
+  width: 100%;
+  padding: 0 0.5rem;
+  border-radius: 1rem 1rem 1rem 1rem;
+  background-color: #fff;
+}
+.flowchart-search-container .mention,
+.flowchart-search-container .ql-mention-denotation-char {
+  cursor: auto;
+}
+.inspect-container {
+  background-color: #fff;
+  width: 100%;
+  margin: 8px 0px 4px 0px;
+  padding: 4px 4px 4px 2px;
+  border-radius: 4px;
+}
+span.flowchartInspectElToolbar {
+  position: absolute;
+  right: 2rem;
+}
+p.flowchartInspectElToolbar {
+  margin-top: -0.25rem;
+  margin-bottom: 2rem;
+}

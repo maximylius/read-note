@@ -13,9 +13,7 @@ const Desk = () => {
   const mdFinderPanel = useSelector(s => s.panel.mdFinderPanel);
   const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
   const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
-  const mdFlowchartPanel = useSelector(s => s.panel.mdFlowchartPanel);
-  const mdInspectPanel = useSelector(s => s.panel.mdInspectPanel);
-  const flowChartOpen = useSelector(s => s.modal.flowChartOpen);
+  const flowchartIsOpen = useSelector(s => s.panel.flowchartIsOpen);
 
   const [refRenderTrigger, setRefRenderTrigger] = React.useState(null);
   const testRef = React.useRef();
@@ -37,12 +35,12 @@ const Desk = () => {
   return (
     <>
       <div className='row grow flex-row mx-0 px-0' ref={testRef}>
-        {flowChartOpen ? (
+        {flowchartIsOpen ? (
           <>
             <div
-              className={`col-md-${mdFlowchartPanel} px-0 mx-0 box `}
+              className={`col-md-12 px-0 mx-0 box `}
               style={{
-                display: mdFlowchartPanel > 0 ? 'flex' : 'none'
+                display: 'flex'
               }}
             >
               <Flowchart />

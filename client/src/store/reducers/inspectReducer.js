@@ -1,9 +1,8 @@
 import * as types from '../types';
 
 const initialState = {
-  isOpen: false,
-  sidepanelOpen: true,
   inspectElements: [],
+  inspectFlowSection: null,
   nonLayoutedElements: [],
   elements: [],
   strictSearchResults: [],
@@ -17,6 +16,11 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.SET_INSPECT_FLOW_SECTION:
+      return {
+        ...state,
+        inspectFlowSection: payload.setTo
+      };
     case types.SET_NONLAYOUTED_FLOWCHART_ELEMENTS:
       return {
         ...state,
@@ -60,22 +64,6 @@ export default (state = initialState, action) => {
         filterDescendants: payload.to
       };
 
-    case types.TOGGLE_FLOWCHART:
-      return {
-        ...state,
-        isOpen: !state.isOpen
-      };
-
-    case types.OPEN_FLOWCHART_SIDEPANEL:
-      return {
-        ...state,
-        sidepanelOpen: true
-      };
-    case types.CLOSE_FLOWCHART_SIDEPANEL:
-      return {
-        ...state,
-        sidepanelOpen: false
-      };
     case types.INSPECT_ELEMENT_IN_FLOWCHART:
       return {
         ...state,
@@ -84,10 +72,8 @@ export default (state = initialState, action) => {
           ...state.inspectElements
             .filter(el => el.id !== payload.id)
             .slice(0, 3) //max 4 open resources
-        ],
-        sidepanelOpen: true
+        ]
       };
-
     case types.CLOSE_FLOWCHART_ELEMENT:
       return {
         ...state,
@@ -95,11 +81,6 @@ export default (state = initialState, action) => {
           el => el.id !== payload.id
         )
       };
-    case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
-    case types.ADD_AND_OPEN_TEXT:
-    case types.OPEN_TEXT:
-    case types.GET_NOTES:
-      return state.isOpen ? { ...state, isOpen: false } : state;
     default:
       return state;
   }
