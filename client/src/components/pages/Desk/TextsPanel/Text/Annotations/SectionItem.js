@@ -52,8 +52,6 @@ make notes only preview notes if they exceed certain height. only when they are 
 const SectionItem = ({
   sectionId,
   // sectionIndex,
-  // quillTextRef,
-  // quillNoteRefs,
   top,
   triggerRemeasure
 }) => {
@@ -101,8 +99,9 @@ const SectionItem = ({
       return;
     dispatch(setCommittedSections([sectionId], holdControl));
   };
-  const sectionItemOnMouseEnterHandler = () =>
+  const sectionItemOnMouseEnterHandler = () => {
     dispatch(setTentativeSections([sectionId], holdControl));
+  };
 
   return (
     <div
@@ -114,7 +113,13 @@ const SectionItem = ({
           : 'not-active'
       }`}
       id={`${sectionItemIdPrepend}${section._id}`}
-      style={{ border: `5px solid ${color}`, top: top }}
+      style={{
+        borderTop: `5px solid ${color}`,
+        borderRight: `5px solid ${color}`,
+        borderLeft: `5px solid  ${color}`,
+        borderBottom: `5px solid ${color}`,
+        top: top
+      }}
       onClick={sectionItemClickHandler}
       onMouseEnter={sectionItemOnMouseEnterHandler}
     >

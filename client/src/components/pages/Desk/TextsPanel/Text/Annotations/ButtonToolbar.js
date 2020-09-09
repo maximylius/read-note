@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setExpandAll,
   collapseAnnotationsPanel,
   setDisplayTextMeta,
   openSpeedReader,
-  playSpeedReader
+  playSpeedReader,
+  toggleFlowSectionView
 } from '../../../../../../store/actions';
 import { IconContext } from 'react-icons';
 import {
@@ -14,7 +15,9 @@ import {
   BsArrowsExpand,
   BsInfoCircle,
   BsPlay,
-  BsPlayFill
+  BsPlayFill,
+  BsPuzzle,
+  BsPuzzleFill
 } from 'react-icons/bs';
 
 const ButtonToolbar = () => {
@@ -22,6 +25,7 @@ const ButtonToolbar = () => {
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const displayTextMeta = useSelector(s => s.textsPanel.displayTextMeta);
   const expandAll = useSelector(s => s.textsPanel.expandAll);
+  const flowSectionView = useSelector(s => s.ui.flowSectionView);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   const toggleAnnotationsPanel = useCallback(
@@ -47,9 +51,10 @@ const ButtonToolbar = () => {
   const toggleDisplayTextMeta = () => {
     dispatch(setDisplayTextMeta(!displayTextMeta));
   };
+  const toggleFlowView = () => dispatch(toggleFlowSectionView());
 
   return (
-    <div className='annotation-button-toolbar'>
+    <div className='side-panel-button-toolbar'>
       <button
         className='btn btn-lg btn-light mt-1'
         onClick={toggleAnnotationsPanel}
@@ -75,6 +80,11 @@ const ButtonToolbar = () => {
         <button className='btn btn-lg btn-light mt-1' onClick={toggleExpandAll}>
           <IconContext.Provider value={{ size: '1.5rem' }}>
             {expandAll ? <BsArrowsCollapse /> : <BsArrowsExpand />}
+          </IconContext.Provider>
+        </button>
+        <button className='btn btn-lg btn-light mt-1' onClick={toggleFlowView}>
+          <IconContext.Provider value={{ size: '1.5rem' }}>
+            {flowSectionView ? <BsPuzzleFill /> : <BsPuzzle />}
           </IconContext.Provider>
         </button>
       </span>

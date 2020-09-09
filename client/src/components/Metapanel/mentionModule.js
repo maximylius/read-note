@@ -26,18 +26,19 @@ export const mentionModuleCreator = (atValues, hashValues) => {
 };
 
 export const atValuesCreator = (notesById, textsById, sectionsById) => {
+  // add Projects 📚
   const atValues = Object.keys(textsById)
     .map(id => {
       return {
         id: `text=${id}_isOpen=false`,
-        value: textsById[id].title
+        value: textsById[id].title + '📖'
       };
     })
     .concat(
       Object.keys(notesById).map(id => {
         return {
           id: `note=${id}_isOpen=false`,
-          value: notesById[id].title
+          value: notesById[id].title + '📌'
         };
       })
     )
@@ -51,7 +52,8 @@ export const atValuesCreator = (notesById, textsById, sectionsById) => {
           textTitle +
           // .slice(0, Math.max(6, 24 - sectionTitle.length))
           ' - ' +
-          sectionTitle;
+          sectionTitle +
+          '📑';
         return {
           id: `section=${id}_text=${textId}_isOpen=false`,
           value

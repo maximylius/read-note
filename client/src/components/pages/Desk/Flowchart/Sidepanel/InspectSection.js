@@ -5,7 +5,7 @@ import ReactQuill from 'react-quill';
 import { BsLink, BsToggleOn, BsX, BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadText } from '../../../../../store/actions';
 
-const InspectSection = ({ id, flowchartInstance }) => {
+const InspectSection = ({ id }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const section = useSelector(s => s.sections[id]);

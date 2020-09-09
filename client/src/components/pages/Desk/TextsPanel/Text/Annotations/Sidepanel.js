@@ -5,11 +5,13 @@ import { BsPlus } from 'react-icons/bs';
 import TextMeta from './TextMeta';
 import ButtonToolbar from './ButtonToolbar';
 import Sections from './Sections';
+import FlowSections from './FlowSections';
 
-const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
+const Sidepanel = ({}) => {
   const dispatch = useDispatch();
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const displayTextMeta = useSelector(s => s.textsPanel.displayTextMeta);
+  const flowSectionView = useSelector(s => s.ui.flowSectionView);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   const addSectionClickHandler = () => {
@@ -40,8 +42,7 @@ const Sidepanel = ({ quillTextRef, quillNoteRefs }) => {
 
       {!displayTextMeta ? (
         <>
-          {/* // 2do: or display FlowSections */}
-          <Sections quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />
+          {flowSectionView ? <FlowSections /> : <Sections />}
           {speedReader.isOpenFor.includes(activeTextPanel) && (
             <button
               className='btn btn-light btn-block btn-lg'

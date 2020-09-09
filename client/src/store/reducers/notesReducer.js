@@ -26,30 +26,40 @@ export default (state = initialState, action) => {
         ...Object.fromEntries(
           payload.connectionsToAdd
             .filter(c => c.resType === 'note')
-            .map(el => [
-              el.resId,
-              {
-                ...state[el.resId],
-                indirectConnections: state[el.resId].indirectConnections
-                  .filter(c => c.resId !== el.resId)
-                  .concat({
-                    resId: payload.note._id,
-                    resType: 'note'
-                  })
-              }
+            .flatMap(el => [
+              state[el.resId]
+                ? [
+                    el.resId,
+                    {
+                      ...state[el.resId],
+                      indirectConnections: state[el.resId].indirectConnections
+                        .filter(c => c.resId !== el.resId)
+                        .concat({
+                          resId: payload.note._id,
+                          resType: 'note'
+                        })
+                    }
+                  ]
+                : []
             ])
         ),
         ...Object.fromEntries(
           payload.connectionsToRemove
             .filter(c => c.resType === 'note')
-            .map(el => [
-              el.resId,
-              {
-                ...state[el.resId],
-                indirectConnections: state[el.resId].indirectConnections.filter(
-                  id => id !== payload.note._id
-                )
-              }
+            .flatMap(el => [
+              state[el.resId]
+                ? [
+                    el.resId,
+                    {
+                      ...state[el.resId],
+                      indirectConnections: state[
+                        el.resId
+                      ].indirectConnections.filter(
+                        id => id !== payload.note._id
+                      )
+                    }
+                  ]
+                : []
             ])
         )
       };

@@ -10,13 +10,12 @@ import { IconContext } from 'react-icons';
 import { BsBoxArrowInLeft, BsX } from 'react-icons/bs';
 import SpeedReader from './SpeedReader/';
 
-function Textpage({ quillNoteRefs }) {
+function Textpage({}) {
   const dispatch = useDispatch();
   const ui = useSelector(s => s.ui);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
 
-  const quillTextRef = React.useRef(null);
   const [boundingRect, setBoundingRect] = useState({
     top: 0,
     left: 0,
@@ -120,10 +119,7 @@ function Textpage({ quillNoteRefs }) {
           <SpeedReader key={activeTextPanel} />
         ) : (
           <div id='textMainCard' className='card'>
-            <TextMain
-              quillTextRef={quillTextRef}
-              quillNoteRefs={quillNoteRefs}
-            />
+            <TextMain />
           </div>
         )}
       </div>
@@ -131,7 +127,7 @@ function Textpage({ quillNoteRefs }) {
         className={`col-md-${ui.mdAnnotationsPanel} box pl-0 side-panel-container`}
         style={{ display: ui.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
       >
-        <Sidepanel quillTextRef={quillTextRef} quillNoteRefs={quillNoteRefs} />
+        <Sidepanel />
       </div>
     </div>
   );

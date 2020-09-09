@@ -13,8 +13,10 @@ import { ObjectKeepKeys, colorGenerator } from '../../../../../functions/main';
 ReactQuill.Quill.register(SectionBlot);
 
 // it does not push section updates into view.
-const TextMain = ({ quillTextRef, quillNoteRefs }) => {
+// 2do: TextSectionsBlots get somehow wrapped by another span holding the backgroundcolor. Problematic in case of mixed (multiple sectionIds) Blots, as the latest seems to set the backgroundcolor for both/all sections.
+const TextMain = ({}) => {
   const dispatch = useDispatch();
+  const quillTextRef = React.useRef();
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const categories = useSelector(s => s.categories);
@@ -78,21 +80,17 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
           const colorObject = Object.fromEntries(
             sectionIds.map(id => [id, sections[id].categoryIds])
           );
-
+          const rgbValue = colorGenerator(
+            colorObject,
+            [...committedSectionIds, ...tentativeSectionIds],
+            categories
+          );
           op.attributes.section = {
             ...op.attributes.section,
-            sectionIds,
+            sectionIds, //2do
             categoryIds,
-            borderColor: `rgb(${colorGenerator(
-              colorObject,
-              [...committedSectionIds, ...tentativeSectionIds],
-              categories
-            )})`,
-            backgroundColor: `rgba(${colorGenerator(
-              colorObject,
-              [...committedSectionIds, ...tentativeSectionIds],
-              categories
-            )},${0.1})`
+            borderColor: `rgb(${rgbValue})`,
+            backgroundColor: `rgba(${rgbValue},${0.1})`
           };
         }
       });
@@ -119,28 +117,42 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
         length
       );
       quillTextRef.current.editor.deleteText(begin, length);
-      const colorObject = Object.fromEntries(
-        [section._id].map(id => [id, sections[id].categoryIds])
-      ); // PROBLEM only one section is updated at the time!
+
       const updatedContents = {
         ops: [
           ...(begin > 0 ? [{ retain: begin }] : []),
           ...updatingContents.ops.map((op, index) => {
             if (!op.attributes) op.attributes = {};
+            const sectionIds =
+              op.attributes.section && op.attributes.section.sectionIds
+                ? [
+                    ...new Set([
+                      ...op.attributes.section.sectionIds.split(','),
+                      section._id
+                    ])
+                  ]
+                : [section._id];
+            const categoryIds = sectionIds
+              .filter(id => sections[id])
+              .flatMap(id => sections[id].categoryIds);
+            const colorObject = Object.fromEntries(
+              sectionIds
+                .filter(id => sections[id])
+                .map(id => [id, sections[id].categoryIds])
+            ); // PROBLEM only one section is updated at the time! //2do important
+            const rgbValue = colorGenerator(
+              colorObject,
+              [...committedSectionIds, ...tentativeSectionIds],
+              categories
+            );
             op.attributes.section = {
               textId: activeTextPanel,
-              sectionIds: [section._id],
-              categoryIds: section.categoryIds,
-              borderColor: `rgb(${colorGenerator(
-                colorObject,
-                [...committedSectionIds, ...tentativeSectionIds],
-                categories
-              )})`,
-              backgroundColor: `rgba(${colorGenerator(
-                colorObject,
-                [...committedSectionIds, ...tentativeSectionIds],
-                categories
-              )},${activeSectionIds.includes(section._id) ? 0.8 : 0.1})`,
+              sectionIds: sectionIds,
+              categoryIds: categoryIds,
+              borderColor: `rgb(${rgbValue})`,
+              backgroundColor: `rgba(${rgbValue},${
+                activeSectionIds.includes(section._id) ? 0.8 : 0.1
+              })`,
               ...(index === 0 && { first: true }),
               ...(index === updatingContents.ops.length - 1 && { last: true })
             };
@@ -250,6 +262,8 @@ const TextMain = ({ quillTextRef, quillNoteRefs }) => {
         dispatch(
           setCommittedSections(e.target.dataset.sectionIds.split(','), false)
         );
+      } else {
+        dispatch(setTentativeSections([], false));
       }
     };
 

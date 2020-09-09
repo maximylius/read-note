@@ -29,7 +29,18 @@ const selectionChangeHandler = (range, source, editorInstance, g) => {
   if (range.length === 0) {
     console.log(editor);
     const scroll = editor.scroll;
-    const scrollAtPos = scroll.path(range.index)[1][0];
+    const scrollAtPos =
+      scroll.path(range.index)[1] && scroll.path(range.index)[1][0];
+    if (!scrollAtPos) {
+      console.error(
+        'EARLY return ',
+        scrollAtPos,
+        scroll,
+        range.index,
+        scroll.path(range.index)
+      );
+      return;
+    } // 2do: does this early return cause any harm? why is this: scroll.path(range.index)[1] sometimes undefined?
     const ops = editor.getContents().ops;
     console.log('scrollAtPos', scrollAtPos);
 

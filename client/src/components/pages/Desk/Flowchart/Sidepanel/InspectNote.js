@@ -5,7 +5,7 @@ import ReactQuill from 'react-quill';
 import { BsLink, BsToggleOn, BsX, BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadNotes } from '../../../../../store/actions';
 
-const InspectNote = ({ id, flowchartInstance }) => {
+const InspectNote = ({ id }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const note = useSelector(s => s.notes[id]);

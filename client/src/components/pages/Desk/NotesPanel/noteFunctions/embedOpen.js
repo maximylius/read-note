@@ -14,8 +14,8 @@ const isMentionResInfo = (op, resInfo) =>
     ? true
     : false;
 
-const embedOpen = (resInfo, g) => {
-  const { noteId, notes, quillNoteRef, deltaRef, dispatch } = g.current;
+const embedOpen = async (resInfo, g) => {
+  const { noteId, notes, quillNoteRef, deltaRef } = g.current;
 
   // 0 defining variables
   const resType = extractAtValueResType(resInfo),
@@ -216,9 +216,10 @@ const embedOpen = (resInfo, g) => {
       }
     }
   } else {
-    deltaToEmbed = returnDeltaToEmbed(resId, g);
+    deltaToEmbed = await returnDeltaToEmbed(resId, g);
+    console.log('returnDeltaToEmbed res:', deltaToEmbed);
     if (!deltaToEmbed) {
-      console.log('no data from promise', deltaToEmbed);
+      console.log('no deltaToEmbed from promise', deltaToEmbed);
       return;
     }
     // 2do: preprocess this delta

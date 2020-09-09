@@ -1,10 +1,9 @@
 /**
 
-// 2dos: fix opening close behaviour
+// add categories
 
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
 // embed color should just be defined by deepness of nest.
-// check whether embed seperator could be simplified into purely resInfo 
 // preprocess delta doesnt seem to reopen last state?
 // put to state which notes in notepanel are visible at the time to force updates (when content is changed or when note is loaded)
 // keep on working here: closesEmebed function shall be able to handle bugged out embeds. 
@@ -28,7 +27,14 @@ DELETE (MANY)    0         0         1
 9     test if headers (for auth and getUserId) work
 9     PUT / DELETE save res to user / project.
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
-@RECENT_BUGS :section item gets positioned badly. bug is recently introduced.
+@RECENT_BUGS 
+// clicking in side note: errror: clicked at Position scroll 0 - (in add-bubble)
+// making a connection within recently created note causes error 
+// sometimes mention does not get saved.
+// closing embed in side-note did cause an error (maybe because of clicking to fast)
+// closing embed in side-note via navClick didnt work.
+// when closing embed in note-panel that is open in side-panel it gets closed in side-panel first.
+// section item gets positioned badly. bug is recently introduced.
 // dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack.
 //user object gets spammed with more and more instances of same resIds
 @OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections

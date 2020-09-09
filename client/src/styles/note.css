@@ -149,7 +149,12 @@
   top: 0;
   height: 100%;
   width: --height;
+}
+.note-panel .note-bg-container {
   width: calc(100% - 14px);
+}
+.side-note .note-bg-container {
+  width: calc(100% - 0px);
 }
 .note-bg-outer {
   position: absolute;
@@ -173,16 +178,20 @@
 .note-bg-inner .navline {
   position: absolute;
   top: -14px;
-  right: -4px;
   width: 20px;
   height: calc(100% + 28px);
   z-index: 20;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   border-bottom: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 5rem 0 0 5rem;
-  background-color: #f00;
   background-color: var(--note-bg-color);
   cursor: zoom-out;
+}
+.note-panel .note-bg-inner .navline {
+  right: -4px;
+}
+.side-note .note-bg-inner .navline {
+  right: -18px;
 }
 .main-navline {
   position: absolute;
@@ -295,10 +304,16 @@ button.navline-button:hover {
 /* EDITOR CONTENT */
 .embedSeperator {
   background-color: transparent;
-  /* border: none; */
+  border: none;
   /* padding: 0;
   margin: 0; */
   z-index: 0;
+}
+.embedSeperator.case-begin {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+.embedSeperator.case-end {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 li.escape-tag::before {
   color: transparent !important;

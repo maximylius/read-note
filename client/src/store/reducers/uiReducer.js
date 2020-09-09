@@ -115,6 +115,10 @@ const initialState = {
   mdAnnotationsPanelLast: 4, // I panelReducer
   mdNotesPanel: 4, // I panelReducer
   mdNotesPanelLast: 4, // I panelReducer
+  mdFlowchartPanel: 8, // I panelReducer
+  mdInspectPanel: 4, // I panelReducer
+  flowSectionView: false, // I panelReducer
+  flowChartOpen: false,
   welcomeOpen: false, // II modalReducer
   aboutOpen: false, // II modalReducer
   registerOpen: false, // II modalReducer
@@ -356,6 +360,11 @@ export default (state = initialState, action) => {
         )
       };
 
+    case types.TOGGLE_FLOW_SECTION_VIEW:
+      return {
+        ...state,
+        flowSectionView: !state.flowSectionView
+      };
     case types.SET_CURRENT_PATHNAME:
       return {
         ...state,

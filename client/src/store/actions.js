@@ -882,6 +882,7 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
       )
     );
 
+  console.log('done fetching note, returning promise of:', notesById);
   return Promise.resolve(notesById);
 };
 
@@ -1547,7 +1548,7 @@ export const addNote = ({
     ...Object.keys(notes).map(id => notes[id].title),
     ...Object.keys(sections).map(id => sections[id].title)
   ];
-  let sep = isAnnotation ? '-' : isReply ? '.' : ' ';
+  let sep = isReply ? '.' : isAnnotation ? '-' : ' ';
   let i = 2;
   while (allNoteTitles.includes(note.title)) {
     note.title = `${titlePlaceholder}${sep}${i}`;
@@ -1683,3 +1684,7 @@ export const toggleShowNoteReplies = noteId => (dispatch, getState) => {
     payload: { noteId }
   });
 };
+
+export const toggleFlowSectionView = () => (dispatch)=> {
+  dispatch({type:types.TOGGLE_FLOW_SECTION_VIEW  })
+}

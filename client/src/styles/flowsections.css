@@ -1,0 +1,17 @@
+.flow-section-container {
+  position: relative;
+  /* background-color: rgba(255, 166, 0, 0.993); */
+  height: 100%;
+  width: 100%;
+}
+.flow-section-item {
+  background-color: rgba(255, 68, 0, 0.212);
+  position: absolute;
+  width: 20px;
+  border-radius: 1rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.flow-section-item:hover {
+  border: 2px solid rgba(0, 0, 0, 0.377);
+}

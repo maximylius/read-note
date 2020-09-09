@@ -12,7 +12,7 @@ import InspectNote from './InspectNote';
 import { Search } from './Search';
 import FilterOptions from './FilterOptions';
 
-const FlowchartSidepanel = ({ flowchartInstance }) => {
+const FlowchartSidepanel = () => {
   const dispatch = useDispatch();
   const inspectElements = useSelector(s => s.flowchart.inspectElements);
   const closeSidepanel = () => {
@@ -20,9 +20,9 @@ const FlowchartSidepanel = ({ flowchartInstance }) => {
   };
   const closeFlowchart = () => {
     dispatch(toggleFlowchart());
-    setTimeout(() => {
-      flowchartInstance.fitView();
-    }, 30);
+    // setTimeout(() => {
+    //   flowchartInstance.fitView();
+    // }, 30);
   };
   console.log(inspectElements);
   return (
@@ -45,11 +45,11 @@ const FlowchartSidepanel = ({ flowchartInstance }) => {
       {inspectElements.map(el => (
         <div key={el.id} className='flowchartInspectElContainer'>
           {el.type === 'text' ? (
-            <InspectText id={el.id} flowchartInstance={flowchartInstance} />
+            <InspectText id={el.id} />
           ) : el.type === 'section' ? (
-            <InspectSection id={el.id} flowchartInstance={flowchartInstance} />
+            <InspectSection id={el.id} />
           ) : el.type === 'note' ? (
-            <InspectNote id={el.id} flowchartInstance={flowchartInstance} />
+            <InspectNote id={el.id} />
           ) : (
             <></>
           )}

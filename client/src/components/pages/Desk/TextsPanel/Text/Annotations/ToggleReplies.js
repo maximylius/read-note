@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useSelector } from 'react';
 import { useDispatch } from 'react-redux';
 import { BsChevronUp, BsChevronDown } from 'react-icons/bs';
 import { toggleShowNoteReplies } from '../../../../../../store/actions';
