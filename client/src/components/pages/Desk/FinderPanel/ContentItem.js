@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 function ContentItem({ title, onClickAction }) {
-  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
-  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
+  const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
   return (
     <div onClick={onClickAction}>
       <span className='btn btn-secondary btn-block '>

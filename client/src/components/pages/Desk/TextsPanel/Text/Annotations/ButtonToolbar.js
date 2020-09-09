@@ -25,7 +25,7 @@ const ButtonToolbar = () => {
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const displayTextMeta = useSelector(s => s.textsPanel.displayTextMeta);
   const expandAll = useSelector(s => s.textsPanel.expandAll);
-  const flowSectionView = useSelector(s => s.ui.flowSectionView);
+  const flowSectionView = useSelector(s => s.panel.flowSectionView);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   const toggleAnnotationsPanel = useCallback(

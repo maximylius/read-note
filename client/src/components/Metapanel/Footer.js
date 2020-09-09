@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 function Footer() {
   const percentageEditingArea = useSelector(
     s =>
-      s.ui.mdNotesPanel / 12 +
-      ((s.ui.mdTextsPanel / 12) * s.ui.mdAnnotationsPanel) / 12
+      s.panel.mdNotesPanel / 12 +
+      ((s.panel.mdTextsPanel / 12) * s.panel.mdAnnotationsPanel) / 12
   );
   return (
     <div className='row static footer my-0 py-0'>

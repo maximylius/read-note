@@ -11,10 +11,14 @@ import authReducer from './reducers/authReducer';
 import userReducer from './reducers/userReducer';
 import categoriesReducer from './reducers/categoriesReducer';
 import flowchartReducer from './reducers/flowchartReducer';
+import panelReducer from './reducers/panelReducer';
+import modalReducer from './reducers/modalReducer';
 
 export default combineReducers({
   auth: authReducer,
   ui: uiReducer,
+  panel: panelReducer,
+  modal: modalReducer,
   spareIds: spareIdsReducer,
   textsPanel: textsPanelReducer,
   notesPanel: notesPanelReducer,

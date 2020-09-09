@@ -8,11 +8,11 @@ import SignIn from './SignIn';
 import Logout from './Logout';
 
 const MainPage = () => {
-  const welcomeOpen = useSelector(s => s.ui.welcomeOpen);
-  const aboutOpen = useSelector(s => s.ui.aboutOpen);
-  const registerOpen = useSelector(s => s.ui.registerOpen);
-  const signInOpen = useSelector(s => s.ui.signInOpen);
-  const logoutOpen = useSelector(s => s.ui.logoutOpen);
+  const welcomeOpen = useSelector(s => s.modal.welcomeOpen);
+  const aboutOpen = useSelector(s => s.modal.aboutOpen);
+  const registerOpen = useSelector(s => s.modal.registerOpen);
+  const signInOpen = useSelector(s => s.modal.signInOpen);
+  const logoutOpen = useSelector(s => s.modal.logoutOpen);
 
   return (
     <>

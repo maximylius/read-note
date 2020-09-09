@@ -14,7 +14,7 @@ import {
 function MyContents() {
   const dispatch = useDispatch();
   const history = useHistory();
-  const { user, notes, texts, projects, ui } = useSelector(s => s);
+  const { user, notes, texts, projects, panel } = useSelector(s => s);
   const currentProject = projects[user.projectIds[0]];
 
   const textsToDisplay = currentProject
@@ -80,7 +80,7 @@ function MyContents() {
                 <input
                   type='checkbox'
                   aria-label='keep finder open'
-                  checked={ui.keepFinderOpen}
+                  checked={panel.keepFinderOpen}
                   onChange={keepFinderOpenClickHandler}
                 ></input>
               </span>

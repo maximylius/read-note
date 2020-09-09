@@ -438,7 +438,7 @@ export const toggleKeepFinderOpen = () => dispatch => {
 };
 
 export const setCurrentPathname = pathname => (dispatch, getState) => {
-  if (getState().ui.currentPahtname === 'pathname') return;
+  if (getState().modal.currentPahtname === 'pathname') return;
   dispatch({
     type: types.SET_CURRENT_PATHNAME,
     payload: { pathname }
@@ -1678,13 +1678,13 @@ export const submitNoteVote = (noteId, bill) => (dispatch, getState) => {
 
 export const toggleShowNoteReplies = noteId => (dispatch, getState) => {
   dispatch({
-    type: getState().ui.openReplyNotes.includes(noteId)
+    type: getState().textsPanel.openReplyNotes.includes(noteId)
       ? types.HIDE_SIDENOTE_REPLIES
       : types.SHOW_SIDENOTE_REPLIES,
     payload: { noteId }
   });
 };
 
-export const toggleFlowSectionView = () => (dispatch)=> {
-  dispatch({type:types.TOGGLE_FLOW_SECTION_VIEW  })
-}
+export const toggleFlowSectionView = () => dispatch => {
+  dispatch({ type: types.TOGGLE_FLOW_SECTION_VIEW });
+};

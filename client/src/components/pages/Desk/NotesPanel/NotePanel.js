@@ -39,7 +39,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const notes = useSelector(s => s.notes);
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
-  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
+  const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
   const note = notes[noteId];
   const [quillValue, setQuillValue] = useState(
     note.delta && note.delta.ops

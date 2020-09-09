@@ -7,8 +7,8 @@ import SliderButton from '../../../Metapanel/SliderButton';
 
 const FinderPanel = () => {
   const dispatch = useDispatch();
-  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
-  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
+  const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
   const onClickHandler = () => dispatch(collapseFinderPanel());
   // 2do: position arrow
   return (

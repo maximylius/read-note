@@ -14,7 +14,7 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
   const notes = useSelector(s => s.notes);
   const openNotes = useSelector(s => s.notesPanel.openNotes);
   const activeNote = useSelector(s => s.notesPanel.activeNote);
-  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
 
   const [notesToRender, setNotesToRender] = useState(openNotes);
   // const notesInSync = (expandAll

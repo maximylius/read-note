@@ -11,7 +11,7 @@ const Sidepanel = ({}) => {
   const dispatch = useDispatch();
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const displayTextMeta = useSelector(s => s.textsPanel.displayTextMeta);
-  const flowSectionView = useSelector(s => s.ui.flowSectionView);
+  const flowSectionView = useSelector(s => s.panel.flowSectionView);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
   const addSectionClickHandler = () => {
@@ -29,11 +29,6 @@ const Sidepanel = ({}) => {
         end: end
       })
     );
-
-    console.log('speedReaderDetails.index', speedReaderDetails.index);
-    console.log('speedReaderDetails.lastIndex', speedReaderDetails.lastIndex);
-    console.log('speedReaderDetails.begin', speedReaderDetails.begin);
-    console.log('begin', begin, 'end', end);
   };
 
   return (

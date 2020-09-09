@@ -11,12 +11,31 @@ const initialState = {
   holdControl: false, // remove
   progress: 0, // shall be moved to text? as an array [0%-12%, 30%-55%, 87%-100%]
   displayTextMeta: false,
-  speedReader: { isOpenFor: [], words: [], byId: {} }
+  speedReader: { isOpenFor: [], words: [], byId: {} }, // move?
+  openReplyNotes: []
 };
 
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.SHOW_SIDENOTE_REPLIES:
+      return {
+        ...state,
+        openReplyNotes: state.openReplyNotes.concat(payload.noteId)
+      };
+    case types.HIDE_SIDENOTE_REPLIES:
+      return {
+        ...state,
+        openReplyNotes: state.openReplyNotes.filter(id => id !== payload.noteId)
+      };
+    case types.ADD_NEW_NOTE:
+      return {
+        ...state,
+        openReplyNotes: state.openReplyNotes.concat([
+          payload.note._id,
+          ...(payload.note.isReply ? [payload.note.isReply.noteId] : [])
+        ])
+      };
     case types.LOAD_TEXTS:
       return {
         ...state,

@@ -12,7 +12,7 @@ import SpeedReader from './SpeedReader/';
 
 function Textpage({}) {
   const dispatch = useDispatch();
-  const ui = useSelector(s => s.ui);
+  const panel = useSelector(s => s.panel);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
 
@@ -62,13 +62,13 @@ function Textpage({}) {
       right: parentBounds.right
     });
     return () => {};
-  }, [ui]);
+  }, [panel]);
 
   return (
     <div
       id='textContentFlexGrow'
       className='row flex-row growContent text-and-side-panel-container'
-      {...(ui.mdAnnotationsPanel === 0 && {
+      {...(panel.mdAnnotationsPanel === 0 && {
         onMouseMove: mouseMoveHandler
       })}
       onMouseLeave={onMouseLeaveHandler}
@@ -102,7 +102,7 @@ function Textpage({}) {
             className='btn btn-lg btn-light mt-2'
             onClick={toggleAnnotationsPanel}
             style={{
-              display: ui.mdAnnotationsPanel > 0 ? 'none' : 'block'
+              display: panel.mdAnnotationsPanel > 0 ? 'none' : 'block'
             }}
           >
             <IconContext.Provider value={{ size: '1.5rem' }}>
@@ -112,7 +112,7 @@ function Textpage({}) {
         </div>
       </div>
 
-      <div className={`col-md-${12 - ui.mdAnnotationsPanel} box`}>
+      <div className={`col-md-${12 - panel.mdAnnotationsPanel} box`}>
         {speedReader.isOpenFor.includes(activeTextPanel) ? (
           // j
           // <></> //
@@ -124,8 +124,8 @@ function Textpage({}) {
         )}
       </div>
       <div
-        className={`col-md-${ui.mdAnnotationsPanel} box pl-0 side-panel-container`}
-        style={{ display: ui.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
+        className={`col-md-${panel.mdAnnotationsPanel} box pl-0 side-panel-container`}
+        style={{ display: panel.mdAnnotationsPanel > 0 ? 'flex' : 'none' }}
       >
         <Sidepanel />
       </div>

@@ -8,7 +8,9 @@ import ToggleReplies from './ToggleReplies';
 const SideNote = ({ noteId, triggerRemeasure }) => {
   // const dispatch = useDispatch();
   const replies = useSelector(s => s.notes[noteId].replies);
-  const showReplies = useSelector(s => s.ui.openReplyNotes.includes(noteId));
+  const showReplies = useSelector(s =>
+    s.textsPanel.openReplyNotes.includes(noteId)
+  );
 
   // const [mouseoverSideNote, setMouseoverSideNote] = useState(false);
   // const mouseEnterHandler = () => setMouseoverSideNote(true);

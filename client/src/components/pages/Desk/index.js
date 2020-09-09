@@ -10,12 +10,12 @@ import Flowchart from './Flowchart';
 const Desk = () => {
   const openNotes = useSelector(s => s.notesPanel.openNotes);
   const addNotesTo = useSelector(s => s.notesPanel.addNotesTo);
-  const mdFinderPanel = useSelector(s => s.ui.mdFinderPanel);
-  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
-  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
-  const mdFlowchartPanel = useSelector(s => s.ui.mdFlowchartPanel);
-  const mdInspectPanel = useSelector(s => s.ui.mdInspectPanel);
-  const flowChartOpen = useSelector(s => s.ui.flowChartOpen);
+  const mdFinderPanel = useSelector(s => s.panel.mdFinderPanel);
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
+  const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
+  const mdFlowchartPanel = useSelector(s => s.panel.mdFlowchartPanel);
+  const mdInspectPanel = useSelector(s => s.panel.mdInspectPanel);
+  const flowChartOpen = useSelector(s => s.modal.flowChartOpen);
 
   const [refRenderTrigger, setRefRenderTrigger] = React.useState(null);
   const testRef = React.useRef();

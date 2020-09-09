@@ -23,14 +23,14 @@ const Navbar = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(s => s.auth.isAuthenticated);
-  // const welcomeOpen = useSelector(s => s.ui.welcomeOpen);
-  const aboutOpen = useSelector(s => s.ui.aboutOpen);
-  const registerOpen = useSelector(s => s.ui.registerOpen);
-  const signInOpen = useSelector(s => s.ui.signInOpen);
-  const logoutOpen = useSelector(s => s.ui.logoutOpen);
+  // const welcomeOpen = useSelector(s => s.modal.welcomeOpen);
+  const aboutOpen = useSelector(s => s.modal.aboutOpen);
+  const registerOpen = useSelector(s => s.modal.registerOpen);
+  const signInOpen = useSelector(s => s.modal.signInOpen);
+  const logoutOpen = useSelector(s => s.modal.logoutOpen);
   const projects = useSelector(s => s.projects);
   const deskOpen = !aboutOpen && !registerOpen && !signInOpen && !logoutOpen;
-  const lastDeskPathname = useSelector(s => s.ui.lastDeskPathname);
+  const lastDeskPathname = useSelector(s => s.modal.lastDeskPathname);
   const username = useSelector(s => s.user.username);
 
   // 2do: make mini when mouse is not over.

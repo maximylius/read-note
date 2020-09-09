@@ -1,5 +1,5 @@
 /**
-
+// improve flowchart layout: add isReply "class".
 // add categories
 
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 

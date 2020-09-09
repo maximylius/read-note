@@ -12,8 +12,8 @@ import SliderButton from '../../../Metapanel/SliderButton';
 
 function TextsPanel({ quillNoteRefs }) {
   const dispatch = useDispatch();
-  const mdNotesPanel = useSelector(s => s.ui.mdNotesPanel);
-  const mdFinderPanel = useSelector(s => s.ui.mdFinderPanel);
+  const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
+  const mdFinderPanel = useSelector(s => s.panel.mdFinderPanel);
   const texts = useSelector(s => s.texts);
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
 

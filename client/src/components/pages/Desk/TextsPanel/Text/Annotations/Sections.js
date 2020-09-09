@@ -30,7 +30,7 @@ const Sections = ({}) => {
   const committedSectionIds = useSelector(
     s => s.textsPanel.committedSectionIds
   );
-  const mdTextsPanel = useSelector(s => s.ui.mdTextsPanel);
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
   const mdTextsPanelRef = useRef(mdTextsPanel);
   const bestPositionsRef = useRef({});
   const [finalPositions, setFinalPositions] = useState({});
