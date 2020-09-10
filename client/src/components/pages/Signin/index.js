@@ -1,10 +1,12 @@
-import React, { useState } from './node_modules/react';
-import { useHistory } from './node_modules/react-router-dom';
-import { useDispatch } from './node_modules/react-redux';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addAlert, registerUser, closeAllModals } from '../../../store/actions';
+import { BsXCircle } from 'react-icons/bs';
 import { addAlert, loginUser, closeAllModals } from '../../../store/actions';
 import { BsXCircle } from './node_modules/react-icons/bs';
 
-function Signin() {
+const Signin = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
@@ -86,6 +88,6 @@ function Signin() {
       </div>
     </>
   );
-}
+};
 
 export default Signin;

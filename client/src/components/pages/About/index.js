@@ -5,7 +5,7 @@ import { closeAllModals } from '../../../store/actions';
 import { BsXCircle } from 'react-icons/bs';
 import SideNote from '../Desk/TextsPanel/Text/Annotations/SideNote';
 
-function About() {
+const About = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   // const notes = useSelector(s => s.notes);
@@ -45,6 +45,6 @@ function About() {
       </div>
     </>
   );
-}
+};
 
 export default About;

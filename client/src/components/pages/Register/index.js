@@ -6,7 +6,7 @@ import { BsXCircle } from 'react-icons/bs';
 
 const emailRegExp = /\S+@\S+\.\S+/;
 
-function Register() {
+const Register = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
@@ -147,6 +147,6 @@ function Register() {
       </div>
     </>
   );
-}
+};
 
 export default Register;

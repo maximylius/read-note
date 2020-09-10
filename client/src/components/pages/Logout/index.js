@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { closeAllModals } from '../../../store/actions';
 import { BsXCircle } from 'react-icons/bs';
 
-function Logout() {
+const Logout = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   return (
@@ -27,6 +27,6 @@ function Logout() {
       </div>
     </>
   );
-}
+};
 
 export default Logout;
