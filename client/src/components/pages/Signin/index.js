@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { addAlert, registerUser, closeAllModals } from '../../../store/actions';
 import { BsXCircle } from 'react-icons/bs';
 import { addAlert, loginUser, closeAllModals } from '../../../store/actions';
-import { BsXCircle } from './node_modules/react-icons/bs';
 
 const Signin = () => {
   const history = useHistory();
