@@ -10,7 +10,6 @@ app.use(express.json());
 
 // db config
 // if working offline: "mongoURI": "mongodb://127.0.0.1:27017/blocktext",
-// if online:  "mongoURI": "mongodb+srv://maximylius:maexiunmillion@blocktext-pvs0k.mongodb.net/test?retryWrites=true&w=majority",
 const db = config.get('mongoURI');
 
 mongoose
