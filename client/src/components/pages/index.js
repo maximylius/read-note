@@ -4,7 +4,7 @@ import Desk from './Desk';
 import Welcome from './Welcome';
 import About from './About';
 import Register from './Register';
-import SignIn from './SignIn';
+import Signin from './Signin';
 import Logout from './Logout';
 
 const MainPage = () => {
@@ -19,7 +19,7 @@ const MainPage = () => {
       {welcomeOpen && <Welcome />}
       {aboutOpen && <About />}
       {registerOpen && <Register />}
-      {signInOpen && <SignIn />}
+      {signInOpen && <Signin />}
       {logoutOpen && <Logout />}
       <Desk />
     </>
