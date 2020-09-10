@@ -1,18 +1,42 @@
 .flow-section-container {
   position: relative;
-  /* background-color: rgba(255, 166, 0, 0.993); */
-  height: 100%;
-  width: 100%;
+}
+.flow-section-text-box {
+  position: absolute;
+  width: calc(100% - 24px);
+  margin-left: 24px;
+  background-color: rgb(248, 248, 248);
+  border-top: 1px solid rgb(182, 182, 182);
+  border-bottom: 1px solid rgb(182, 182, 182);
+  border-right: 1px solid rgb(182, 182, 182);
+}
+.flow-section-text-box-polygon {
+  stroke: rgb(0, 0, 0, 0.125);
+  fill: rgb(255, 255, 255);
 }
 .flow-section-item {
-  background-color: rgba(255, 68, 0, 0.212);
   position: absolute;
   width: 20px;
   border-radius: 1rem;
-  border: 2px solid transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
   z-index: 100;
 }
 .flow-section-item:hover {
-  border: 2px solid rgba(0, 0, 0, 0.377);
+  border: 2px solid rgba(0, 0, 0, 0.5);
 }
+.flow-section-item-title {
+  margin: 6px;
+}
+/* .allCATEGORYCOLORS {
+  color: rgb(200, 255, 49);
+  color: rgb(255, 145, 55);
+  color: rgb(236, 142, 255);
+  color: rgb(255, 242, 121);
+  color: rgb(147, 255, 75);
+  color: rgb(234, 75, 255);
+  color: rgb(93, 160, 84);
+  color: rgb(89, 161, 255);
+  color: rgb(85, 255, 93);
+  color: rgb(250, 107, 107);
+} */

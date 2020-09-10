@@ -109,6 +109,7 @@ const TextMain = ({}) => {
 
   // useCallback(
   const paintSections = (sectionsToUpdate, activeSectionIds) => {
+    console.log('sectionsToUpdate', sectionsToUpdate);
     sectionsToUpdate.forEach(section => {
       const begin = section.begin;
       const length = section.end - section.begin;

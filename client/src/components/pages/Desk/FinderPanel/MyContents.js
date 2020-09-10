@@ -31,24 +31,6 @@ function MyContents() {
     <div className='row growContent'>
       <ul className='nav flex-column pl-4'>
         <div>
-          <p className='lead'>My Notes</p>
-          {notesToDisplay.map(id => (
-            <ContentItem
-              key={'noteitem' + id}
-              title={notes[id].title}
-              onClickAction={() => dispatch(openNote({ noteId: id, history }))}
-            />
-          ))}
-          <button
-            className='btn btn-secondary btn-block'
-            onClick={addNoteClickHandler}
-          >
-            <BsPlus /> new note
-          </button>
-          <hr style={{ backgroundColor: 'white' }} />
-        </div>
-
-        <div>
           <p className='lead'>My Texts</p>
           {textsToDisplay.map(id => (
             <ContentItem
@@ -64,6 +46,24 @@ function MyContents() {
             onClick={addTextClickHandler}
           >
             <BsPlus /> add text
+          </button>
+          <hr style={{ backgroundColor: 'white' }} />
+        </div>
+
+        <div>
+          <p className='lead'>My Notes</p>
+          {notesToDisplay.map(id => (
+            <ContentItem
+              key={'noteitem' + id}
+              title={notes[id].title}
+              onClickAction={() => dispatch(openNote({ noteId: id, history }))}
+            />
+          ))}
+          <button
+            className='btn btn-secondary btn-block'
+            onClick={addNoteClickHandler}
+          >
+            <BsPlus /> new note
           </button>
           <hr style={{ backgroundColor: 'white' }} />
         </div>

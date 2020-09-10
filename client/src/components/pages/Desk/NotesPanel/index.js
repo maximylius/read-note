@@ -63,24 +63,12 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
         <Nav />
         <div className='row growContent mx-0 notepanel-background'>
           {activeNote && notes[activeNote] && (
-            <div key={activeNote}>
-              <NotePanel noteId={activeNote} containerType='note-panel' />
-            </div>
+            <NotePanel
+              key={activeNote}
+              noteId={activeNote}
+              containerType='note-panel'
+            />
           )}
-          {/* {notesToRender.map(noteId => (
-            <div
-              style={{
-                display: noteId === activeNote ? 'block' : 'none'
-              }}
-              key={noteId}
-            >
-              <NotePanel
-                quillNoteRefs={quillNoteRefs}
-                setNoteRef={createSetNoteRef(noteId)}
-                noteId={noteId}
-              />
-            </div>
-          ))} */}
           {openNotes.length === 0 && <NotePlaceholder />}
         </div>
       </div>

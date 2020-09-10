@@ -28,6 +28,7 @@ import handleEditorChange from './noteFunctions/handleEditorChange';
 import onChangeHandler from './noteFunctions/onChangeHandler';
 import preProcessDelta from './noteFunctions/preProcessDelta';
 import selectionChangeHandler from './noteFunctions/selectionChangeHandler';
+import toolbar from './noteFunctions/toolbar';
 
 ReactQuill.Quill.register(BlotEmbedSeperator);
 const g = {}; // serves as a ref container for component state to be passed into outsourced functions in Order to simplify their input parameters
@@ -271,25 +272,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
         theme={'snow' || 'bubble'}
         modules={{
           //'#notesToolbar'
-          toolbar: [
-            [
-              { header: '1' },
-              { header: '2' },
-              // { header: '3' },
-              // { header: '4' }
-              { size: 'small' },
-              { size: 'large' }
-            ],
-            ['bold', 'italic', 'underline'],
-            [{ color: [] }, { background: [] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [
-              { indent: '-1' },
-              { indent: '+1' },
-              { align: 'center' },
-              { align: 'right' }
-            ]
-          ],
+          toolbar: toolbar,
           history: {
             delay: 1000,
             maxStack: 50

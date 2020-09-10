@@ -7,9 +7,9 @@ const FlowSectionInspect = ({ inspectFlowSection }) => {
   const textSectionsNodeList = quillTextPanel
     ? [...quillTextPanel.querySelectorAll('.TextPanelSectionBlot')]
     : [];
-  const div = textSectionsNodeList.filter(el =>
+  const div = textSectionsNodeList.find(el =>
     el.dataset.sectionIds.includes(inspectFlowSection)
-  )[0];
+  );
   let committedOffset = 200;
   if (div && scrollContainer) {
     committedOffset =

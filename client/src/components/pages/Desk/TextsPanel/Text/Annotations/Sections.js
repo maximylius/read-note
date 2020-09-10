@@ -21,7 +21,11 @@ const Sections = ({}) => {
       sectionsToDisplay.includes(connection.resId)
     );
     return arcsFromSection.length > 0
-      ? arcsFromSection.map(to => ({ from: id, to: to.resId }))
+      ? arcsFromSection.map(to => ({
+          from: id,
+          to: to.resId,
+          twoWay: sections[id].indirectConnections.includes(to.resId)
+        }))
       : [];
   });
   //   const sectionsToDisplay = useSelector(s => s.texts[s.textsPanel.activeTextPanel]  ? s.texts[s.textsPanel.activeTextPanel].sectionIds.filter(id => Object.keys( s.sections).includes(id) ) : [] ); //2do use this instead of the above to prevent unnecessary rerenders. add custom hook that performs deep equal check whether sections to display have changed.

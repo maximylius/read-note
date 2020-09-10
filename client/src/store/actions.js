@@ -868,11 +868,13 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
     textsPanel: { openTexts }
   } = getState();
 
-  const notesToGet = [],
+  const notesToGet = noteIds.flatMap(noteId =>
+      notes[noteId] && notes[noteId].title ? [] : [noteId]
+    ),
+    notesAlreadyLoaded = noteIds.flatMap(noteId =>
+      notes[noteId] && notes[noteId].title ? [] : [noteId]
+    ),
     notesById = {};
-  noteIds.forEach(noteId =>
-    notesToGet.push(...(notes[noteId] && notes[noteId].title ? [] : [noteId]))
-  );
 
   if (notesToGet.length > 0) {
     const notesRes = await axios.get(
@@ -886,7 +888,7 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
 
   dispatch({
     type: types.GET_NOTES,
-    payload: { notesById, open, setToActive }
+    payload: { notesById, open, setToActive, notesAlreadyLoaded }
   });
   if (history)
     noteIds.forEach(noteId =>
@@ -1342,9 +1344,9 @@ export const removeSectionCategory = (sectionId, categoryId) => (
     new RegExp(`${categories.byId[categoryId].title} \\d+$`).test(section.title)
   ) {
     newTitle = addPlaceholderTitle(
-      section.categoryIds.filter(id => id !== categoryId)[0]
+      section.categoryIds.find(id => id !== categoryId)
         ? categories.byId[
-            section.categoryIds.filter(id => id !== categoryId)[0]
+            section.categoryIds.find(id => id !== categoryId)
           ].title
         : 'not categorized',
       [...texts[section.textId].sectionIds.map(id => sections[id].title)]

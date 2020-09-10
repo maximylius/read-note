@@ -1,16 +1,47 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setInspectFlowSection,
+  setCommittedSections,
+  setTentativeSections
+} from '../../../../../../store/actions';
+import { colorGenerator } from '../../../../../../functions/main';
 
-const FlowSectionItem = () => {
+const FlowSectionItem = ({ sectionId, top, left, height, width }) => {
+  const dispatch = useDispatch();
+  const sectionTitle = useSelector(s => s.sections[sectionId].title);
+  const rgbValue = useSelector(s =>
+    colorGenerator(
+      { [sectionId]: s.sections[sectionId].categoryIds },
+      [],
+      s.categories
+    )
+  );
+
+  const clickHandler = () => {
+    dispatch(setCommittedSections([sectionId], false));
+    dispatch(setTentativeSections([sectionId], false));
+    dispatch(setInspectFlowSection(sectionId));
+  };
+  const mouseEnterHandler = () => {
+    dispatch(setTentativeSections([sectionId], false));
+  };
+
   return (
     <div
       className='flow-section-item'
       style={{
-        top: (el.begin - adjustTop) / shrinkFactor + 'px',
-        height: (el.end - el.begin) / shrinkFactor + 'px',
-        left: `calc(${((el.indentLevel / maxIndentLevel) * 100) / 2}% + 20px)`,
-        width: `calc(${((1 / maxIndentLevel) * 100 * 1) / 3}%)`
+        top,
+        left,
+        height,
+        width,
+        backgroundColor: `rgb(${rgbValue})`
       }}
-    ></div>
+      onClick={clickHandler}
+      onMouseEnter={mouseEnterHandler}
+    >
+      <span className='flow-section-item-title'>{sectionTitle}</span>
+    </div>
   );
 };
 

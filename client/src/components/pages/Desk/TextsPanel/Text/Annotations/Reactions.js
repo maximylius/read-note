@@ -31,7 +31,7 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
     s => (s.notes[noteId] && s.notes[noteId].votes) || []
   );
   const voteAggregate = votes.reduce((a, b) => a + b.bill, 0); //2do move this task to server backend
-  const currentVote = votes.filter(vote => vote.userId === userId)[0];
+  const currentVote = votes.find(vote => vote.userId === userId);
 
   const toggleFavourite = () => {
     if (!userId) {

@@ -13,7 +13,7 @@ const calcAllFinalPositions = (sectionsToDisplay, bestPositions) => {
 
   const finalPositions = {};
   sectionsToDisplay.forEach((id, index) => {
-    // const sectionNode = sectionsNodeList.filter(el => el.id.includes(id))[0];
+    // const sectionNode = sectionsNodeList.find(el => el.id.includes(id));
     // console.log(
     //   'sectionNode',
     //   sectionNode && sectionNode.getBoundingClientRect()

@@ -22,6 +22,9 @@ export default (state = initialState, action) => {
           ? [
               ...new Set([
                 ...state.openNotes,
+                ...(payload.notesAlreadyLoaded
+                  ? payload.notesAlreadyLoaded
+                  : []),
                 ...Object.keys(payload.notesById)
               ])
             ]

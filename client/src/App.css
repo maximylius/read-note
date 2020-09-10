@@ -240,11 +240,10 @@ button.closeAlertElement {
   }
 }
 
-/* 
-.QuillEditorAnnotation {
-  cursor: pointer;
+#textMainCard,
+#textMainCard .card-body {
+  border-right: none;
 }
- */
 .TextPanelSectionBlot {
   cursor: alias;
 }

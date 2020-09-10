@@ -17,7 +17,7 @@ const calcBestPositions = sectionsToDisplay => {
     0;
 
   const bestPositions = {};
-  sectionsToDisplay.forEach(id => {
+  sectionsToDisplay.forEach((id, index) => {
     const firstIndex = textSectionsNodeList.findIndex(el =>
       el.dataset.sectionIds.includes(id)
     );
@@ -27,12 +27,16 @@ const calcBestPositions = sectionsToDisplay => {
       [...textSectionsNodeList]
         .reverse()
         .findIndex(el => el.dataset.sectionIds.includes(id));
-
+    const lastId = sectionsToDisplay[index - 1];
     bestPositions[id] =
       firstIndex < 0
         ? {
-            top_text: 0,
-            bottom_text: 0
+            top_text: bestPositions[lastId]
+              ? bestPositions[lastId].top_text + 100
+              : 80,
+            bottom_text: bestPositions[lastId]
+              ? bestPositions[lastId].bottom_text + 100
+              : 120
           }
         : {
             top_text:
@@ -51,15 +55,15 @@ const calcBestPositions = sectionsToDisplay => {
     bestPositions[id] = {
       ...bestPositions[id],
       height_section:
-        (sectionNode && sectionNode.getBoundingClientRect().height) || 40,
+        (sectionNode && sectionNode.getBoundingClientRect().height) || 70,
       bottom_section:
         (sectionNode &&
           sectionNode.getBoundingClientRect().bottom - adjustTop) ||
-        bestPositions[id].top + 40,
+        bestPositions[id].top + 70,
       right_section:
-        (sectionNode && sectionNode.getBoundingClientRect().right) || 800,
+        (sectionNode && sectionNode.getBoundingClientRect().right) || 900,
       left_section:
-        (sectionNode && sectionNode.getBoundingClientRect().left) || 100
+        (sectionNode && sectionNode.getBoundingClientRect().left) || 550
     };
   });
   console.log('bestPositions', bestPositions);

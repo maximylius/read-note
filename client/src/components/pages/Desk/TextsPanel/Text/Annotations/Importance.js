@@ -25,7 +25,7 @@ const Importance = ({ sectionId, preview }) => {
   const personalImportance = importance.some(el => el.userId === userId);
   const personalScore =
     (personalImportance || 0) &&
-    importance.filter(el => el.userId === userId)[0].score;
+    importance.find(el => el.userId === userId).score;
   const importanceScore = importance.reduce((a, b) => a + b.score, 0);
   // const [tentativeScore, setTentativeScore] = useState(importanceScore);
   // const [mouseIsOver, setMouseIsOver] = useState(false);

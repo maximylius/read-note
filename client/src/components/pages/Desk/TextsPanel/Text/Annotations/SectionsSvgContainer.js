@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { colorGenerator } from '../../../../../../functions/main';
 import ConnectingArrow from './ConnectingArrow';
 import ParagraphConnector from './ParagraphConnector';
+import FlowSectionBox from './FlowSectionBox';
 
 /**
  * point A (xA, yA)
@@ -15,7 +16,7 @@ import ParagraphConnector from './ParagraphConnector';
  * MAKE SURE TO DRAW ARC ONLY ONCE
  */
 
-const SectionsSvgContainer = ({ arcsToDisplay, finalPositions }) => {
+const SectionsSvgContainer = ({ arcsToDisplay, finalPositions, textBox }) => {
   const categories = useSelector(s => s.categories);
   const sections = useSelector(s => s.sections);
   const committedSectionIds = useSelector(
@@ -62,18 +63,36 @@ const SectionsSvgContainer = ({ arcsToDisplay, finalPositions }) => {
       <defs>
         <marker
           id={'arrowhead'}
-          viewBox='0 0 40 40'
-          orient='180'
-          strokeWidth='10'
+          viewBox='0 0 30 30'
+          orient='110'
+          strokeWidth='1'
+          markerWidth='15'
+          markerHeight='15'
+          refX='20'
+          refY='13'
+        >
+          <path d={`M 5 8 L 25 15 L 5 22 z`} fill='black' stroke='black' />
+        </marker>
+        <marker
+          id={'arrowhead-active'}
+          viewBox='0 0 30 30'
+          orient='110'
+          strokeWidth='1'
           markerWidth='10'
           markerHeight='10'
-          refX='0'
-          refY='5'
+          refX='20'
+          refY='13'
         >
-          <path d={`M 0 0 L 10 5 L 0 10 z`} fill='red' stroke='pink' />
+          <path
+            d={`M 5 8 L 25 15 L 5 22 z`}
+            fill='rgb(5, 225, 5)'
+            stroke='rgb(5, 225, 5)'
+          />
         </marker>
       </defs>
-
+      {textBox && (
+        <FlowSectionBox textBox={textBox} containerLeft={containerLeft} />
+      )}
       {Object.keys(finalPositions).map(id => (
         <ParagraphConnector
           key={`ParagraphConnector${id}`}
@@ -96,9 +115,10 @@ const SectionsSvgContainer = ({ arcsToDisplay, finalPositions }) => {
         <ConnectingArrow
           key={`arc_${arc.from}_${arc.to}`}
           id={`arc_${arc.from}_${arc.to}`}
+          twoWay={!!arc.twoWay}
           startX={finalPositions[arc.from].right_section - 1 - containerLeft}
           startY={finalPositions[arc.from].top_section + 20}
-          endX={finalPositions[arc.to].right_section - 1 - containerLeft}
+          endX={finalPositions[arc.to].right_section + 4 - containerLeft}
           endY={finalPositions[arc.to].top_section + 20}
           active={
             committedSectionIds.includes(arc.from) ||

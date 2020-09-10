@@ -1,6 +1,9 @@
 /**
 // finish flowSections: add titles. align correctly. add connecting arrows.
+// fix desk nav link click
 // add categories
+// push
+// host
 
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
 // embed color should just be defined by deepness of nest.

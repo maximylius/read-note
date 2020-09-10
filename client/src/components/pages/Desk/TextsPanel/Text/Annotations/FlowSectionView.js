@@ -4,7 +4,11 @@ import FlowSectionInspect from './FlowSectionInspect';
 import { useSelector } from 'react-redux';
 
 const FlowSectionView = ({}) => {
-  const inspectFlowSection = useSelector(s => s.inspect.inspectFlowSection);
+  // const inspectFlowSection = useSelector(s => s.inspect.inspectFlowSection);
+  const inspectFlowSection = useSelector(
+    s => s.textsPanel.committedSectionIds[0]
+  );
+
   // 2do: make row with columns
   return (
     <div className='row flex-row '>

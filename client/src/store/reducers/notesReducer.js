@@ -65,9 +65,9 @@ export default (state = initialState, action) => {
       };
     case types.SUBMIT_NOTE_VOTE:
       // remove it that same vote has been already given
-      const lastVote = state[payload.noteId].votes.filter(
+      const lastVote = state[payload.noteId].votes.find(
         vote => vote.userId === payload.vote.userId
-      )[0];
+      );
 
       return {
         ...state,

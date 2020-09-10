@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import MyContents from './MyContents';
-import Search from './Search';
 import { collapseFinderPanel } from '../../../../store/actions';
 import SliderButton from '../../../Metapanel/SliderButton';
 
@@ -13,8 +12,7 @@ const FinderPanel = () => {
   // 2do: position arrow
   return (
     <div className='row grow flex-row mx-0 px-0 text-white bg-secondary'>
-      <div className='col'>
-        <Search />
+      <div className='col box'>
         <MyContents />
       </div>
 

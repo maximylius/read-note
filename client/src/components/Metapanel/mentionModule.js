@@ -31,22 +31,28 @@ export const atValuesCreator = (notesById, textsById, sectionsById) => {
     .map(id => {
       return {
         id: `text=${id}_isOpen=false`,
-        value: textsById[id].title + '📖'
+        value:
+          (textsById[id] ? textsById[id].title : 'text not available') + '📖'
       };
     })
     .concat(
       Object.keys(notesById).map(id => {
         return {
           id: `note=${id}_isOpen=false`,
-          value: notesById[id].title + '📌'
+          value:
+            (notesById[id] ? notesById[id].title : 'note not available') + '📌'
         };
       })
     )
     .concat(
       Object.keys(sectionsById).map(id => {
-        const textId = sectionsById[id].textId;
-        const textTitle = textsById[textId].title;
-        const sectionTitle = sectionsById[id].title;
+        const textId = sectionsById[id] ? sectionsById[id].textId : null;
+        const textTitle = textsById[textId]
+          ? textsById[textId].title
+          : 'text n.a.';
+        const sectionTitle = sectionsById[id]
+          ? sectionsById[id].title
+          : 'section n.a.';
 
         let value =
           textTitle +
