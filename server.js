@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const config = require('config');
+const path = require('path');
 
 const app = express();
 
@@ -27,6 +28,16 @@ app.use('/api/notes', require('./routes/api/notes'));
 app.use('/api/texts', require('./routes/api/texts'));
 app.use('/api/sections', require('./routes/api/sections'));
 app.use('/api/common', require('./routes/api/common'));
+
+// serve static assets if in production
+if (process.env.NODE_ENV === 'production') {
+  // set static folder
+  app.use(express.static('client/build'));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
+}
 
 const port = process.env.PORT || 5000;
 
