@@ -2,6 +2,9 @@
   "name": "mern",
   "version": "1.0.0",
   "description": "Environment for blocktext",
+  "engines": {
+    "node": "12.6.1"
+  },
   "main": "server.js",
   "scripts": {
     "client-install": "npm install --prefix client",
