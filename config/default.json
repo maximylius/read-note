@@ -1,4 +1,4 @@
 {
-  "mongoURI": "mongodb+srv://maximylius:maexiunmillion@blocktext-pvs0k.mongodb.net/test?retryWrites=true&w=majority",
+  "mongoURI": "mongodb+srv://maximylius:VqMs4B2zddELWD4b@cluster0.0brfw.mongodb.net/cluster0?retryWrites=true&w=majority",
   "jwtSecret": "vu4nfir8ofw32owc35ylsp7g"
 }
