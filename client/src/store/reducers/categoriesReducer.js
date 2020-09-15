@@ -11,7 +11,7 @@ const initialState = {
     // },
     standard_0: {
       title: 'Assumption',
-      rgbColor: '198, 231, 106',
+      rgbColor: '212, 240, 134',
       icon: '',
       parent: null,
       children: [],
@@ -19,7 +19,7 @@ const initialState = {
     },
     standard_1: {
       title: 'Hypothesis',
-      rgbColor: '247, 185, 134',
+      rgbColor: '247, 197, 157',
       icon: '',
       parent: null,
       children: [],
@@ -27,7 +27,7 @@ const initialState = {
     },
     standard_2: {
       title: 'Theory',
-      rgbColor: '220, 155, 233',
+      rgbColor: '233, 183, 243',
       icon: '',
       parent: null,
       children: [],
@@ -35,7 +35,7 @@ const initialState = {
     },
     standard_3: {
       title: 'Reference',
-      rgbColor: '240, 230, 138',
+      rgbColor: '250, 241, 157',
       icon: '',
       parent: null,
       children: [],
@@ -43,7 +43,7 @@ const initialState = {
     },
     standard_4: {
       title: 'Argument',
-      rgbColor: '161, 219, 122',
+      rgbColor: '180, 235, 144',
       icon: '',
       parent: null,
       children: [],
@@ -51,7 +51,7 @@ const initialState = {
     },
     standard_5: {
       title: 'Question',
-      rgbColor: '206, 116, 218',
+      rgbColor: '233, 169, 241',
       icon: '',
       parent: null,
       children: [],
@@ -59,7 +59,7 @@ const initialState = {
     },
     standard_6: {
       title: 'Method',
-      rgbColor: '127, 185, 119',
+      rgbColor: '154, 206, 147',
       icon: '',
       parent: null,
       children: [],
@@ -67,7 +67,7 @@ const initialState = {
     },
     standard_7: {
       title: 'Data',
-      rgbColor: '168, 200, 241',
+      rgbColor: '177, 206, 245',
       icon: '',
       parent: null,
       children: [],
@@ -75,7 +75,7 @@ const initialState = {
     },
     standard_8: {
       title: 'Result',
-      rgbColor: '128, 233, 133',
+      rgbColor: '152, 248, 157',
       icon: '',
       parent: null,
       children: [],
@@ -83,7 +83,7 @@ const initialState = {
     },
     standard_9: {
       title: 'Limitation',
-      rgbColor: '235, 144, 144',
+      rgbColor: '243, 164, 164',
       icon: '',
       parent: null,
       children: [],

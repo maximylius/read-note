@@ -11,7 +11,7 @@ import FlowSectionItem from './FlowSectionItem';
 // alignment shall depend on
 
 const SECTION_ITEM_HEIGHT = 60,
-  SECTION_ITEM_MARGIN = 60;
+  SECTION_ITEM_MARGIN = 40;
 
 const FlowSections = ({}) => {
   const sections = useSelector(s => s.sections);

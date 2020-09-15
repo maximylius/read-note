@@ -33,9 +33,7 @@ const About = () => {
           notes in an organized manner.
         </p>
         <p className='lead'>
-          You've ideas how this app could be improved? Share them with us and
-          give your opinion on the ideas of others. 2do: implement feedback Main
-          note where thread shall be available.
+          You've got ideas how this app could be improved? Let us know how!
         </p>
         <div className='feedback-container'>
           {[].map(noteId => (

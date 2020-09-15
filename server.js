@@ -11,7 +11,7 @@ app.use(express.json());
 // db config
 // if working offline: "mongoURI": "mongodb://127.0.0.1:27017/blocktext", //cluster0
 // const db = config.get('mongoURI');
-const db = process.env.MONGODB_URI;
+const db = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/blocktext';
 
 mongoose
   .connect(db, {
