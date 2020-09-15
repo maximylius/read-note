@@ -123,6 +123,7 @@ export default (state = initialState, action) => {
     case types.ADD_NEW_SECTION:
       return {
         ...state,
+        displayTextMeta: false,
         committedSectionIds: [
           ...(payload.add === true ? state.committedSectionIds : []),
           payload.section._id
@@ -138,6 +139,7 @@ export default (state = initialState, action) => {
     case types.SET_COMMITTED_SECTIONS:
       return {
         ...state,
+        displayTextMeta: false,
         committedSectionIds:
           payload.add === true
             ? [
