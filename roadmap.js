@@ -1,12 +1,7 @@
 /**
-// finish flowSections: add titles. align correctly. add connecting arrows.
 // fix desk nav link click
-// add categories
-// push
-// host
 
 // notepanel can keep track of which notes are open, as most of the times embed clicks change what is open. as soon as it saved you know again how they are saved. 
-// embed color should just be defined by deepness of nest.
 // preprocess delta doesnt seem to reopen last state?
 // put to state which notes in notepanel are visible at the time to force updates (when content is changed or when note is loaded)
 // keep on working here: closesEmebed function shall be able to handle bugged out embeds. 
@@ -30,6 +25,7 @@ DELETE (MANY)    0         0         1
 9     test if headers (for auth and getUserId) work
 9     PUT / DELETE save res to user / project.
 9     add projectIds to text, section & note // is it necessary to ingegrate it both ways?
+
 @RECENT_BUGS 
 // clicking in side note: errror: clicked at Position scroll 0 - (in add-bubble)
 // making a connection within recently created note causes error 
@@ -40,6 +36,7 @@ DELETE (MANY)    0         0         1
 // section item gets positioned badly. bug is recently introduced.
 // dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack. // lastPathname does not work: should update as soon as a link is used. when closing a modal still modal prevails.
 //user object gets spammed with more and more instances of same resIds
+
 @OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections
 handle if resource is deleted. handle if no resource is open (-1): -0. open any note?
 check load res functions
@@ -60,13 +57,11 @@ check load res functions
 
 @SECTION_UI
 2    UI: improve open / collapsed state of sections. they shall not autocollapse when another section is selected. In fact it should be better if they are open as long as there is enough space. Also open section attributes when section is just beeing created or there is enough space.
-4     rethink color logic: for embeds and categories for sections.
-3    connect sections to respective texts parts with polyone: left side mimic section height in text, right side mimcs section-item height. Top and bottom connect. Color: partly transparent mimicing the section color. 
+4     rethink color logic: different color for
+    empty section | section with note(s) | categorized section | categorized sections with note(s). Maybe use importance for color intensity? Add symbols for categories only.
 1    Enable user to define and recommend category schemas
 2    design mind map of sections: custom icons, shapes, (border-)color, dots on the right to indicate type and amount of attributes in section. 2 category levels, maximum 3.
 2   shrink text size to fit into single line for section Title.
-5   while not in flowchar view connect connected section with simple arc on the right hand side
-6   set maximum height on section item - if exceeded 
 5   when section flow chart is opened reuse flowcahrt-item-preview and close notepanel
 6   improve scroll behaviour // alowing multiple scroll panes in side-panel // translate scroll to percentages. // think about whether to make side-panel independent from text scroll all together? // $0.scrollTo(x,y)
 6   allow modes: structuring / note taking / standard (both = current)
@@ -102,13 +97,9 @@ when text is open:
 // allow search in your texts
 
 @RAFAS_BRUDER
-7    @MOBGODB   multiple document updates.
-7    note_panel monster component. how to split?
-6    do i need to seperate the logic out of the component? How?
 6    how to best do performance checks?
 6    how costly (moneywise) are server tasks?
 6    how to best structure server routes?
-6    is hording spareIds a good approach?
 6    how to prevent frontend and mongodb to get out of sync?
 
 // progressive web app.
@@ -127,10 +118,7 @@ when text is open:
 // Promise all
 
 
-7     reduce ammount of rerenders of flowchart
 6     Improve dagre layout 
-6     add flowchart for text comments
-6     make login session stable
 4     #hastags for categories @ for notes only? 
 
 @REMOVE BUGS  & NEW FEATURES------------------------
@@ -154,14 +142,12 @@ when text is open:
 6 @SERVER improvements ----------------------------------
 9    mongodb error check: .toString(). does indexOf always work?
 8    make sure to send one response per request. 
-8    if a link to deleted document is in any note, then all these notes have to be updated: replacing mention blot with deleted-blot. in both: frontend and server side? 
 6    implement server clean up routines.
 4    get anonymousSession token for not logged in users... route: migrate session to user.
 6    make get request not url only -> what if to many notes get requested? string to long...
 6    request error handling
 6    set loading while requesting server data for individual components
 4    include password and email validation
-4    do i need to JSON.stringify axios requests?
 
 4 @Future_Functionalities ----------------------------
 9    work with iframe for webpages and or PDF Docs.
@@ -225,6 +211,9 @@ when text is open:
 1         tell others something about yourself, but remember to keep your private data private.
 1         will show your statistics, reputation, profile pic, bio
 1         connect with people: privacy status, allow access for contacts
-1
-1
+
+
+
+
+
 */

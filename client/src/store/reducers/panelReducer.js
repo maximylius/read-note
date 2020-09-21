@@ -378,7 +378,6 @@ export default (state = initialState, action) => {
     case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
     case types.ADD_AND_OPEN_TEXT:
     case types.OPEN_TEXT:
-    case types.GET_NOTES:
     case types.CLOSE_FLOWCHART:
       return {
         ...state,
@@ -387,6 +386,19 @@ export default (state = initialState, action) => {
           state.mdTextsPanelLast,
           state.mdAnnotationsPanelLast,
           state.mdNotesPanelLast,
+          state.flowSectionView
+        ),
+        flowchartIsOpen: false,
+        inspectIsOpen: true
+      };
+    case types.GET_NOTES:
+      return {
+        ...state,
+        ...mdResolver(
+          false,
+          state.mdTextsPanelLast,
+          state.mdAnnotationsPanelLast,
+          payload.open || state.mdNotesPanelLast,
           state.flowSectionView
         ),
         flowchartIsOpen: false,

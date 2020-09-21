@@ -872,7 +872,7 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
       notes[noteId] && notes[noteId].title ? [] : [noteId]
     ),
     notesAlreadyLoaded = noteIds.flatMap(noteId =>
-      notes[noteId] && notes[noteId].title ? [] : [noteId]
+      notes[noteId] && notes[noteId].title ? [noteId] : []
     ),
     notesById = {};
 
@@ -885,6 +885,20 @@ export const loadNotes = ({ noteIds, open, setToActive, history }) => async (
 
     notesRes.data.forEach(note => (notesById[note._id] = note));
   }
+
+  console.log(
+    'loadNotes',
+    'noteIds',
+    noteIds,
+    'notesById',
+    notesById,
+    'open',
+    open,
+    'setToActive',
+    setToActive,
+    'notesAlreadyLoaded',
+    notesAlreadyLoaded
+  );
 
   dispatch({
     type: types.GET_NOTES,
@@ -1345,9 +1359,8 @@ export const removeSectionCategory = (sectionId, categoryId) => (
   ) {
     newTitle = addPlaceholderTitle(
       section.categoryIds.find(id => id !== categoryId)
-        ? categories.byId[
-            section.categoryIds.find(id => id !== categoryId)
-          ].title
+        ? categories.byId[section.categoryIds.find(id => id !== categoryId)]
+            .title
         : 'not categorized',
       [...texts[section.textId].sectionIds.map(id => sections[id].title)]
     );
