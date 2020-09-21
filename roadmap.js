@@ -73,6 +73,10 @@ check load res functions
 3     make quill stop jumping to bottom when loaded.
 2DAY- 2     give focus (only) when new note is created.
 3     layout mentions span so that it mimics a heading
+2     change css of color picker so it opens to top.
+
+@FLOW_CHART
+2     display search bar even when side-panel is collapsed.
 
 @OTHER_SIMPLE
 3     sidepanel takes to long to expand. <- because expanding doesnt trigger a rerender. fix that!
@@ -82,15 +86,6 @@ check load res functions
 2DAY- 2     improve quill text css. Also make cursor more visible: hard to see if next to mention Blot.
 1     100% width on footer.
 3     design idea for hide reply btn: when hover it shall created a shadow above replies that are going to be hidden
-// rethink panel distribution:
-remove finderpanel?
-integrate flowchart in panels: left hand side: 2/3 flowchart. right 1/3 insepect elements
-when text is open: 
-- 3/5 texts, 2/5 sidepanel-sidenotes. 
-- 3/5 texts, 2/5 notes. 
-- 2/5 texts, 1/5 annotation 2/5 notes. 
-- text(3/5) sidepanel-flowchart (2/5).
-- text(2/5) sidepanel-flowchart (2/5) inspect (1/5).
 
 @ADD_TEXT_PANEL
 // list last used texts <- needs to be saved to user.  slice(100)
@@ -137,6 +132,7 @@ when text is open:
 3     reduce code repetition in actions
 4     make css files consistent (bootstrap, custom, use color vars)
 1     reduce code repetition among components
+1     remove non-used types and actions and reducer actions.
 
 
 6 @SERVER improvements ----------------------------------

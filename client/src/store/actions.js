@@ -949,22 +949,22 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
   getState
 ) => {
   const {
-    notes,
     texts,
-    textsPanel: { activeTextPanel }
+    textsPanel: { activeTextPanel },
+    panel: { flowchartIsOpen }
   } = getState();
   const loaded = texts[textId]
     ? texts[textId].textcontent
       ? true
       : false
     : false;
-  console.log('loaded? ', loaded);
-  console.log(texts);
-  console.log(textId);
-  console.log(texts[textId]);
 
   if (loaded && activeTextPanel === textId) {
-    console.log('text already open.');
+    if (flowchartIsOpen)
+      dispatch({
+        type: types.CLOSE_FLOWCHART
+      });
+
     return;
   }
   if (history)

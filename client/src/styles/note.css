@@ -64,17 +64,19 @@
   padding: 1.25rem 1.25rem 1.25rem 3rem;
 } */
 .note-container {
+  border-width: 1px;
+  border-style: solid;
   position: relative;
   background-color: rgba(255, 255, 255, 0.75);
   border-radius: 0.5rem;
 }
 .note-container.note-panel {
-  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-color: rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
   padding: 1.25rem 1.25rem 1.25rem 3rem;
 }
 .note-container.side-note {
-  border: 1px solid rgb(0, 217, 255, 0);
+  border-color: rgba(0, 217, 255, 0);
   min-height: 100px;
   margin-left: -0.8rem;
   padding: 0.1rem 1.25rem 0.2rem 2rem;
@@ -84,6 +86,11 @@
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.8); */
   margin-bottom: 4px;
   background-color: rgb(249, 249, 249);
+}
+.note-container.inspect-note {
+  border-color: rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
+  padding: 1.25rem 1.25rem 1.25rem 3rem;
 }
 .note-container.side-note .ql-editor {
   padding-right: 8px;
@@ -148,13 +155,15 @@
   left: 0;
   top: 0;
   height: 100%;
-  width: --height;
 }
 .note-panel .note-bg-container {
   width: calc(100% - 14px);
 }
 .side-note .note-bg-container {
   width: calc(100% - 0px);
+}
+.inspect-note .note-bg-container {
+  width: calc(100% - 14px);
 }
 .note-bg-outer {
   position: absolute;
@@ -193,6 +202,9 @@
 .side-note .note-bg-inner .navline {
   right: -18px;
 }
+.inspect-note .note-bg-inner .navline {
+  right: -4px;
+}
 .main-navline {
   position: absolute;
   right: 0;
@@ -208,6 +220,10 @@
 .side-note .main-navline {
   right: 0px;
   border-radius: 0.5rem;
+}
+.inspect-note .main-navline {
+  top: 0;
+  bottom: 0;
 }
 .note-bg-inner:hover .navline {
   border-top: 1px solid rgba(0, 0, 0, 0.5);

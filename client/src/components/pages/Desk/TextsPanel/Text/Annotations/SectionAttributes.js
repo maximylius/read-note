@@ -45,7 +45,7 @@ const SectionAttributes = ({ sectionId, triggerRemeasure }) => {
   const textSectionIds = useSelector(
     s => (s.texts[section.textId] && s.texts[section.textId].sectionIds) || []
   );
-
+ 
   const twoWayConnections = sectionDirectConnections.filter(
     connection =>
       connection.resType === 'section' &&

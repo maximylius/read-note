@@ -3,6 +3,7 @@
 .flowchartContainer {
   z-index: 1050;
   background-color: #fff;
+  margin: 0;
 }
 .flowchartOpen {
   position: fixed;

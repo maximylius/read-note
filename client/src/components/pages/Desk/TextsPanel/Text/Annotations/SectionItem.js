@@ -103,7 +103,7 @@ const SectionItem = ({
     dispatch(setTentativeSections([sectionId], holdControl));
   };
 
-  return (
+  return ( 
     <div
       className={`${sectionItemClassName} ${
         committedToSection

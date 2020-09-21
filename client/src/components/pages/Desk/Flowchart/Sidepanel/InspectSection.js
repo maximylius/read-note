@@ -4,6 +4,8 @@ import { useHistory } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import {  BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadText } from '../../../../../store/actions';
+import SectionAttributes from '../../TextsPanel/Text/Annotations/SectionAttributes'
+import SectionTitle from '../../TextsPanel/Text/Annotations/SectionTitle'
 
 const InspectSection = ({ id }) => {
   const history = useHistory();
@@ -24,7 +26,7 @@ const InspectSection = ({ id }) => {
   // onclick function that selections mindmap node also
   return (
     <div>
-      <h5>{section.title}</h5>
+      <SectionTitle   sectionId={id} triggerRemeasure={()=>{}}/>
       <p className='inspect-toolbar'>
         <span className='inspect-toolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
@@ -41,6 +43,10 @@ const InspectSection = ({ id }) => {
           </button>
         </span>
       </p>
+      <SectionAttributes
+              sectionId={id}
+              triggerRemeasure={()=>{}}
+            />
       <ReactQuill
         defaultValue={`<blockquoute>${section.fullWords}</blockquoute>`}
         theme='bubble'

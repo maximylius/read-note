@@ -2,7 +2,7 @@
   /* resize: horizontal; */
   overflow-y: auto;
   background-color: rgb(106, 126, 139);
-  padding-right: 0px;
+  padding-right: 1rem;
 }
 .flowchart-search-container {
   width: 100%;

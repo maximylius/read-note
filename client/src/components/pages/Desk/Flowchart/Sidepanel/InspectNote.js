@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import { BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadNotes } from '../../../../../store/actions';
+import NotePanel from '../../NotesPanel/NotePanel';
 
 const InspectNote = ({ id }) => {
   const history = useHistory();
@@ -41,7 +42,9 @@ const InspectNote = ({ id }) => {
           </button>
         </span>
       </p>
-      <ReactQuill defaultValue={note.delta} theme='bubble' readOnly={true} />
+      <div className='notepanel-background'>
+        <NotePanel noteId={id} containerType='inspect-note' />
+      </div>
     </div>
   );
 };
