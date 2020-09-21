@@ -36,6 +36,7 @@ DELETE (MANY)    0         0         1
 // section item gets positioned badly. bug is recently introduced.
 // dont just push new thing to history if url does not fit. try to pop another level, if this is still in stack. // lastPathname does not work: should update as soon as a link is used. when closing a modal still modal prevails.
 //user object gets spammed with more and more instances of same resIds
+// noteInfo title of undefined.
 
 @OTHER_IMPORTANT DELETE_ACTIONS for notes / texts / section need to be improved to delete all connections
 handle if resource is deleted. handle if no resource is open (-1): -0. open any note?

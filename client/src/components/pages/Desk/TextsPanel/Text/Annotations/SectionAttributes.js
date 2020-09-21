@@ -45,7 +45,7 @@ const SectionAttributes = ({ sectionId, triggerRemeasure }) => {
   const textSectionIds = useSelector(
     s => (s.texts[section.textId] && s.texts[section.textId].sectionIds) || []
   );
- 
+
   const twoWayConnections = sectionDirectConnections.filter(
     connection =>
       connection.resType === 'section' &&
@@ -133,6 +133,9 @@ const SectionAttributes = ({ sectionId, triggerRemeasure }) => {
               value={sectionCategoryIds[0]}
               onChange={onCategoryChangeHandler}
             >
+              <option key={'- select -'} value='- select -'>
+                - select -
+              </option>
               {Object.keys(categories.byId)
                 .filter(id => !sectionCategoryIds.includes(id))
                 .map(id => (
