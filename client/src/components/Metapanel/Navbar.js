@@ -14,12 +14,14 @@ import {
 import { Link } from 'react-router-dom';
 import {
   BsPower,
-  BsLaptop,
   BsPerson,
   BsCollection,
   BsCollectionFill,
-  BsMap
+  BsMap,
+  BsLayoutThreeColumns
 } from 'react-icons/bs';
+import BiNetworkIcon from './icons/BiNetworkIcon';
+// import { BiNetworkChart } from 'react-icons/bi';
 
 const Navbar = () => {
   const history = useHistory();
@@ -80,7 +82,7 @@ const Navbar = () => {
                 dispatch(toggleFlowchart());
               }}
             >
-              <BsMap />
+              <BiNetworkIcon />
               Network-Graph
             </span>
           </li>
@@ -96,7 +98,7 @@ const Navbar = () => {
               }}
               to={lastDeskPathname}
             >
-              <BsLaptop />
+              <BsLayoutThreeColumns />
               Desk
             </Link>
           </li>

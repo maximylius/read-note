@@ -206,7 +206,6 @@ export default (state = initialState, action) => {
             )
           }
         : state;
-    case types.OPEN_TEXT:
     case types.ADD_AND_OPEN_TEXT:
     case types.ADD_TEXT:
     case types.SWITCH_TO_OPEN_TEXTPANEL:
@@ -377,7 +376,6 @@ export default (state = initialState, action) => {
       };
     case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
     case types.ADD_AND_OPEN_TEXT:
-    case types.OPEN_TEXT:
     case types.CLOSE_FLOWCHART:
       return {
         ...state,
@@ -386,6 +384,19 @@ export default (state = initialState, action) => {
           state.mdTextsPanelLast,
           state.mdAnnotationsPanelLast,
           state.mdNotesPanelLast,
+          state.flowSectionView
+        ),
+        flowchartIsOpen: false,
+        inspectIsOpen: true
+      };
+    case types.OPEN_TEXT:
+      return {
+        ...state,
+        ...mdResolver(
+          state.mdFinderPanel > 0 && state.keepFinderOpen,
+          true,
+          state.mdAnnotationsPanel > 0 || state.mdAnnotationsPanelLast,
+          state.mdNotesPanel > 0 || state.mdNotesPanelLast,
           state.flowSectionView
         ),
         flowchartIsOpen: false,

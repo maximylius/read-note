@@ -457,7 +457,7 @@ span.mention:hover .ql-mention-denotation-char {
   cursor: pointer;
 }
 .direct-connection {
-  background-color: green;
+  background-color: rgb(1, 102, 102);
 }
 .indirect-connection {
   background-color: hotpink;

@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { BsXCircle, BsCheck, BsQuestion } from 'react-icons/bs';
 import InputWithPrepend from '../../../Metapanel/InputWithPrepend';
+import NoteInfoConnections from './NoteInfoConnections';
 import {
   updateNote,
   addAlert,
@@ -24,6 +25,22 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
   const notes = useSelector(s => s.notes);
   const [title, setTitle] = useState(notes[noteInfo.id].title);
   const note = notes[noteInfo.id];
+  const directConnections = note.directConnections;
+  const parents = [
+    ...(note.isAnnotation
+      ? [
+          { resId: note.isAnnotation.textId, resType: 'text' },
+          { resId: note.isAnnotation.sectionId, resType: 'section' }
+        ]
+      : []),
+    ...(note.isReply ? [{ resId: note.isReply.noteId, resType: 'note' }] : [])
+  ];
+  const indirectConnections = [
+    ...parents,
+    ...note.indirectConnections.filter(
+      c => !parents.some(p => p.resId === c.resId)
+    )
+  ];
   const noteInfoRef = useRef();
   const closeInfo = () => setNoteInfo(null);
   const updateNoteTitle = () => {
@@ -106,36 +123,12 @@ const NoteInfo = ({ noteInfo, setNoteInfo }) => {
         value={title}
         onEvent={{ onChange: e => setTitle(e.target.value) }}
       />
-      <p className='note-info-subheading'>direct connections</p>
-      {note.directConnections.length === 0 ? (
-        <span className='note-info-no-connections'>None</span>
-      ) : (
-        note.directConnections
-          // .filter(el => Object.keys(notes).includes(el.resId))
-          .map(el => (
-            <span
-              key={el.resId}
-              className={`note-info-connection direct-connection connection-${el.resType}`}
-            >
-              {notes[el.resId].title}
-            </span>
-          ))
-      )}
-      <p className='note-info-subheading'>indirect connections</p>
-      {note.indirectConnections.length === 0 ? (
-        <span className='note-info-no-connections'>None</span>
-      ) : (
-        note.indirectConnections
-          // .filter(el => Object.keys(notes).includes(el.resId))
-          .map(el => (
-            <div
-              key={el.resId}
-              className={`note-info-connection indirect-connection connection-${el.resType}`}
-            >
-              {notes[el.resId].title}
-            </div>
-          ))
-      )}
+
+      <NoteInfoConnections direction='direct' connections={directConnections} />
+      <NoteInfoConnections
+        direction='indirect'
+        connections={indirectConnections}
+      />
       <p className='note-info-subheading'>
         meta category: isAnnotation: show full words / go to text project
       </p>

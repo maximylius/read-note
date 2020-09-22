@@ -70,13 +70,13 @@
   background-color: rgba(0, 0, 0, 0.4);
 }
 .two-way-connection {
-  background-color: rgb(52, 126, 52);
+  background-color: rgb(41, 155, 41);
 }
 .outgoing-connection {
-  background-color: rgb(57, 57, 129);
+  background-color: rgb(1, 102, 102);
 }
 .incoming-connection {
-  background-color: rgba(129, 127, 17);
+  background-color: rgb(219, 114, 167);
 }
 .section-attribute-preview-shadow {
   position: absolute;

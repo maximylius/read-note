@@ -9,6 +9,7 @@ import {
   BsLightning,
   BsFile
 } from 'react-icons/bs';
+import HiOutlineLightBulb from '../../../../../Metapanel/icons/HiOutlineLightBulb';
 import { addNote } from '../../../../../../store/actions';
 
 const AddNoteButton = ({ sectionId, triggerRemeasure }) => {
@@ -68,7 +69,7 @@ const AddNoteButton = ({ sectionId, triggerRemeasure }) => {
         className='add-side-note-type'
         onClick={e => newNoteClickhandler(e, 'idea')}
       >
-        <BsLightning />
+        <HiOutlineLightBulb />
       </button>
       {/* <button className='add-side-note-type' onClick={e => {}}>
         <BsThreeDots />
