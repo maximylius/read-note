@@ -32,6 +32,7 @@ export const Search = () => {
   const notes = useSelector(s => s.notes);
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
+  const categories = useSelector(s => s.categories);
 
   const searchQuillRef = React.useRef();
   const [atValues, setAtValues] = React.useState(
@@ -135,6 +136,9 @@ export const Search = () => {
         Object.keys(filteredSectionsById).forEach(key =>
           keysToKeep.push(
             ...(filteredSectionsById[key].title.includes(searchTerm) ||
+            filteredSectionsById[key].categoryIds.some(catId =>
+              categories.byId[catId].title.includes(searchTerm)
+            ) ||
             (searchWithinTextcontent &&
               filteredSectionsById[key].fullWords.includes(searchTerm))
               ? [key]
