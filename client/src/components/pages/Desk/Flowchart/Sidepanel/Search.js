@@ -68,10 +68,13 @@ export const Search = () => {
     const editor = searchQuillRef.current.editor;
     const delta = editor.getContents();
     console.log(delta);
+    const caseInsensitive = true;
     let searchTerms = delta.ops
       .flatMap(op => (typeof op.insert === 'string' ? [op.insert] : []))
       .join(' ')
-      .split(/\s+/);
+      .split(/\s+/)
+      .filter(searchTerm => searchTerm)
+      .map(searchTerm => new RegExp(searchTerm, caseInsensitive ? 'i' : ''));
     let mentionSearchTerms = delta.ops.flatMap(op =>
       op.insert && op.insert.mention ? [op.insert.mention.id] : []
     );
@@ -122,9 +125,9 @@ export const Search = () => {
         const keysToKeep = [];
         Object.keys(filteredTextsById).forEach(key =>
           keysToKeep.push(
-            ...(filteredTextsById[key].title.includes(searchTerm) ||
+            ...(searchTerm.test(filteredTextsById[key].title) ||
             (searchWithinTextcontent &&
-              filteredTextsById[key].textcontent.includes(searchTerm))
+              searchTerm.test(filteredTextsById[key].textcontent))
               ? [key]
               : [])
           )
@@ -135,12 +138,12 @@ export const Search = () => {
         const keysToKeep = [];
         Object.keys(filteredSectionsById).forEach(key =>
           keysToKeep.push(
-            ...(filteredSectionsById[key].title.includes(searchTerm) ||
+            ...(searchTerm.test(filteredSectionsById[key].title) ||
             filteredSectionsById[key].categoryIds.some(catId =>
-              categories.byId[catId].title.includes(searchTerm)
+              searchTerm.test(categories.byId[catId].title)
             ) ||
             (searchWithinTextcontent &&
-              filteredSectionsById[key].fullWords.includes(searchTerm))
+              searchTerm.test(filteredSectionsById[key].fullWords))
               ? [key]
               : [])
           )
@@ -151,8 +154,8 @@ export const Search = () => {
         const keysToKeep = [];
         Object.keys(filteredNotesById).forEach(key =>
           keysToKeep.push(
-            ...(filteredNotesById[key].title.includes(searchTerm) ||
-            filteredNotesById[key].plainText.includes(searchTerm)
+            ...(searchTerm.test(filteredNotesById[key].title) ||
+            searchTerm.test(filteredNotesById[key].plainText)
               ? [key]
               : [])
           )
