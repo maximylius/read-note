@@ -107,23 +107,23 @@ const miniMapSwitch = node => {
   switch (node.type) {
     case 'text':
       return `rgba(12, 100, 16, ${
-        node.className.includes('customOpacity') ? 0.3 : 1
+        node.className.includes('non-match') ? 0.3 : 1
       })`;
     case 'section':
       return `rgba(198, 235, 210, ${
-        node.className.includes('customOpacity') ? 0.3 : 1
+        node.className.includes('non-match') ? 0.3 : 1
       })`;
     case 'annotation':
       return `rgba(209, 54, 106, ${
-        node.className.includes('customOpacity') ? 0.3 : 1
+        node.className.includes('non-match') ? 0.3 : 1
       })`;
     case 'reply':
       return `rgba(209, 209, 209, ${
-        node.className.includes('customOpacity') ? 0.3 : 1
+        node.className.includes('non-match') ? 0.3 : 1
       })`;
     case 'note':
       return `rgba(197, 73, 24, ${
-        node.className.includes('customOpacity') ? 0.2 : 1
+        node.className.includes('non-match') ? 0.2 : 1
       })`;
     default:
       return '#ccc';
@@ -146,13 +146,6 @@ const Flowchart = () => {
   const filterTypes = useSelector(s => s.inspect.filterTypes);
   const filterAncestors = useSelector(s => s.inspect.filterAncestors);
   const filterDescendants = useSelector(s => s.inspect.filterDescendants);
-
-  const openFlowchart = () => {
-    dispatch(toggleFlowchart());
-    setTimeout(() => {
-      flowchartInstance.fitView();
-    }, 30);
-  };
 
   useEffect(
     () => {
@@ -226,8 +219,8 @@ const Flowchart = () => {
         filteredElements = nonLayoutedElements.map(el => ({
           ...el,
           className: strictSearchResults.includes(el.name)
-            ? el.className
-            : el.className + ' customOpacity',
+            ? el.className + ' match'
+            : el.className + ' non-match',
           links: el.links.filter(link =>
             nonLayoutedElements.some(el => el.name === link.name)
           )
