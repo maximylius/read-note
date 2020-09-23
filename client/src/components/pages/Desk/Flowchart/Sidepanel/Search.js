@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import _isEqual from 'lodash/isEqual';
-import { BsSearch } from 'react-icons/bs';
 import ReactQuill from 'react-quill';
 import QuillMention from 'quill-mention';
 import {
@@ -11,10 +10,7 @@ import {
   extractAtValueResId
 } from '../../../../Metapanel/mentionModule';
 import { ObjectKeepKeys } from '../../../../../functions/main';
-import {
-  strictFlowchartSearchresults,
-  toggleSearchWithinTextcontentFlowchart
-} from '../../../../../store/actions';
+import { strictFlowchartSearchresults } from '../../../../../store/actions';
 
 const placeholderOptions = [
   'Search...',
@@ -33,6 +29,7 @@ export const Search = () => {
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const categories = useSelector(s => s.categories);
+  const filterTypes = useSelector(s => s.inspect.filterTypes);
 
   const searchQuillRef = React.useRef();
   const [atValues, setAtValues] = React.useState(
@@ -48,26 +45,23 @@ export const Search = () => {
   };
 
   useEffect(() => {
-    console.log('startchangetimer');
     const commitChange = () =>
       setCommittedChangeCounter(prevState => prevState + 1);
     const commitChangeTimer = setTimeout(() => {
       //2do if @ is used more timeout needs to be given.
       commitChange();
-    }, 1000);
+    }, 400);
 
     return () => {
       clearTimeout(commitChangeTimer);
     };
-  }, [changeCounter, searchWithinTextcontent]);
+  }, [changeCounter, searchWithinTextcontent, filterTypes]);
 
   useEffect(() => {
     if (!searchQuillRef.current) return;
     if (committedChangeCounter === 0) return;
-    console.log('SEARCH_SEARCH_SEARCH_SEARCH_');
     const editor = searchQuillRef.current.editor;
     const delta = editor.getContents();
-    console.log(delta);
     const caseInsensitive = true;
     let searchTerms = delta.ops
       .flatMap(op => (typeof op.insert === 'string' ? [op.insert] : []))
@@ -78,26 +72,41 @@ export const Search = () => {
     let mentionSearchTerms = delta.ops.flatMap(op =>
       op.insert && op.insert.mention ? [op.insert.mention.id] : []
     );
+
+    let filteredTextsById = filterTypes.includes('texts') ? { ...texts } : {};
+    let filteredSectionsById = filterTypes.includes('sections')
+      ? { ...sections }
+      : {};
+    let filteredNotesById = Object.fromEntries(
+      [
+        ...Object.keys(notes).flatMap(key => {
+          let keep = notes[key].isAnnotation
+            ? filterTypes.includes('annotations')
+            : notes[key].isReply
+            ? filterTypes.includes('replies')
+            : filterTypes.includes('notes');
+          if (keep) return [key];
+          return [];
+        })
+      ].map(key => [key, notes[key]])
+    );
+
     if (mentionSearchTerms.length === 0 && !searchTerms.join('')) {
-      if (strictSearchResults.length !== 0) {
-        dispatch(strictFlowchartSearchresults([]));
-      }
-      console.log('NO_SEARCH_NO_SEARCH_NO_SEARCH_');
+      // if (strictSearchResults.length !== 0) {
+      dispatch(
+        strictFlowchartSearchresults(
+          filterTypes.length < 5
+            ? [
+                ...Object.keys(filteredTextsById),
+                ...Object.keys(filteredSectionsById),
+                ...Object.keys(filteredNotesById)
+              ]
+            : []
+        )
+      );
+      // }
       return;
     }
-    // how does the search work?
-    // first search and get results and then regain relative that shall be displayed.
-    // shall words be looked for individually? yes.
-    // do all words have to match? For now yes.
-    console.log(
-      'mentionSearchTerms',
-      mentionSearchTerms,
-      'searchTerms',
-      searchTerms
-    );
-    let filteredTextsById = { ...texts };
-    let filteredSectionsById = { ...sections };
-    let filteredNotesById = { ...notes };
     mentionSearchTerms.forEach(mentionId => {
       const resId = extractAtValueResId(mentionId);
       const mentionType = extractAtValueResType(mentionId);
@@ -117,10 +126,6 @@ export const Search = () => {
     });
 
     searchTerms.forEach(searchTerm => {
-      if (!searchTerm) {
-        console.log('nonSearchterm:_', searchTerm);
-        return;
-      }
       if (Object.keys(filteredTextsById).length > 0) {
         const keysToKeep = [];
         Object.keys(filteredTextsById).forEach(key =>
@@ -152,14 +157,12 @@ export const Search = () => {
       }
       if (Object.keys(filteredNotesById).length > 0) {
         const keysToKeep = [];
-        Object.keys(filteredNotesById).forEach(key =>
-          keysToKeep.push(
-            ...(searchTerm.test(filteredNotesById[key].title) ||
-            searchTerm.test(filteredNotesById[key].plainText)
-              ? [key]
-              : [])
-          )
-        );
+        Object.keys(filteredNotesById).forEach(key => {
+          let note = filteredNotesById[key];
+          let keep =
+            searchTerm.test(note.title) || searchTerm.test(note.plainText);
+          if (keep) keysToKeep.push(key);
+        });
         filteredNotesById = ObjectKeepKeys(filteredNotesById, keysToKeep);
       }
     });
@@ -192,17 +195,6 @@ export const Search = () => {
           formats={['mention']}
           placeholder={searchPlaceholder}
         />
-      </div>
-      <div>
-        Search within text content:{' '}
-        <button
-          className={`btn btn-sm btn-secondary ${
-            searchWithinTextcontent ? 'active' : ''
-          }`}
-          onClick={() => dispatch(toggleSearchWithinTextcontentFlowchart())}
-        >
-          {searchWithinTextcontent ? 'on' : 'off'}
-        </button>
       </div>
     </>
   );

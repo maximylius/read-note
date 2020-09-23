@@ -158,7 +158,9 @@ const Flowchart = () => {
         label: texts[id].title,
         links: [
           ...texts[id].sectionIds.map(id => ({ name: id })),
-          ...texts[id].directConnections.map(c => ({ name: c.resId }))
+          ...(filterTypes.includes('sections')
+            ? []
+            : texts[id].directConnections.map(c => ({ name: c.resId })))
         ]
       }));
       const connectedSections = Object.keys(sections).map(id => ({
@@ -199,7 +201,7 @@ const Flowchart = () => {
       return () => {};
     },
     // [flowchartIsOpen]
-    [sections, texts, notes]
+    [sections, texts, notes, filterTypes]
   );
 
   useEffect(() => {

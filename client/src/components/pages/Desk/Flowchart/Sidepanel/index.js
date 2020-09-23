@@ -10,20 +10,13 @@ import InspectText from './InspectText';
 import InspectSection from './InspectSection';
 import InspectNote from './InspectNote';
 import { Search } from './Search';
-import FilterOptions from './FilterOptions';
+import SearchOptions from './SearchOptions';
 
-const FlowchartSidepanel = ({ flowchartInstance }) => {
+const FlowchartSidepanel = ({}) => {
   const dispatch = useDispatch();
   const inspectElements = useSelector(s => s.inspect.inspectElements);
   const closeSidepanel = () => {
     dispatch(closeFlowchartSidepanel());
-  };
-  const closeFlowchart = () => {
-    if (!flowchartInstance) return;
-    dispatch(toggleFlowchart());
-    setTimeout(() => {
-      flowchartInstance.fitView();
-    }, 30);
   };
   console.log(inspectElements);
   return (
@@ -36,8 +29,7 @@ const FlowchartSidepanel = ({ flowchartInstance }) => {
         </button>
       </span>
       <Search />
-      {/* use text editor instead of input field. disallow all formats expect mentions. filter by words search, # and @. varying placeholder can show examples. #topic to see only main notes. */}
-      <FilterOptions />
+      <SearchOptions />
       {inspectElements.map(el => (
         <div key={el.id} className='inspect-container'>
           {el.type === 'text' ? (
