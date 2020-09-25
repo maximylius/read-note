@@ -17,7 +17,6 @@ import {
   BsPerson,
   BsCollection,
   BsCollectionFill,
-  BsMap,
   BsLayoutThreeColumns
 } from 'react-icons/bs';
 import BiNetworkIcon from './icons/BiNetworkIcon';
@@ -40,7 +39,7 @@ const Navbar = () => {
 
   // 2do: make mini when mouse is not over.
   return (
-    <nav className='navbar navbar-expand-sm navbar-dark bg-secondary row static nav-main'>
+    <nav className='navbar navbar-expand navbar-dark bg-secondary row static nav-main'>
       <Link
         to='/'
         className='navbar-brand'
