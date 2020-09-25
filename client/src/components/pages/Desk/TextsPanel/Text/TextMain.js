@@ -17,6 +17,8 @@ ReactQuill.Quill.register(SectionBlot);
 const TextMain = ({}) => {
   const dispatch = useDispatch();
   const quillTextRef = React.useRef();
+  const mdTextsPanel = useSelector(s => s.panel.mdTextsPanel);
+  const mdAnnotationsPanel = useSelector(s => s.panel.mdAnnotationsPanel);
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const categories = useSelector(s => s.categories);
@@ -377,7 +379,13 @@ const TextMain = ({}) => {
       {!editorEditState && editorSelection && editorSelection.length > 0 && (
         <Tooltip quillTextRef={quillTextRef} selection={editorSelection} />
       )}
-      <div className='card-body'>
+      <div
+        className={`card-body ${
+          mdTextsPanel === 12 && mdAnnotationsPanel === 0
+            ? 'full-screen-padding'
+            : ''
+        }`}
+      >
         <ReactQuill
           id='quillTextPanel'
           ref={quillTextRef}
@@ -410,17 +418,6 @@ const TextMain = ({}) => {
           onMouseDown={() => (mouseIsDownRef.current = true)}
           onMouseUp={() => (mouseIsDownRef.current = false)}
         />
-        <button onClick={toggleEditorEditState}>
-          {editorEditState ? 'Disbable...' : 'Enable...'}
-        </button>
-        <button
-          onClick={() => {
-            if (!quillTextRef.current) return;
-            console.log(quillTextRef.current.editor.getContents());
-          }}
-        >
-          get contents
-        </button>
       </div>
     </>
   );

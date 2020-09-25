@@ -54,6 +54,14 @@ body,
 .text-and-side-panel-container {
   position: relative;
 }
+.full-screen-padding {
+  padding-left: 15vw;
+  padding-right: 15vw;
+}
+.full-screen-padding .quill {
+  padding-left: 15vw;
+  padding-right: 15vw;
+}
 
 .upload-paste {
   border-radius: 0.2rem;

@@ -41,6 +41,7 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
   const mdNotesPanel = useSelector(s => s.panel.mdNotesPanel);
+  const flowchartIsOpen = useSelector(s => s.panel.flowchartIsOpen);
   const note = notes[noteId];
   const [quillValue, setQuillValue] = useState(
     note.delta && note.delta.ops
@@ -236,7 +237,9 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
   if (!note) return <></>;
   return (
     <div
-      className={`note-container ${containerType}`}
+      className={`note-container ${containerType} ${
+        mdNotesPanel === 12 && !flowchartIsOpen ? 'full-screen-padding' : ''
+      }`}
       ref={cardBodyRef}
       id={`noteCardBody${noteId}`}
     >

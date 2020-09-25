@@ -76,7 +76,7 @@ const Desk = () => {
               />
             </div>
             <div
-              className={`col-md-${12 - mdFinderPanel} px-0 mx-0 box `}
+              className={`col-md-${12 - mdFinderPanel} px-0 mx-0 box`}
               style={{
                 display:
                   mdTextsPanel === 0 && mdNotesPanel === 0 ? 'flex' : 'none'

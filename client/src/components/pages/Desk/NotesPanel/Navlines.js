@@ -11,6 +11,9 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
   const [noteInfo, setNoteInfo] = useState(null);
   const [_, setForceRenderCounter] = useState(0);
   const cardBodyRect = cardBody.getBoundingClientRect();
+  const quillEditor = cardBody.querySelector('.ql-editor');
+  const pixelIndentWidth =
+    quillEditor.getBoundingClientRect().left - cardBodyRect.left;
   let maxIndentLevel = 4;
   if (mdNotesPanel !== mdNotesPanelRef.current) {
     setTimeout(() => setForceRenderCounter(prevS => prevS + 1), 30);
@@ -77,9 +80,11 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
             style={{
               top: el.top + 'px',
               height: el.height + 'px',
-              left: (el.indentLevel / maxIndentLevel) * 40,
+              left: (el.indentLevel / maxIndentLevel) * pixelIndentWidth,
               width:
-                cardBodyRect.width - (el.indentLevel / maxIndentLevel) * 40 - 20
+                cardBodyRect.width - // problem cardBodyRect.width is a product
+                (el.indentLevel / maxIndentLevel) * pixelIndentWidth -
+                20
             }}
           >
             <div className={`note-bg-inner`}>
