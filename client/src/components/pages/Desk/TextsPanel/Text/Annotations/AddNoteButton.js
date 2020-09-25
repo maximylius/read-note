@@ -33,48 +33,54 @@ const AddNoteButton = ({ sectionId, triggerRemeasure }) => {
   };
 
   return (
-    <div className='add-side-note'>
-      <BsPlus /> new
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, '')}
-      >
-        <BsFile />
-      </button>
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, 'summary')}
-      >
-        <BsFunnel />
-      </button>
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, 'comment')}
-      >
-        <BsChat />
-      </button>
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, 'question')}
-      >
-        <BsQuestion />
-      </button>
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, 'critique')}
-      >
-        <BsExclamation />
-      </button>
-      <button
-        className='add-side-note-type'
-        onClick={e => newNoteClickhandler(e, 'idea')}
-      >
-        <HiOutlineLightBulb />
-      </button>
-      {/* <button className='add-side-note-type' onClick={e => {}}>
-        <BsThreeDots />
-      </button> */}
-    </div>
+    <button
+      className='btn btn-block btn-light add-btn'
+      onClick={e => newNoteClickhandler(e, '')}
+    >
+      <BsPlus /> new note
+    </button>
+    // <div className='add-side-note'>
+    //   <BsPlus /> new
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, '')}
+    //   >
+    //     <BsFile />
+    //   </button>
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, 'summary')}
+    //   >
+    //     <BsFunnel />
+    //   </button>
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, 'comment')}
+    //   >
+    //     <BsChat />
+    //   </button>
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, 'question')}
+    //   >
+    //     <BsQuestion />
+    //   </button>
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, 'critique')}
+    //   >
+    //     <BsExclamation />
+    //   </button>
+    //   <button
+    //     className='add-side-note-type'
+    //     onClick={e => newNoteClickhandler(e, 'idea')}
+    //   >
+    //     <HiOutlineLightBulb />
+    //   </button>
+    //   {/* <button className='add-side-note-type' onClick={e => {}}>
+    //     <BsThreeDots />
+    //   </button> */}
+    // </div>
   );
 };
 
