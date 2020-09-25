@@ -33,7 +33,12 @@ import toolbar from './noteFunctions/toolbar';
 ReactQuill.Quill.register(BlotEmbedSeperator);
 const g = {}; // serves as a ref container for component state to be passed into outsourced functions in Order to simplify their input parameters
 
-const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
+const NotePanel = ({
+  noteId,
+  containerType,
+  informParentAboutChange,
+  scrollParentId
+}) => {
   console.log('NOTEPANEL RENDER. NOTEPANEL RENDER. NOTEPANEL RENDER. ');
   const history = useHistory();
   const dispatch = useDispatch();
@@ -282,6 +287,8 @@ const NotePanel = ({ noteId, containerType, informParentAboutChange }) => {
           },
           mention: mentionModule
         }}
+        // scrollingContainer='.notepanel-background'
+        scrollingContainer={document.getElementById(scrollParentId)}
         placeholder='Take a note...'
         sanitize='true'
       />

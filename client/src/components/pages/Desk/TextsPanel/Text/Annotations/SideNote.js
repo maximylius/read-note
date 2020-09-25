@@ -5,7 +5,7 @@ import Replies from './Replies';
 import Reactions from './Reactions';
 import ToggleReplies from './ToggleReplies';
 
-const SideNote = ({ noteId, triggerRemeasure }) => {
+const SideNote = ({ noteId, triggerRemeasure, scrollParentId }) => {
   // const dispatch = useDispatch();
   const replies = useSelector(s => s.notes[noteId].replies);
   const showReplies = useSelector(s =>
@@ -29,6 +29,7 @@ const SideNote = ({ noteId, triggerRemeasure }) => {
             noteId={noteId}
             containerType='side-note'
             informParentAboutChange={triggerRemeasure}
+            scrollParentId={scrollParentId}
           />
           {replies.length > 0 && (
             <div className='side-note-child-replies'>
@@ -36,6 +37,7 @@ const SideNote = ({ noteId, triggerRemeasure }) => {
                 <Replies
                   replies={replies}
                   triggerRemeasure={triggerRemeasure}
+                  scrollParentId={scrollParentId}
                 />
               )}
               <ToggleReplies

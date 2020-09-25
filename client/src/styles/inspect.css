@@ -1,8 +1,11 @@
 .flowchart-sidepanel {
   /* resize: horizontal; */
-  overflow-y: auto;
+  overflow: hidden;
   background-color: rgb(106, 126, 139);
   padding-right: 1rem;
+}
+.flowchart-sidepanel:hover {
+  overflow-y: overlay;
 }
 .flowchart-search-container {
   width: 100%;

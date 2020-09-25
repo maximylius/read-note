@@ -9,6 +9,8 @@
   width: 90%;
   padding: 0rem 0rem 0rem 0rem;
   border-radius: 1rem;
+  border-width: 4px;
+  border-style: solid;
   z-index: 0;
   background-color: rgb(251, 251, 251);
   cursor: pointer;
@@ -24,8 +26,10 @@
 .section-scroll {
   padding: 0rem 0.5rem 0rem 0.5rem;
   max-height: 600px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+.section-scroll:hover {
+  overflow-y: overlay;
 }
 
 .section-outside-btn-container {
@@ -131,7 +135,8 @@
 }
 .importance-rating:hover,
 .importance-rating.personal-importance,
-.importance-rating-sleep:hover {
+.importance-rating-sleep:hover,
+.importance-rating-sleep.rated {
   color: rgb(10, 10, 250);
 }
 .importance-rating-sleep {

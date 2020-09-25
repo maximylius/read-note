@@ -61,12 +61,16 @@ const Notes = ({ createSetNoteRef, quillNoteRefs }) => {
 
       <div className='col px-0 box pr-4'>
         <Nav />
-        <div className='row growContent mx-0 notepanel-background'>
+        <div
+          id={`scroll-parent-note-panel-${activeNote}`}
+          className='row growContent mx-0 notepanel-background'
+        >
           {activeNote && notes[activeNote] && (
             <NotePanel
               key={activeNote}
               noteId={activeNote}
               containerType='note-panel'
+              scrollParentId={`scroll-parent-note-panel-${activeNote}`}
             />
           )}
           {openNotes.length === 0 && <NotePlaceholder />}

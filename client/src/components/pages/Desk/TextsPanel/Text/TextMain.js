@@ -417,6 +417,7 @@ const TextMain = ({}) => {
           })}
           onMouseDown={() => (mouseIsDownRef.current = true)}
           onMouseUp={() => (mouseIsDownRef.current = false)}
+          scrollingContainer='#textContentFlexGrow'
         />
       </div>
     </>

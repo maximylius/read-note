@@ -103,7 +103,7 @@ const SectionItem = ({
     dispatch(setTentativeSections([sectionId], holdControl));
   };
 
-  return ( 
+  return (
     <div
       className={`${sectionItemClassName} ${
         committedToSection
@@ -114,11 +114,8 @@ const SectionItem = ({
       }`}
       id={`${sectionItemIdPrepend}${section._id}`}
       style={{
-        borderTop: `5px solid ${color}`,
-        borderRight: `5px solid ${color}`,
-        borderLeft: `5px solid  ${color}`,
-        borderBottom: `5px solid ${color}`,
-        top: top
+        top: top,
+        borderColor: color
       }}
       onClick={sectionItemClickHandler}
       onMouseEnter={sectionItemOnMouseEnterHandler}
@@ -132,7 +129,7 @@ const SectionItem = ({
         color={color}
       />
       <SectionTitle sectionId={sectionId} triggerRemeasure={triggerRemeasure} />
-      <div className='section-scroll'>
+      <div id={`section-scroll-${section._id}`} className='section-scroll'>
         {committedToSection || expandAll ? (
           <>
             <SectionAttributes
@@ -146,6 +143,7 @@ const SectionItem = ({
                   sectionId={sectionId}
                   noteId={noteId}
                   triggerRemeasure={triggerRemeasure}
+                  scrollParentId={`section-scroll-${section._id}`}
                 />
               ))}
             </div>
