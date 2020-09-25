@@ -1,7 +1,7 @@
 .side-panel-container {
   display: flex;
   flex-flow: column;
-  height: 4000px;
+  /* height: 4000px; */
   background-color: var(--light);
 }
 .section-item {
@@ -130,8 +130,12 @@
   color: rgba(255, 255, 255, 0.7);
 }
 .importance-rating:hover,
-.importance-rating.personal-importance {
+.importance-rating.personal-importance,
+.importance-rating-sleep:hover {
   color: rgb(10, 10, 250);
+}
+.importance-rating-sleep {
+  cursor: pointer;
 }
 .importance-rating-stars {
   display: inline-block;

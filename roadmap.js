@@ -9,6 +9,8 @@
 // navline of embed render only after change.
 // when opening an embed and loading a note the state of embeded notes shall be recreated. 
 // closing 
+// save note when unmounting
+// handle toolbar display: sometimes does not show the active editor toolbar but inactive one instead.
 
 @IMPROVE & ADD FUNCTIONALITIES (0: last, 9: first)
 // section => noteIds

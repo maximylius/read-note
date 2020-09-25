@@ -146,10 +146,12 @@ const FlowSections = ({}) => {
       Object.keys(block.positions).includes(firstCommittedSection)
     );
     const committedItemOffset =
-      blocks
-        .slice(0, committedBlockIndex + 1)
-        .reduce((a, b) => a + b.offsetTop, 0) +
-      blocks[committedBlockIndex].positions[firstCommittedSection].top;
+      committedBlockIndex < 0
+        ? 100
+        : blocks
+            .slice(0, committedBlockIndex + 1)
+            .reduce((a, b) => a + b.offsetTop, 0) +
+          blocks[committedBlockIndex].positions[firstCommittedSection].top;
 
     const committedOffset =
       firstDiv && scrollContainer
