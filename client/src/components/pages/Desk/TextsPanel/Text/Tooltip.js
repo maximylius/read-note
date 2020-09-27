@@ -86,10 +86,14 @@ const Tooltip = ({ quillTextRef, selection }) => {
         <span className='ql-tooltip-arrow'></span>
         <div className='ql-toolbar'> */}
       <div>
-        <button className='btn btn-secondary' onClick={addSectionClickHandler}>
-          <BsPlus /> section
-        </button>
         <button
+          className='btn btn-secondary  string-tooltip string-tooltip-bottom'
+          onClick={addSectionClickHandler}
+          data-string-tooltip='mark selection'
+        >
+          <BsPlus /> <BsChatSquareQuote />
+        </button>
+        {/* <button
           className='btn btn-secondary draggable'
           draggable='true'
           onDrop={onDropHandler}
@@ -97,8 +101,12 @@ const Tooltip = ({ quillTextRef, selection }) => {
           onDragEnd={onDragEndHandler}
         >
           <BsChatSquareQuote />
-        </button>
-        <button className='btn btn-secondary' onClick={playClickHandler}>
+        </button> */}
+        <button
+          className='btn btn-secondary  string-tooltip string-tooltip-bottom'
+          onClick={playClickHandler}
+          data-string-tooltip='start speed reader at selection'
+        >
           <BsPlay />
         </button>
       </div>

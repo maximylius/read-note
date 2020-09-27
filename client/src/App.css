@@ -55,8 +55,8 @@ body,
   position: relative;
 }
 .full-screen-padding {
-  padding-left: 15vw;
-  padding-right: 15vw;
+  padding-left: 5vw;
+  padding-right: 5vw;
 }
 .full-screen-padding .quill {
   padding-left: 15vw;

@@ -56,7 +56,8 @@ const ButtonToolbar = () => {
   return (
     <div className='side-panel-button-toolbar'>
       <button
-        className='btn btn-lg btn-light mt-1'
+        data-string-tooltip='Hide side panel'
+        className='btn btn-lg btn-light mt-1 string-tooltip string-tooltip-bottom'
         onClick={toggleAnnotationsPanel}
       >
         <IconContext.Provider value={{ size: '1.5rem' }}>
@@ -65,7 +66,8 @@ const ButtonToolbar = () => {
       </button>
       <span style={{ visibility: !displayTextMeta ? 'visible' : 'hidden' }}>
         <button
-          className='btn btn-lg btn-light mt-1'
+          data-string-tooltip='Start speed-reader'
+          className='btn btn-lg btn-light mt-1 string-tooltip string-tooltip-bottom'
           onClick={playClickHandler}
         >
           {/* 2do: fill background color of button with percentage of text read. */}
@@ -77,12 +79,24 @@ const ButtonToolbar = () => {
             )}
           </IconContext.Provider>
         </button>
-        <button className='btn btn-lg btn-light mt-1' onClick={toggleExpandAll}>
+        <button
+          data-string-tooltip={
+            expandAll ? 'Collapse sections' : 'Expand all sections'
+          }
+          className='btn btn-lg btn-light mt-1 string-tooltip string-tooltip-bottom'
+          onClick={toggleExpandAll}
+        >
           <IconContext.Provider value={{ size: '1.5rem' }}>
             {expandAll ? <BsArrowsCollapse /> : <BsArrowsExpand />}
           </IconContext.Provider>
         </button>
-        <button className='btn btn-lg btn-light mt-1' onClick={toggleFlowView}>
+        <button
+          data-string-tooltip={
+            flowSectionView ? 'Show structure diagram' : 'Hide structure digram'
+          }
+          className='btn btn-lg btn-light mt-1 string-tooltip string-tooltip-bottom'
+          onClick={toggleFlowView}
+        >
           <IconContext.Provider value={{ size: '1.5rem' }}>
             {flowSectionView ? <BsPuzzleFill /> : <BsPuzzle />}
           </IconContext.Provider>
@@ -90,9 +104,12 @@ const ButtonToolbar = () => {
       </span>
 
       <button
+        data-string-tooltip={
+          displayTextMeta ? 'Show text info' : 'Show side panel'
+        }
         className={`btn btn-lg btn-light mt-1 ${
           displayTextMeta ? 'active' : ''
-        }`}
+        } string-tooltip string-tooltip-bottom`}
         onClick={toggleDisplayTextMeta}
       >
         <IconContext.Provider value={{ size: '1.5rem' }}>

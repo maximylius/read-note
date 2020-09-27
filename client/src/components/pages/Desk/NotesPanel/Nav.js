@@ -29,6 +29,7 @@ function Nav() {
             id === 'addNote' ? (
               <NavTabAdd
                 key={id}
+                tooltip='create new note (unrelated to text)'
                 isActive={notesToDisplay.length === 1}
                 openAction={() => dispatch(addNote({ history }))}
               />

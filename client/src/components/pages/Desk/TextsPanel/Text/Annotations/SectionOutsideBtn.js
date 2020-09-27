@@ -48,11 +48,19 @@ const SectionOutsideBtn = ({
       }}
     >
       {isExpanded && (
-        <button className='section-outside-btn' onClick={mininmizeClickHandler}>
+        <button
+          className='section-outside-btn string-tooltip string-tooltip-bottom'
+          data-string-tooltip='minimize section'
+          onClick={mininmizeClickHandler}
+        >
           <BsDash />
         </button>
       )}
-      <button className='section-outside-btn' onClick={deleteClickHandler}>
+      <button
+        className='section-outside-btn string-tooltip string-tooltip-bottom'
+        data-string-tooltip='permantly delete section and contents'
+        onClick={deleteClickHandler}
+      >
         <BsTrash />
       </button>
     </div>

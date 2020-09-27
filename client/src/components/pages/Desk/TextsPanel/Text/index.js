@@ -81,7 +81,8 @@ function Textpage({}) {
         }}
       >
         <button
-          className='btn btn-lg btn-light mt-2'
+          data-string-tooltip='Return to text'
+          className='btn btn-lg btn-light mt-2 string-tooltip string-tooltip-bottom'
           onClick={closeSpeedReaderClickHandler}
           style={{
             display: speedReader.isOpenFor.includes(activeTextPanel)

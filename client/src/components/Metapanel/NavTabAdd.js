@@ -1,13 +1,14 @@
 import React from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-const NavTab = ({ isActive, openAction }) => {
+const NavTabAdd = ({ isActive, openAction, tooltip }) => {
   const openClickHandler = e => openAction();
   return (
     <li className='nav-item nav-add' onClick={openClickHandler}>
       <span
         className={`nav-link noSelect
-      ${isActive ? 'active' : ''} `}
+      ${isActive ? 'active' : ''} string-tooltip string-tooltip-bottom`}
+        data-string-tooltip={tooltip}
       >
         <BsPlus />
       </span>
@@ -15,4 +16,4 @@ const NavTab = ({ isActive, openAction }) => {
   );
 };
 
-export default NavTab;
+export default NavTabAdd;

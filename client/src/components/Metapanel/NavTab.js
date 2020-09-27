@@ -110,10 +110,11 @@ const NavTab = ({
           </span>
           <span>{` `}</span>
           <span
-            className='close'
+            className='close string-tooltip string-tooltip-bottom'
             style={{
               visibility: mouseOver || isActive ? 'visible' : 'hidden'
             }}
+            data-string-tooltip='close'
           >
             <BsX />
           </span>

@@ -100,7 +100,8 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
           <button
             className={`side-note-reaction ${
               currentVote && currentVote.bill === -1 ? 'active-reaction' : ''
-            }`}
+            } string-tooltip string-tooltip-bottom`}
+            data-string-tooltip='permantly delete this note'
             onClick={deleteClickHandler}
           >
             <BsX />
@@ -111,7 +112,8 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
           <button
             className={`side-note-reaction ${
               noteInFavourites ? 'active-reaction' : ''
-            }`}
+            } string-tooltip string-tooltip-bottom`}
+            data-string-tooltip='set note to favourites'
             onClick={toggleFavourite}
           >
             {noteInFavourites ? <BsStarFill /> : <BsStar />}
@@ -119,7 +121,8 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
           <button
             className={`side-note-reaction ${
               currentVote && currentVote.bill === 1 ? 'active-reaction' : ''
-            }`}
+            } string-tooltip string-tooltip-bottom`}
+            data-string-tooltip='upvote note'
             onClick={() => sumbmitVote(1)}
           >
             <BsArrowUp />
@@ -134,7 +137,8 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
           <button
             className={`side-note-reaction ${
               currentVote && currentVote.bill === -1 ? 'active-reaction' : ''
-            }`}
+            } string-tooltip string-tooltip-bottom`}
+            data-string-tooltip='downvote note'
             onClick={() => sumbmitVote(-1)}
           >
             <BsArrowDown />
@@ -142,7 +146,11 @@ const Reactions = ({ noteId, triggerRemeasure }) => {
         </>
       )}
 
-      <button className='side-note-reaction' onClick={createReply}>
+      <button
+        className='side-note-reaction  string-tooltip string-tooltip-bottom'
+        data-string-tooltip='reply to this note'
+        onClick={createReply}
+      >
         <BsReply />
       </button>
     </div>

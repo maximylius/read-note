@@ -34,7 +34,8 @@ const AddNoteButton = ({ sectionId, triggerRemeasure }) => {
 
   return (
     <button
-      className='btn btn-block btn-light add-btn'
+      className='btn btn-block btn-light add-btn string-tooltip string-tooltip-bottom'
+      data-string-tooltip='create new note related to this section'
       onClick={e => newNoteClickhandler(e, '')}
     >
       <BsPlus /> new note

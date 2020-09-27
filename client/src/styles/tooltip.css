@@ -1,0 +1,56 @@
+.string-tooltip:hover {
+  position: relative;
+}
+.string-tooltip:after {
+  content: attr(data-string-tooltip);
+  padding: 0.125rem 0.75rem 0.25rem 0.75rem;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+  border: 3px solid #333 !important;
+  z-index: 10000;
+  position: absolute;
+  background-color: rgb(250, 250, 250);
+  color: #111;
+  font-size: medium;
+  font-style: italic;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
+}
+.string-tooltip:hover:after {
+  opacity: 1;
+  transition: opacity 0.1s 0.75s linear;
+}
+.string-tooltip:before {
+  content: ' ';
+  z-index: 9999;
+  width: 15px;
+  height: 15px;
+  background-color: #333;
+  position: absolute;
+  pointer-events: none;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+.string-tooltip:hover:before {
+  opacity: 1;
+  transition: opacity 0.1s 0.76s linear;
+}
+.string-tooltip-bottom:after {
+  /* transform: translateY(calc(100% + 10px)); */
+  top: calc(100% + 10px);
+  left: -50%;
+}
+.string-tooltip-bottom:before {
+  /* transform: translateY(calc(100% + 10px)); */
+  top: calc(100% + 5px);
+  left: 40%;
+}
+.string-tooltip-left:after {
+  top: -2px;
+  left: -9rem;
+}
+.string-tooltip-left:hover:before {
+  top: 5px;
+  left: -20px;
+}

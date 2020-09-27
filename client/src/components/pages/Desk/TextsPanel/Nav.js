@@ -33,6 +33,7 @@ function Nav() {
                     switchToOpenTextPanel({ textPanelId: id, history: history })
                   )
                 }
+                tooltip='add new text'
               />
             ) : (
               <NavTab
