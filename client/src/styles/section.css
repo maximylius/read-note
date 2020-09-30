@@ -47,6 +47,10 @@
 .section-outside-btn:hover {
   background-color: #dae0e5;
 }
+.section-outside-btn:focus {
+  outline: none;
+  background-color: #bac1c7;
+}
 .section-attrinutes-container {
   background-color: rgba(255, 255, 255, 0.5);
   margin: 0.25rem -0.5rem 0.25rem -0.5rem;
