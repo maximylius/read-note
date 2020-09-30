@@ -57,7 +57,6 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
       id: extractAtValueResId(sep.dataset.resInfo)
     });
   });
-  console.log('NAVLINE: cardBodyRect.height', cardBodyRect.height);
 
   useEffect(() => {
     const onResize = () => {
@@ -68,6 +67,7 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
       window.removeEventListener('resize', onResize);
     };
   }, []);
+
   return (
     <>
       {noteInfo && <NoteInfo noteInfo={noteInfo} setNoteInfo={setNoteInfo} />}
@@ -97,7 +97,8 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
             }}
           >
             <div className={`note-bg-inner`}>
-              <div className='navline'>
+              <div className='navline-left' data-res-info={el.resInfo}></div>
+              <div className='navline' data-res-info={el.resInfo}>
                 <NavlineButton
                   noteInfo={noteInfo}
                   setNoteInfo={setNoteInfo}

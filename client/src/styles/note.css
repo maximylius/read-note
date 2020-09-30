@@ -167,6 +167,8 @@
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.2rem;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.125);
+  background-color: var(--note-bg-color);
 }
 .note-bg-inner {
   height: 100%;
@@ -178,22 +180,37 @@
   border-left: 1px solid rgb(0, 0, 0);
   border-top: 1px solid rgb(0, 0, 0);
   border-bottom: 1px solid rgb(0, 0, 0);
+  border: 1px solid rgb(0, 0, 0);
   box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
+  transition: box-shadow 0.3s 0.1s linear;
+}
+.note-bg-inner .navline-left {
+  position: absolute;
+  height: calc(100% - 3px);
+  width: 0px;
+  opacity: 1;
+  border-radius: 0.2rem 0rem 0rem 0.2rem;
+  background-color: var(--note-bg-color);
+  cursor: pointer;
+  transition: width 0.2s 0s linear;
+}
+.note-bg-inner:hover .navline-left {
+  width: 14px;
+  transition: width 0.3s 0s linear;
 }
 .note-bg-inner .navline {
   position: absolute;
-  top: -14px;
+  top: 0;
   width: 20px;
-  height: calc(100% + 28px);
-  z-index: 20;
-  /* border-top: 1px solid rgba(0, 0, 0, 0.05);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2); */
-  border-radius: 5rem 0 0 5rem;
+  height: 100%;
+  /* z-index: 20; */
+  border-radius: 0rem 0.2rem 0.2rem 0rem;
   background-color: var(--note-bg-color);
-  cursor: zoom-out;
+  box-shadow: 2px 2px 1px 1px rgba(0, 0, 0, 0.125);
+  cursor: pointer;
 }
 .note-bg-inner:hover .navline {
-  box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
+  box-shadow: none;
 }
 .note-panel .note-bg-inner .navline {
   right: -4px;
@@ -209,7 +226,7 @@
   right: 0;
   width: 20px;
   background-color: rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  /* z-index: 10; */
   cursor: default;
 }
 .note-panel .main-navline {
@@ -224,10 +241,6 @@
   top: 0;
   bottom: 0;
 }
-.note-bg-inner:hover .navline {
-  border-top: 1px solid rgba(0, 0, 0, 0.5);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.8);
-}
 
 /* NAVLINE BUTTONS */
 .navline-button-container {
@@ -239,7 +252,7 @@
   z-index: 20;
 }
 .note-bg-inner .navline-button-container {
-  margin-top: 10px;
+  margin-top: 5px;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s 0.1s, opacity 0.1s linear;
@@ -265,55 +278,42 @@ button.navline-button:hover {
 /* BACKGROUND COLOR */
 .note-bg-color-0 {
   --note-bg-color: var(--ccc-0);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-1 {
   --note-bg-color: var(--ccc-1);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-2 {
   --note-bg-color: var(--ccc-2);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-3 {
   --note-bg-color: var(--ccc-3);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-4 {
   --note-bg-color: var(--ccc-4);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-5 {
   --note-bg-color: var(--ccc-5);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-6 {
   --note-bg-color: var(--ccc-6);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-7 {
   --note-bg-color: var(--ccc-7);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-8 {
   --note-bg-color: var(--ccc-8);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-9 {
   --note-bg-color: var(--ccc-9);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-10 {
   --note-bg-color: var(--ccc-10);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-11 {
   --note-bg-color: var(--ccc-11);
-  background-color: var(--note-bg-color);
 }
 .note-bg-color-12 {
   --note-bg-color: var(--ccc-12);
-  background-color: var(--note-bg-color);
 }
 
 /* EDITOR CONTENT */
