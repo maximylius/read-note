@@ -132,6 +132,7 @@ check load res functions
 
 
 @CLEANER CODE ---------------
+2     review old components, move hover actions into css
 3     reduce code repetition in actions
 4     make css files consistent (bootstrap, custom, use color vars)
 1     reduce code repetition among components

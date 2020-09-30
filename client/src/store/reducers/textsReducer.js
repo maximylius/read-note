@@ -94,12 +94,16 @@ export default (state = initialState, action) => {
                         {
                           ...state[el.resId],
                           indirectConnections: [
-                            ...new Set(
-                              ...state[el.resId].indirectConnections.concat({
+                            ...state[el.resId].indirectConnections
+                              .filter(
+                                ele =>
+                                  ele.resType !== 'note' ||
+                                  ele.resId !== payload.note._id
+                              )
+                              .concat({
                                 resId: payload.note._id,
                                 resType: 'note'
                               })
-                            )
                           ]
                         }
                       ]
