@@ -255,6 +255,9 @@ button.closeAlertElement {
 #textMainCard .card-body {
   border-right: none;
 }
+#textMainCard .card-body {
+  margin-top: 3rem;
+}
 .TextPanelSectionBlot {
   cursor: alias;
 }

@@ -13,7 +13,7 @@ const calcBestPositions = sectionsToDisplay => {
   console.log('sectionsNodeList', sectionsNodeList);
   const adjustTop =
     (quillTextPanel &&
-      quillTextPanel.getBoundingClientRect().top - 1.25 * 16) || //2do? adjust with scroll?
+      quillTextPanel.getBoundingClientRect().top + (-3 - 1.25) * 16) || //2do? adjust with scroll?
     0;
 
   const bestPositions = {};
