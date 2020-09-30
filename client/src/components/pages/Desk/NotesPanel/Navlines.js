@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NoteInfo from './NoteInfo';
 import { extractAtValueResId } from '../../../Metapanel/mentionModule';
 import NavlineButton from './NavlineButton';
@@ -59,10 +59,19 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
   });
   console.log('NAVLINE: cardBodyRect.height', cardBodyRect.height);
 
+  useEffect(() => {
+    const onResize = () => {
+      setForceRenderCounter(prevS => prevS + 1);
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
   return (
     <>
       {noteInfo && <NoteInfo noteInfo={noteInfo} setNoteInfo={setNoteInfo} />}
-      <div className='note-bg-container'>
+      <div className='note-bg-container' onResi>
         <div
           className='main-navline'
           style={{ height: `${cardBodyRect.height - 5}px` }}

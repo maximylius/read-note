@@ -59,8 +59,8 @@ body,
   padding-right: 5vw;
 }
 .full-screen-padding .quill {
-  padding-left: 15vw;
-  padding-right: 15vw;
+  padding-left: 12vw;
+  padding-right: 12vw;
 }
 
 .upload-paste {
@@ -288,8 +288,12 @@ button.closeAlertElement {
   background-color: var(--secondary);
   color: white;
 }
-.footer-version {
+div.footer-version {
+  /* display: ; */
+}
+span.footer-version {
   margin-left: 20%;
+  white-space: nowrap;
 }
 /* @media (max-height: 600px) {
   .box .row.footer {

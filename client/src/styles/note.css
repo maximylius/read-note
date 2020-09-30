@@ -74,6 +74,7 @@
   border-color: rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
   padding: 1.25rem 1.25rem 1.25rem 3rem;
+  margin-bottom: 1rem;
 }
 .note-container.side-note {
   border-color: rgba(0, 217, 255, 0);
