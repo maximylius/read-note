@@ -8,6 +8,14 @@ const Tooltip = ({ quillTextRef, selection }) => {
   const activeTextPanel = useSelector(s => s.textsPanel.activeTextPanel);
   const speedReader = useSelector(s => s.textsPanel.speedReader);
 
+  console.log(
+    'selection.index',
+    selection.index,
+    selection.index,
+    'selection.length',
+    selection.length
+  );
+
   const addSectionClickHandler = () => {
     dispatch(
       addSection({

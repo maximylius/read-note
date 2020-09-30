@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BsX } from 'react-icons/bs';
-
+const closeClassName = 'close string-tooltip string-tooltip-bottom';
 const NavTab = ({
   isActive,
   titleEditAction,
@@ -17,10 +17,10 @@ const NavTab = ({
   const onMouseEnterHandler = e => {
     if (
       [
-        e.target.className,
-        e.target.parentElement.className,
-        e.target.parentElement.parentElement.className
-      ].includes('close')
+        e.target.className +
+          e.target.parentElement.className +
+          e.target.parentElement.parentElement.className
+      ].includes(closeClassName)
     ) {
       setMouseOver('close');
     } else {
@@ -34,7 +34,7 @@ const NavTab = ({
         e.target.className,
         e.target.parentElement.className,
         e.target.parentElement.parentElement.className
-      ].includes('close')
+      ].includes(closeClassName)
     ) {
       closeAction();
     } else if (!isActive) {
@@ -110,7 +110,7 @@ const NavTab = ({
           </span>
           <span>{` `}</span>
           <span
-            className='close string-tooltip string-tooltip-bottom'
+            className={closeClassName}
             style={{
               visibility: mouseOver || isActive ? 'visible' : 'hidden'
             }}
