@@ -54,13 +54,16 @@ body,
 .text-and-side-panel-container {
   position: relative;
 }
-.full-screen-padding {
+.note-full-screen {
   padding-left: 5vw;
+}
+.note-full-screen .quill {
+  padding-left: 15vw;
   padding-right: 5vw;
 }
-.full-screen-padding .quill {
-  padding-left: 12vw;
-  padding-right: 12vw;
+.text-full-screen {
+  padding-left: 15vw;
+  padding-right: 20vw;
 }
 
 .upload-paste {

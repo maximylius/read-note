@@ -382,7 +382,7 @@ const TextMain = ({}) => {
       <div
         className={`card-body ${
           mdTextsPanel === 12 && mdAnnotationsPanel === 0
-            ? 'full-screen-padding'
+            ? 'text-full-screen'
             : ''
         }`}
       >

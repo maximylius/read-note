@@ -243,7 +243,7 @@ const NotePanel = ({
   return (
     <div
       className={`note-container ${containerType} ${
-        mdNotesPanel === 12 && !flowchartIsOpen ? 'full-screen-padding' : ''
+        mdNotesPanel === 12 && !flowchartIsOpen ? 'note-full-screen' : ''
       }`}
       ref={cardBodyRef}
       id={`noteCardBody${noteId}`}

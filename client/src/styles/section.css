@@ -15,6 +15,7 @@
   background-color: rgb(251, 251, 251);
   cursor: pointer;
   z-index: 100;
+  transition: border-color 0.2s 0s linear;
 }
 .section-item.tentative {
   z-index: 550;
@@ -276,4 +277,5 @@ path.section-arc-path.active-arc {
 .paragraph-connector {
   stroke-width: 1.5px;
   cursor: pointer;
+  transition: fill 0.2s 0s linear, stroke 0.2s 0s linear;
 }

@@ -14,7 +14,7 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
   const quillEditor = cardBody.querySelector('.ql-editor');
   const pixelIndentWidth =
     quillEditor.getBoundingClientRect().left - cardBodyRect.left;
-  let maxIndentLevel = 4;
+  let maxIndentLevel = 2;
   if (mdNotesPanel !== mdNotesPanelRef.current) {
     setTimeout(() => setForceRenderCounter(prevS => prevS + 1), 30);
     mdNotesPanelRef.current = mdNotesPanel;
@@ -89,10 +89,10 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
             style={{
               top: el.top + 'px',
               height: el.height + 'px',
-              left: (el.indentLevel / maxIndentLevel) * pixelIndentWidth,
+              left: (el.indentLevel / (maxIndentLevel + 1)) * pixelIndentWidth,
               width:
                 cardBodyRect.width - // problem cardBodyRect.width is a product
-                (el.indentLevel / maxIndentLevel) * pixelIndentWidth -
+                (el.indentLevel / (maxIndentLevel + 1)) * pixelIndentWidth -
                 20
             }}
           >
