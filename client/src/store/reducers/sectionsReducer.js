@@ -35,14 +35,12 @@ export default (state = initialState, action) => {
         ...ObjectRemoveKeys(state, [payload.sectionId]),
         ...Object.fromEntries(
           [
-            ...new Set([
-              ...state[payload.sectionId].directConnections.filter(
-                c => c.resType === 'section'
-              ),
-              ...state[payload.sectionId].directConnections.filter(
-                c => c.resType === 'section'
-              )
-            ])
+            ...state[payload.sectionId].directConnections.filter(
+              c => c.resType === 'section'
+            ),
+            ...state[payload.sectionId].indirectConnections.filter(
+              c => c.resType === 'section'
+            )
           ].map(c => [
             c.resId,
             {
