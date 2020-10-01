@@ -71,28 +71,35 @@ const generateFlow = (elements, strictSearchResults) => {
     };
   });
   console.log('g.edges()', g.edges());
-  const edges = g.edges().map(e => ({
-    id: `__${e.v}__${e.w}`,
-    points: g.edge(e).points,
-    source: e.w,
-    target: e.v,
-    ...(strictSearchResults &&
-    [e.w, e.v].some(el => strictSearchResults.includes(el))
-      ? {
-          style: {
-            stroke: 'rgb(255, 46, 143)',
-            strokeWidth: '4'
-          },
-          animated: false
-        }
-      : {
-          style: {
-            stroke: 'rgba(0,0,0,0.15)'
-          },
-
-          animated: false
-        })
-  }));
+  const edges = g.edges().map(e => {
+    const incoming = (strictSearchResults || []).includes(e.v);
+    const outgoing = (strictSearchResults || []).includes(e.w);
+    const selectionType = !strictSearchResults
+      ? 'null'
+      : incoming && outgoing
+      ? 'two-way'
+      : incoming
+      ? 'incoming'
+      : outgoing
+      ? 'outgoing'
+      : 'none';
+    return {
+      id: `__${e.v}__${e.w}`,
+      points: g.edge(e).points,
+      source: e.w,
+      target: e.v,
+      className: `selection-${selectionType}`,
+      data: { selection: selectionType },
+      type: 'smoothedge',
+      ...(strictSearchResults && selectionType !== 'none'
+        ? {
+            animated: false
+          }
+        : {
+            animated: false
+          })
+    };
+  });
   console.log('nodes', nodes, 'edges', edges);
   return [...nodes, ...edges];
 };

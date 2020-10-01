@@ -90,6 +90,7 @@ const Register = () => {
                 <span className='input-group-text'>E-Mail</span>
               </div>
               <input
+                id='email'
                 type='text'
                 className={`form-control ${
                   emailRegExp.test(email) ? 'input-valid' : 'input-non-valid'
@@ -118,7 +119,7 @@ const Register = () => {
               />
             </div>
             <div className='input-group mb-2'>
-              <div className='input-group-prepend' id='Password'>
+              <div className='input-group-prepend' id='password'>
                 <span className='input-group-text'>Password</span>
               </div>
               <input

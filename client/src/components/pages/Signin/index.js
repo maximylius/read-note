@@ -50,7 +50,7 @@ const Signin = () => {
               <span className='input-group-text'>E-Mail</span>
             </div>
             <input
-              id='sigin_email'
+              id='email'
               type='text'
               className='form-control'
               aria-label='Email'
@@ -65,7 +65,7 @@ const Signin = () => {
               <span className='input-group-text'>Password</span>
             </div>
             <input
-              id='sigin_pw'
+              id='password'
               type='password'
               className='form-control'
               aria-label='Password'

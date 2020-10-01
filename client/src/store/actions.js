@@ -746,6 +746,18 @@ export const uploadTextcontent = ({ textcontent, delta }, isPublic = true) => (
     payload: { text }
   });
 
+  if (!user._id)
+    dispatchAlert(
+      {
+        message:
+          'Text will not be saved to your profile. Login and re-upload text!',
+        type: 'danger'
+      },
+      12000,
+      dispatch,
+      getState
+    );
+
   axios.put(
     `/api/common/text/${text._id}`,
     { doc: text },
@@ -1599,6 +1611,18 @@ export const addNote = ({
     type: types.ADD_NEW_NOTE,
     payload: { note, open: !!history }
   });
+
+  if (!user._id)
+    dispatchAlert(
+      {
+        message:
+          'Note will not be saved to your profile. Login and re-create note!',
+        type: 'danger'
+      },
+      10000,
+      dispatch,
+      getState
+    );
 
   axios.put(
     `/api/common/note/${note._id}`,
