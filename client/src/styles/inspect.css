@@ -9,8 +9,13 @@
 }
 .flowchart-search-container {
   width: 100%;
-  padding: 0 0.5rem;
-  border-radius: 1rem 1rem 1rem 1rem;
+  margin-top: 0.25rem;
+  padding: 0 0.5rem 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+.flowchart-search-container:focus-within {
   background-color: #fff;
 }
 .flowchart-search-container .mention,
@@ -31,4 +36,25 @@ span.flowchartInspectElToolbar {
 p.flowchartInspectElToolbar {
   margin-top: -0.25rem;
   margin-bottom: 2rem;
+}
+.search-results-info {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-radius: 0.2rem;
+  color: #fff;
+  transition: background-color 0.5s 0.1s linear, margin-top 0.5s 0.1s linear,
+    margin-bottom 0.5s 0.1s linear, padding-top 0.3s 0.1s linear,
+    padding-bottom 0.3s 0.1s linear;
+}
+.search-results-info.search-results {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.search-results-info.no-results {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.search-results-info.no-search {
+  opacity: 0;
+  margin: 0;
+  padding: 0;
 }

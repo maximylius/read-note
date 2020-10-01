@@ -14,14 +14,8 @@ import {
   setNonLayoutedFlowchartElements
 } from '../../../../store/actions';
 // 2do: dimensions depending on type and content
-const NODE_WIDTH = 200;
-const NODE_HEIGHT = 50;
-
-// let initialElements = [{
-//     name: '2',
-//     label: 'El 2',
-//     links: [{ name: '3' }, { name: '4' }]
-//   }];
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 60;
 
 const generateFlow = (elements, strictSearchResults) => {
   const g = new dagre.graphlib.Graph();
@@ -36,12 +30,13 @@ const generateFlow = (elements, strictSearchResults) => {
   });
   console.log('elements', elements);
   elements.forEach(e => {
+    const mult = Math.max(1, e.nConnections);
     g.setNode(e.name, {
       label: e.label,
       notype: e.type,
       className: e.className,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT
+      width: NODE_WIDTH * Math.pow(mult, 1 / 4),
+      height: NODE_HEIGHT * Math.pow(mult, 1 / 2)
     });
     e.links.forEach(i => {
       g.setEdge(e.name, i.name);
@@ -59,7 +54,8 @@ const generateFlow = (elements, strictSearchResults) => {
       data: {
         label: n.label,
         width: n.width,
-        height: n.height
+        height: n.height,
+        somevar: 'sd'
       },
       className: n.className,
       width: n.width,
@@ -89,7 +85,6 @@ const generateFlow = (elements, strictSearchResults) => {
       source: e.w,
       target: e.v,
       className: `selection-${selectionType}`,
-      data: { selection: selectionType },
       type: 'smoothedge',
       ...(strictSearchResults && selectionType !== 'none'
         ? {
@@ -168,7 +163,10 @@ const Flowchart = () => {
           ...(filterTypes.includes('sections')
             ? []
             : texts[id].directConnections.map(c => ({ name: c.resId })))
-        ]
+        ],
+        nConnections:
+          texts[id].directConnections.length +
+          texts[id].indirectConnections.length
       }));
       const connectedSections = Object.keys(sections).map(id => ({
         name: id,
@@ -178,7 +176,10 @@ const Flowchart = () => {
         links: [
           ...sections[id].directConnections.map(c => ({ name: c.resId })),
           ...sections[id].noteIds.map(id => ({ name: id }))
-        ]
+        ],
+        nConnections:
+          sections[id].directConnections.length +
+          sections[id].indirectConnections.length
       }));
       const connectedNotes = Object.keys(notes).map(id => {
         const note = notes[id];
@@ -195,7 +196,9 @@ const Flowchart = () => {
           links: [
             ...note.directConnections.map(c => ({ name: c.resId })),
             ...note.replies.map(id => ({ name: id }))
-          ]
+          ],
+          nConnections:
+            note.directConnections.length + note.indirectConnections.length
         };
       });
       dispatch(
@@ -291,7 +294,7 @@ const Flowchart = () => {
         >
           <Controls />
           <MiniMap nodeColor={miniMapSwitch} />
-          <Background variant='dots' gap={50} size={0.7} />
+          <Background variant='dots' gap={80} size={0.5} />
         </ReactFlow>
       </div>
       {inspectIsOpen && (

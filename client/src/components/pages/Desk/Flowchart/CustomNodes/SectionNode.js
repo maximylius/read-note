@@ -15,7 +15,7 @@ export default memo(props => {
     dispatch(inspectSectionInFlowchart(id));
   };
   return (
-    <div style={{ width, height }} onClick={onClickHandler}>
+    <div style={{ width, minHeight: height }} onClick={onClickHandler}>
       <Handle
         type='source'
         position='top'

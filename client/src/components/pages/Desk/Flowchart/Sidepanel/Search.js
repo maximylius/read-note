@@ -11,6 +11,7 @@ import {
 } from '../../../../Metapanel/mentionModule';
 import { ObjectKeepKeys } from '../../../../../functions/main';
 import { strictFlowchartSearchresults } from '../../../../../store/actions';
+import ResultsInfo from './ResultsInfo';
 
 const placeholderOptions = [
   'Search...',
@@ -24,7 +25,7 @@ export const Search = () => {
   const searchWithinTextcontent = useSelector(
     s => s.inspect.searchWithinTextcontent
   );
-  const strictSearchResults = useSelector(s => s.inspect.strictSearchResults);
+
   const notes = useSelector(s => s.notes);
   const texts = useSelector(s => s.texts);
   const sections = useSelector(s => s.sections);
@@ -175,7 +176,15 @@ export const Search = () => {
     );
     return () => {};
   }, [committedChangeCounter]);
-
+  const searchEntered =
+    searchQuillRef.current &&
+    !!searchQuillRef.current.editor
+      .getContents()
+      .ops.some(op =>
+        typeof op.insert === 'string'
+          ? !!op.insert.trim().length
+          : !!op.insert.mention
+      );
   return (
     <>
       <div className='flowchart-search-container'>
@@ -196,6 +205,7 @@ export const Search = () => {
           placeholder={searchPlaceholder}
         />
       </div>
+      <ResultsInfo searchEntered={searchEntered} />
     </>
   );
 };

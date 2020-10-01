@@ -10,12 +10,20 @@ export default memo(props => {
     id,
     data: { width, height, label }
   } = props;
+  console.log('props', props);
   const onClickHandler = () => {
     // 2do distinguish drag and click
     dispatch(inspectNoteInFlowchart(id));
   };
   return (
-    <div style={{ width, height }} onClick={onClickHandler}>
+    <div
+      style={{
+        width,
+        minHeight: height,
+        borderRadius: `${(width + height) / 20}px`
+      }}
+      onClick={onClickHandler}
+    >
       <Handle
         type='source'
         position='top'
