@@ -9,8 +9,11 @@ function Footer() {
   );
   return (
     <div className='row static footer my-0 py-0'>
-      <div className="footer-version" style={{ width: (1 - percentageEditingArea) * 100 + '%' }}>
-        <span className='lead footer-version'>Alpha Version 1.1.2</span>
+      <div
+        className='footer-version'
+        style={{ width: (1 - percentageEditingArea) * 100 + '%' }}
+      >
+        <span className='lead footer-version'>Alpha Version 1.2</span>
       </div>
       <div
         style={{ width: percentageEditingArea * 100 + '%' }}

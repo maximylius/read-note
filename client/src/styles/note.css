@@ -177,9 +177,6 @@
 }
 
 .note-bg-inner:hover {
-  border-left: 1px solid rgb(0, 0, 0);
-  border-top: 1px solid rgb(0, 0, 0);
-  border-bottom: 1px solid rgb(0, 0, 0);
   border: 1px solid rgb(0, 0, 0);
   box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
   transition: box-shadow 0.3s 0.1s linear;
@@ -204,14 +201,18 @@
   top: 0;
   width: 20px;
   height: 100%;
-  /* z-index: 20; */
+  z-index: 20;
   border-radius: 0rem 0.2rem 0.2rem 0rem;
   background-color: var(--note-bg-color);
-  box-shadow: 2px 2px 1px 1px rgba(0, 0, 0, 0.125);
   cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 2px 1px 1px rgba(0, 0, 0, 0.125);
+  transition: box-shadow 0.2s 0s linear;
 }
 .note-bg-inner:hover .navline {
-  box-shadow: none;
+  box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
+  transition: box-shadow 0.2s 0s linear;
 }
 .note-panel .note-bg-inner .navline {
   right: -4px;
@@ -258,7 +259,8 @@
   opacity: 0;
   transition: visibility 0s 0.1s, opacity 0.1s linear, margin-top 0.2s 0s linear;
 }
-.note-bg-inner:hover .navline-button-container {
+.note-bg-inner:hover .navline-button-container,
+.navline-button-container:focus-within {
   margin-top: 5px;
   visibility: visible;
   opacity: 1;
@@ -269,14 +271,17 @@ button.navline-button {
   position: relative;
   margin-bottom: 5px;
   border: none;
-  border-radius: 0rem;
+  border-radius: 0.2rem;
   color: rgba(0, 0, 0, 0.6);
   background-color: transparent;
 }
 button.navline-button:hover {
   color: rgba(0, 0, 0);
 }
-
+button.navline-button:focus {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0);
+}
 /* BACKGROUND COLOR */
 .note-bg-color-0 {
   --note-bg-color: var(--ccc-0);
@@ -339,6 +344,7 @@ span.mention {
   padding: 0;
   color: #000;
   background-color: rgb(214, 245, 255);
+  --span-color: #000;
   /* border: 0.05px solid rgb(148, 148, 148); */
 }
 span.mention[data-id^='note'] {
@@ -353,20 +359,49 @@ span.mention[data-id^='note']:hover {
   box-shadow: 4px 4px 2px 2px rgba(0, 0, 0, 0.125);
   transition: box-shadow 0.2s 0.1s linear;
 }
-span.mention[data-id^='note']:hover span {
-  background-color: rgba(0, 0, 0, 0.05);
+span.mention[data-id^='note']:hover span:not(.ql-mention-denotation-char) {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 span.mention[data-id$='_isOpen=false'] {
   font-size: unset;
   cursor: zoom-in;
-  width: auto;
 }
+
+span.mention[data-id^='note'] .ql-mention-denotation-char::before {
+  content: ' ';
+  position: absolute;
+  border-style: solid;
+  border-width: 6px 0 6px 8px;
+  border-color: transparent transparent transparent var(--span-color);
+  height: 0px;
+  /* opacity: 0.8; */
+  transform: rotate(0deg);
+}
+span.mention[data-id^='note'] .ql-mention-denotation-char::before {
+  /* border-width: 10px 6px 0 6px; */
+  /* border-color: #000 transparent transparent transparent; */
+  transform: rotate(90deg);
+  margin-top: 10px;
+  margin-left: 3px;
+}
+span.mention[data-id$='_isOpen=false'] .ql-mention-denotation-char::before {
+  border-width: 6px 0 6px 8px;
+  border-color: transparent transparent transparent #000;
+  transform: rotate(0deg);
+  margin-top: 2px;
+  margin-left: 2px;
+}
+span.mention[data-id^='note']:hover .ql-mention-denotation-char::before {
+  opacity: 1;
+}
+
 span.mention[data-id$='_isOpen=color_class-0'] {
   background-color: var(--ccc-0);
 }
 span.mention[data-id$='_isOpen=color_class-1'] {
   background-color: var(--ccc-1);
   color: #fff;
+  --span-color: #fff;
 }
 span.mention[data-id$='_isOpen=color_class-2'] {
   background-color: var(--ccc-2);
@@ -415,12 +450,10 @@ span.mention[data-id^='section'] {
 }
 span.ql-mention-denotation-char {
   cursor: alias;
+}
+span.mention[data-id^='note'] span.ql-mention-denotation-char {
   color: transparent;
 }
-span.mention:hover .ql-mention-denotation-char {
-  color: #fff;
-}
-
 /* note info */
 .note-info {
   position: absolute;
