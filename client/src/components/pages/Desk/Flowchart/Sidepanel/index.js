@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IconContext } from 'react-icons';
-import { BsBoxArrowInRight, BsX } from 'react-icons/bs';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 import {
   toggleFlowchart,
   closeFlowchartSidepanel
@@ -22,13 +22,11 @@ const FlowchartSidepanel = ({}) => {
   console.log(inspectElements);
   return (
     <div className='col-4 flowchart-sidepanel'>
-      <span>
-        <button className='btn btn-lg btn-light mt-1' onClick={closeSidepanel}>
-          <IconContext.Provider value={{ size: '1.5rem' }}>
-            <BsBoxArrowInRight />
-          </IconContext.Provider>
-        </button>
-      </span>
+      <button className='btn btn-lg btn-light mt-1' onClick={closeSidepanel}>
+        <IconContext.Provider value={{ size: '1.5rem' }}>
+          <BsBoxArrowInRight />
+        </IconContext.Provider>
+      </button>
       <Search />
       <SearchOptions />
       {inspectElements.map(el => (

@@ -1,6 +1,7 @@
 import * as types from '../types';
 
 const initialState = {
+  searchDelta: { ops: [] },
   inspectElements: [],
   inspectFlowSection: null,
   nonLayoutedElements: [],
@@ -16,6 +17,11 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.SET_SEARCH_DELTA:
+      return {
+        ...state,
+        searchDelta: payload.searchDelta
+      };
     case types.DELETE_NOTE:
       return {
         ...state,

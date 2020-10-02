@@ -96,18 +96,32 @@ p.flowchartInspectElToolbar {
   padding: 0.5rem 0.5rem 0.5rem 1rem;
   border-radius: 0.2rem;
   color: #fff;
+  text-align: center;
   transition: background-color 0.5s 0.1s linear, margin-top 0.5s 0.1s linear,
     margin-bottom 0.5s 0.1s linear, padding-top 0.3s 0.1s linear,
     padding-bottom 0.3s 0.1s linear;
 }
 .search-results-info.search-results {
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: rgba(77, 77, 77, 0.45);
 }
 .search-results-info.no-results {
-  background-color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(75, 75, 75, 0.55);
 }
 .search-results-info.no-search {
   opacity: 0;
   margin: 0;
   padding: 0;
+}
+.flowchart-fullscreen-toolbar {
+  position: absolute;
+  width: max(30%, 25rem);
+  top: 1rem;
+  right: 1rem;
+  text-align: right;
+  z-index: 20;
+}
+.flowchart-fullscreen-toolbar .flowchart-search-container {
+  background-color: #fff;
+  box-shadow: 2px 2px 1px 1px rgba(0, 0, 0, 0.1);
+  border-width: 2px;
 }

@@ -13,6 +13,7 @@ import {
   setFlowchartElements,
   setNonLayoutedFlowchartElements
 } from '../../../../store/actions';
+import FullFlowchartToolbar from './FullFlowchartToolbar';
 // 2do: dimensions depending on type and content
 const NODE_WIDTH = 180;
 const NODE_HEIGHT = 60;
@@ -300,8 +301,10 @@ const Flowchart = () => {
           <Background variant='dots' gap={80} size={0.5} />
         </ReactFlow>
       </div>
-      {inspectIsOpen && (
+      {inspectIsOpen ? (
         <FlowchartSidepanel flowchartInstance={flowchartInstance} />
+      ) : (
+        <FullFlowchartToolbar />
       )}
     </div>
   );

@@ -301,9 +301,9 @@ button.close-alert-element {
   background-color: var(--secondary);
   color: white;
 }
-div.footer-version {
-  /* display: ; */
-}
+/* div.footer-version {
+  display: ;
+} */
 span.footer-version {
   margin-left: 20%;
   white-space: nowrap;

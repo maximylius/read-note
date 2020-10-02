@@ -1482,6 +1482,13 @@ export const strictFlowchartSearchresults = strictSearchResults => dispatch => {
   });
 };
 
+export const setSearchDelta = searchDelta => dispatch => {
+  dispatch({
+    type: types.SET_SEARCH_DELTA,
+    payload: { searchDelta }
+  });
+};
+
 export const inspectTextInFlowchart = id => dispatch => {
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,

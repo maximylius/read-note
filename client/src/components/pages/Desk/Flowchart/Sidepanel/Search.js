@@ -10,7 +10,10 @@ import {
   extractAtValueResId
 } from '../../../../Metapanel/mentionModule';
 import { ObjectKeepKeys } from '../../../../../functions/main';
-import { strictFlowchartSearchresults } from '../../../../../store/actions';
+import {
+  setSearchDelta,
+  strictFlowchartSearchresults
+} from '../../../../../store/actions';
 import ResultsInfo from './ResultsInfo';
 
 const placeholderOptions = [
@@ -30,13 +33,13 @@ const returnSearchResults = (
       resId: id,
       resType: 'note'
     })),
-    ...Object.keys(filteredSectionsById).map(id => ({
-      resId: id,
-      resType: 'section'
-    })),
     ...Object.keys(filteredTextsById).map(id => ({
       resId: id,
       resType: 'text'
+    })),
+    ...Object.keys(filteredSectionsById).map(id => ({
+      resId: id,
+      resType: 'section'
     }))
   ];
 };
@@ -52,6 +55,7 @@ export const Search = () => {
   const sections = useSelector(s => s.sections);
   const categories = useSelector(s => s.categories);
   const filterTypes = useSelector(s => s.inspect.filterTypes);
+  const searchDelta = useSelector(s => s.inspect.searchDelta);
 
   const searchQuillRef = React.useRef();
   const [atValues, setAtValues] = React.useState(
@@ -84,6 +88,7 @@ export const Search = () => {
     if (committedChangeCounter === 0) return;
     const editor = searchQuillRef.current.editor;
     const delta = editor.getContents();
+    dispatch(setSearchDelta(delta));
     const caseInsensitive = true;
     let searchTerms = delta.ops
       .flatMap(op => (typeof op.insert === 'string' ? [op.insert] : []))
@@ -114,19 +119,7 @@ export const Search = () => {
     );
 
     if (mentionSearchTerms.length === 0 && !searchTerms.join('')) {
-      // if (strictSearchResults.length !== 0) {
-      dispatch(
-        strictFlowchartSearchresults(
-          filterTypes.length < 5
-            ? returnSearchResults(
-                filteredTextsById,
-                filteredSectionsById,
-                filteredNotesById
-              )
-            : []
-        )
-      );
-      // }
+      dispatch(strictFlowchartSearchresults([]));
       return;
     }
     mentionSearchTerms.forEach(mentionId => {
@@ -214,7 +207,7 @@ export const Search = () => {
         <ReactQuill
           ref={searchQuillRef}
           onChange={onChangeHandler}
-          defaultValue={''}
+          defaultValue={searchDelta}
           theme='bubble'
           modules={{
             toolbar: null,
