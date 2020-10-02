@@ -31,7 +31,7 @@ const FlowchartSidepanel = ({}) => {
       <Search />
       <SearchOptions />
       {inspectElements.map(el => (
-        <div key={el.id} className='inspect-container'>
+        <div key={el.id} className={`inspect-container inspect-${el.type}`}>
           {el.type === 'text' ? (
             <InspectText id={el.id} />
           ) : el.type === 'section' ? (

@@ -34,14 +34,29 @@
   overflow: auto;
 }
 
+/* .octagon {
+  height: 10em;
+  width: 10em;
+  position: relative;
+  overflow: hidden;
+}
+.octagon:after {
+  background-color: red;
+  content: ' ';
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  transform: rotate(45deg);
+} */
+
 /* NODES AND EDGES */
 .react-flow__node {
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   font-size: 150%;
   border-width: 3px;
   border-style: solid;
   border-color: rgb(0, 0, 0, 0.2);
-  box-shadow: 3px 3px 2px 2px rgba(0, 0, 0, 0.2);
+  /* box-shadow: 3px 3px 2px 2px rgba(0, 0, 0, 0.2); */
   transition: border 0.3s 0.1s linear;
 }
 .react-flow__node div {
@@ -52,8 +67,6 @@
 .react-flow__node div span {
   display: table-cell;
   vertical-align: middle;
-
-  line-height: var(--p-height);
 }
 .react-flow__node:hover {
   border-color: rgb(0, 0, 0, 0.5);

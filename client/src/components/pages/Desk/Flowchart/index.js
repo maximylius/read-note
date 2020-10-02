@@ -153,54 +153,66 @@ const Flowchart = () => {
     () => {
       // 2do: only trigger update when necessary
       // if (!flowchartIsOpen) return;
-      const connectedTexts = Object.keys(texts).map(id => ({
-        name: id,
-        type: 'text',
-        className: 'flowchartText',
-        label: texts[id].title,
-        links: [
-          ...texts[id].sectionIds.map(id => ({ name: id })),
-          ...(filterTypes.includes('sections')
-            ? []
-            : texts[id].directConnections.map(c => ({ name: c.resId })))
-        ],
-        nConnections:
-          texts[id].directConnections.length +
-          texts[id].indirectConnections.length
-      }));
-      const connectedSections = Object.keys(sections).map(id => ({
-        name: id,
-        type: 'section',
-        className: 'flowchartSection',
-        label: sections[id].title,
-        links: [
-          ...sections[id].directConnections.map(c => ({ name: c.resId })),
-          ...sections[id].noteIds.map(id => ({ name: id }))
-        ],
-        nConnections:
-          sections[id].directConnections.length +
-          sections[id].indirectConnections.length
-      }));
-      const connectedNotes = Object.keys(notes).map(id => {
-        const note = notes[id];
-        console.log('note', note);
-        return {
-          name: id,
-          type: note.isAnnotation
-            ? 'annotation'
-            : note.isReply
-            ? 'reply'
-            : 'note',
-          className: 'flowchartNote',
-          label: note.title,
-          links: [
-            ...note.directConnections.map(c => ({ name: c.resId })),
-            ...note.replies.map(id => ({ name: id }))
-          ],
-          nConnections:
-            note.directConnections.length + note.indirectConnections.length
-        };
-      });
+      const connectedTexts = !filterTypes.includes('texts')
+        ? []
+        : Object.keys(texts).map(id => ({
+            name: id,
+            type: 'text',
+            className: 'flowchartText',
+            label: texts[id].title,
+            links: [
+              ...texts[id].sectionIds.map(id => ({ name: id })),
+              ...(filterTypes.includes('sections')
+                ? []
+                : texts[id].directConnections.map(c => ({ name: c.resId })))
+            ],
+            nConnections:
+              texts[id].directConnections.length +
+              texts[id].indirectConnections.length
+          }));
+      const connectedSections = !filterTypes.includes('sections')
+        ? []
+        : Object.keys(sections).map(id => ({
+            name: id,
+            type: 'section',
+            className: 'flowchartSection',
+            label: sections[id].title,
+            links: [
+              ...sections[id].directConnections.map(c => ({ name: c.resId })),
+              ...sections[id].noteIds.map(id => ({ name: id }))
+            ],
+            nConnections:
+              sections[id].directConnections.length +
+              sections[id].indirectConnections.length
+          }));
+      const connectedNotes = Object.keys(notes)
+        .filter(id =>
+          notes[id].isAnnotation
+            ? filterTypes.includes('annotations')
+            : notes[id].isReply
+            ? filterTypes.includes('replies')
+            : filterTypes.includes('notes')
+        )
+        .map(id => {
+          const note = notes[id];
+          console.log('note', note);
+          return {
+            name: id,
+            type: note.isAnnotation
+              ? 'annotation'
+              : note.isReply
+              ? 'reply'
+              : 'note',
+            className: 'flowchartNote',
+            label: note.title,
+            links: [
+              ...note.directConnections.map(c => ({ name: c.resId })),
+              ...note.replies.map(id => ({ name: id }))
+            ],
+            nConnections:
+              note.directConnections.length + note.indirectConnections.length
+          };
+        });
       dispatch(
         setNonLayoutedFlowchartElements([
           ...connectedTexts,

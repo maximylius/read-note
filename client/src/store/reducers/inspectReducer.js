@@ -16,6 +16,27 @@ const initialState = {
 export default (state = initialState, action) => {
   const { type, payload } = action;
   switch (type) {
+    case types.DELETE_NOTE:
+      return {
+        ...state,
+        inspectElements: state.inspectElements.filter(
+          el => el.id !== payload.note._id
+        )
+      };
+    case types.DELETE_SECTION:
+      return {
+        ...state,
+        inspectElements: state.inspectElements.filter(
+          el => el.id !== payload.sectionId
+        )
+      };
+    case types.DELETE_TEXT:
+      return {
+        ...state,
+        inspectElements: state.inspectElements.filter(
+          el => el.id !== payload.textId
+        )
+      };
     case types.SET_INSPECT_FLOW_SECTION:
       return {
         ...state,
