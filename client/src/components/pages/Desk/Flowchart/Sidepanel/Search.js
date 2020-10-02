@@ -89,7 +89,7 @@ export const Search = () => {
     const editor = searchQuillRef.current.editor;
     const delta = editor.getContents();
     dispatch(setSearchDelta(delta));
-    const caseInsensitive = true;
+    const caseInsensitive = true; // 2do allow to set option in ui
     let searchTerms = delta.ops
       .flatMap(op => (typeof op.insert === 'string' ? [op.insert] : []))
       .join(' ')
@@ -127,17 +127,38 @@ export const Search = () => {
       const mentionType = extractAtValueResType(mentionId);
 
       filteredTextsById =
-        mentionType === 'text' || mentionType === 'section'
-          ? ObjectKeepKeys(filteredTextsById, [resId])
-          : {};
-      filteredSectionsById =
-        mentionType === 'section'
-          ? ObjectKeepKeys(filteredSectionsById, [resId])
-          : {};
-      filteredNotesById =
-        mentionType === 'note'
-          ? ObjectKeepKeys(filteredNotesById, [resId])
-          : {};
+        // mentionType === 'text' || mentionType === 'section'?
+        ObjectKeepKeys(filteredTextsById, [
+          resId,
+          ...Object.keys(filteredTextsById).flatMap(id =>
+            texts[id].sectionIds.includes(resId) ||
+            texts[id].directConnections.some(el => el.resId === resId) ||
+            texts[id].indirectConnections.some(el => el.resId === resId)
+              ? [id]
+              : []
+          )
+        ]);
+      filteredSectionsById = ObjectKeepKeys(filteredSectionsById, [
+        resId,
+        ...Object.keys(filteredSectionsById).flatMap(id =>
+          sections[id].textId === resId ||
+          sections[id].noteIds.includes(resId) ||
+          sections[id].directConnections.some(el => el.resId === resId) ||
+          sections[id].indirectConnections.some(el => el.resId === resId)
+            ? [id]
+            : []
+        )
+      ]);
+      filteredNotesById = ObjectKeepKeys(filteredNotesById, [
+        resId,
+        ...Object.keys(filteredNotesById).flatMap(id =>
+          notes[id].replies.includes(resId) ||
+          notes[id].directConnections.some(el => el.resId === resId) ||
+          notes[id].indirectConnections.some(el => el.resId === resId)
+            ? [id]
+            : []
+        )
+      ]);
     });
 
     searchTerms.forEach(searchTerm => {
