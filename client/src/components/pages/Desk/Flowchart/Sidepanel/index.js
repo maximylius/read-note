@@ -15,6 +15,7 @@ import SearchOptions from './SearchOptions';
 const FlowchartSidepanel = ({}) => {
   const dispatch = useDispatch();
   const inspectElements = useSelector(s => s.inspect.inspectElements);
+  const notes = useSelector(s => s.notes);
   const closeSidepanel = () => {
     dispatch(closeFlowchartSidepanel());
   };
@@ -33,7 +34,15 @@ const FlowchartSidepanel = ({}) => {
       {inspectElements.map(el => (
         <div
           key={el.resId}
-          className={`inspect-container inspect-${el.resType}`}
+          className={`inspect-container inspect-${
+            el.resType === 'note'
+              ? notes[el.resId].isAnnotation
+                ? 'annotation'
+                : notes[el.resId].isReply
+                ? 'reply'
+                : el.resType
+              : el.resType
+          }`}
         >
           {el.resType === 'text' ? (
             <InspectText id={el.resId} />

@@ -24,20 +24,22 @@ const returnSearchResults = (
   filteredTextsById,
   filteredSectionsById,
   filteredNotesById
-) => [
-  ...Object.keys(filteredNotesById).map(id => ({
-    resId: id,
-    resType: 'note'
-  })),
-  ...Object.keys(filteredSectionsById).map(id => ({
-    resId: id,
-    resType: 'section'
-  })),
-  ...Object.keys(filteredTextsById).map(id => ({
-    resId: id,
-    resType: 'text'
-  }))
-];
+) => {
+  return [
+    ...Object.keys(filteredNotesById).map(id => ({
+      resId: id,
+      resType: 'note'
+    })),
+    ...Object.keys(filteredSectionsById).map(id => ({
+      resId: id,
+      resType: 'section'
+    })),
+    ...Object.keys(filteredTextsById).map(id => ({
+      resId: id,
+      resType: 'text'
+    }))
+  ];
+};
 
 export const Search = () => {
   const dispatch = useDispatch();

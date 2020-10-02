@@ -68,8 +68,8 @@ const generateFlow = (elements, strictSearchResults) => {
   });
   console.log('g.edges()', g.edges());
   const edges = g.edges().map(e => {
-    const incoming = (strictSearchResults || []).some(el=>el.resId===e.v);
-    const outgoing = (strictSearchResults || []).some(el=>el.resId===e.w);
+    const incoming = (strictSearchResults || []).some(ele => ele.resId === e.v);
+    const outgoing = (strictSearchResults || []).some(ele => ele.resId === e.w);
     const selectionType = !strictSearchResults
       ? 'null'
       : incoming && outgoing
@@ -233,20 +233,20 @@ const Flowchart = () => {
       if (displayNonMatches) {
         filteredElements = nonLayoutedElements.map(el => ({
           ...el,
-          className: strictSearchResults.some(el=>el.resId===el.name)
+          className: strictSearchResults.some(ele => ele.resId === el.name)
             ? el.className + ' match'
             : el.className + ' non-match',
           links: el.links.filter(link =>
-            nonLayoutedElements.some(el => el.name === link.name)
+            nonLayoutedElements.some(ele => ele.name === link.name)
           )
         }));
       } else {
         filteredElements = nonLayoutedElements
-          .filter(el => strictSearchResults.some(el=>el.resId===el.name))
+          .filter(el => strictSearchResults.some(ele => ele.resId === el.name))
           .map(el => ({
             ...el,
             links: el.links.filter(link =>
-              strictSearchResults.some(el=>el.resId===link.name)
+              strictSearchResults.some(ele => ele.resId === link.name)
             )
           }));
       }
@@ -254,7 +254,7 @@ const Flowchart = () => {
       filteredElements = nonLayoutedElements.map(el => ({
         ...el,
         links: el.links.filter(link =>
-          nonLayoutedElements.some(el => el.name === link.name)
+          nonLayoutedElements.some(ele => ele.name === link.name)
         )
       }));
     }

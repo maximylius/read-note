@@ -28,6 +28,23 @@
   margin: 8px 0px 4px 0px;
   padding: 4px 4px 4px 2px;
   border-radius: 4px;
+  border-style: solid;
+  border-width: 4px;
+}
+.inspect-container.inspect-text {
+  border-color: rgb(12, 100, 16);
+}
+.inspect-container.inspect-section {
+  border-color: rgb(198, 235, 210);
+}
+.inspect-container.inspect-note {
+  border-color: rgb(197, 73, 24);
+}
+.inspect-container.inspect-annotation {
+  border-color: rgb(209, 54, 106);
+}
+.inspect-container.inspect-reply {
+  border-color: rgb(209, 209, 209);
 }
 .inspect-container.inspect-section .quill {
   position: relative;
