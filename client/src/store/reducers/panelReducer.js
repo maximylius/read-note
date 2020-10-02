@@ -407,8 +407,8 @@ export default (state = initialState, action) => {
         ...state,
         ...mdResolver(
           false,
-          state.mdTextsPanelLast,
-          state.mdAnnotationsPanelLast,
+          state.mdTextsPanel,
+          state.mdAnnotationsPanel,
           payload.open || state.mdNotesPanelLast,
           state.flowSectionView
         ),
