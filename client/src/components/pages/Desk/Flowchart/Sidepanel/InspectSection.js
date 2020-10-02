@@ -2,10 +2,10 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import ReactQuill from 'react-quill';
-import {  BsXCircle, BsTrash } from 'react-icons/bs';
+import { BsXCircle, BsTrash } from 'react-icons/bs';
 import { closeFlowchartElement, loadText } from '../../../../../store/actions';
-import SectionAttributes from '../../TextsPanel/Text/Annotations/SectionAttributes'
-import SectionTitle from '../../TextsPanel/Text/Annotations/SectionTitle'
+import SectionAttributes from '../../TextsPanel/Text/Annotations/SectionAttributes';
+import SectionTitle from '../../TextsPanel/Text/Annotations/SectionTitle';
 
 const InspectSection = ({ id }) => {
   const history = useHistory();
@@ -26,7 +26,7 @@ const InspectSection = ({ id }) => {
   // onclick function that selections mindmap node also
   return (
     <div>
-      <SectionTitle   sectionId={id} triggerRemeasure={()=>{}}/>
+      <SectionTitle sectionId={id} triggerRemeasure={() => {}} />
       <p className='inspect-toolbar'>
         <span className='inspect-toolbar'>
           <button className='btn btn-sm btn-light' onClick={openClickHandler}>
@@ -43,15 +43,14 @@ const InspectSection = ({ id }) => {
           </button>
         </span>
       </p>
-      <SectionAttributes
-              sectionId={id}
-              triggerRemeasure={()=>{}}
-            />
-      <ReactQuill
-        defaultValue={`<blockquoute>${section.fullWords}</blockquoute>`}
-        theme='bubble'
-        readOnly={true}
-      />
+      <SectionAttributes sectionId={id} triggerRemeasure={() => {}} />
+      <div className='inspect-text-quill-wrapper'>
+        <ReactQuill
+          defaultValue={`<blockquoute>${section.fullWords}</blockquoute>`}
+          theme='bubble'
+          readOnly={true}
+        />
+      </div>
     </div>
   );
 };

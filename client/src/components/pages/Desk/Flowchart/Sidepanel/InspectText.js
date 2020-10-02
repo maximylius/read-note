@@ -39,7 +39,9 @@ const InspectText = ({ id }) => {
           </button>
         </span>
       </p>
-      <ReactQuill defaultValue={text.delta} theme='bubble' readOnly={true} />
+      <div className='inspect-text-quill-wrapper'>
+        <ReactQuill defaultValue={text.delta} theme='bubble' readOnly={true} />
+      </div>
     </div>
   );
 };

@@ -19,7 +19,7 @@
 }
 .string-tooltip:hover:after {
   opacity: 1;
-  transition: opacity 0.1s 0.75s linear;
+  transition: opacity 0s 0.89s linear;
 }
 .string-tooltip:before {
   content: ' ';
@@ -34,7 +34,7 @@
 }
 .string-tooltip:hover:before {
   opacity: 1;
-  transition: opacity 0.1s 0.76s linear;
+  transition: opacity 0s 0.9s linear;
 }
 .string-tooltip-bottom:after {
   /* transform: translateY(calc(100% + 10px)); */

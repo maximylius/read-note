@@ -9,7 +9,15 @@ const ResultsInfo = ({ searchEntered }) => {
     addClass += 'no-search';
   } else {
     if (strictSearchResults && strictSearchResults.length) {
-      message = <span>{`${strictSearchResults.length} results.`}</span>;
+      message = (
+        <span>{`${strictSearchResults.length} results: ${
+          strictSearchResults.filter(el => el.resType === 'note').length
+        } notes, ${
+          strictSearchResults.filter(el => el.resType === 'text').length
+        } texts, ${
+          strictSearchResults.filter(el => el.resType === 'section').length
+        } sections.`}</span>
+      );
       addClass += 'search-results';
     } else {
       message = <span>No search results.</span>;

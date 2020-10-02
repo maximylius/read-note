@@ -24,8 +24,9 @@ function Welcome() {
         </div>
         <h1 className='display-4'>Welcome to the Alpha Version.</h1>
         <p className='lead'>
-          In case you haven't done so yet: register to try out the App. We are
-          looking forward to your feedback
+          In case you haven't done so yet:{' '}
+          <strong>register to try out the App</strong>. We are looking forward
+          to your feedback
         </p>
         <p className='lead'>
           Quick explanation. Copy and paste in a text into the add-text panel.
@@ -33,7 +34,9 @@ function Welcome() {
           you want to make generell notes not referring to a specific text, do
           so in the panel on the right hand side. Add new notes via the plus
           symbol. You can embed notes into each other and use them as
-          sub-heading. The network-graph allows to keep track of all linkages.
+          sub-heading. Do so by typing '<strong>@</strong>' and a menu with all
+          your resources will pop up. The network-graph allows to keep track of
+          all linkages.
         </p>
       </div>
     </>

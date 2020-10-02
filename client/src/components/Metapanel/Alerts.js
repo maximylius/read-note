@@ -10,14 +10,14 @@ const Alerts = () => {
   const alerts = useSelector(s => s.ui.alerts);
 
   return (
-    <div className='alertContainer'>
+    <div className='alert-container'>
       {[...alerts]
         .filter((el, index) => index >= alerts.length - maxStack)
         .reverse()
         .map(el => (
-          <div key={el.id} className={`alertElement ${el.type} fade-in`}>
+          <div key={el.id} className={`alert-element ${el.type} fade-in`}>
             <button
-              className='closeAlertElement'
+              className='close-alert-element'
               onClick={() => dispatch(removeAlert(el.id))}
             >
               <BsX />

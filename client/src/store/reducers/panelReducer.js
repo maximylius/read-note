@@ -389,6 +389,7 @@ export default (state = initialState, action) => {
         flowchartIsOpen: false,
         inspectIsOpen: true
       };
+    case types.RETURN_TO_TEXT:
     case types.OPEN_TEXT:
       return {
         ...state,

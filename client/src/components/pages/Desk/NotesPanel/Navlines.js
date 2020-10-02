@@ -71,7 +71,7 @@ const Navlines = ({ noteId, cardBody, mdNotesPanel }) => {
   return (
     <>
       {noteInfo && <NoteInfo noteInfo={noteInfo} setNoteInfo={setNoteInfo} />}
-      <div className='note-bg-container' onResi>
+      <div className='note-bg-container'>
         <div
           className='main-navline'
           style={{ height: `${cardBodyRect.height - 5}px` }}

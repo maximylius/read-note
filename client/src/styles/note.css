@@ -171,6 +171,7 @@
   background-color: var(--note-bg-color);
 }
 .note-bg-inner {
+  position: relative;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 0.2rem;
@@ -183,7 +184,7 @@
 }
 .note-bg-inner .navline-left {
   position: absolute;
-  height: calc(100% - 3px);
+  height: 100%;
   width: 9px;
   opacity: 0;
   border-radius: 0.2rem 0rem 0rem 0.2rem;

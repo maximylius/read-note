@@ -68,8 +68,8 @@ const generateFlow = (elements, strictSearchResults) => {
   });
   console.log('g.edges()', g.edges());
   const edges = g.edges().map(e => {
-    const incoming = (strictSearchResults || []).includes(e.v);
-    const outgoing = (strictSearchResults || []).includes(e.w);
+    const incoming = (strictSearchResults || []).some(el=>el.resId===e.v);
+    const outgoing = (strictSearchResults || []).some(el=>el.resId===e.w);
     const selectionType = !strictSearchResults
       ? 'null'
       : incoming && outgoing
@@ -85,14 +85,7 @@ const generateFlow = (elements, strictSearchResults) => {
       source: e.w,
       target: e.v,
       className: `selection-${selectionType}`,
-      type: 'smoothedge',
-      ...(strictSearchResults && selectionType !== 'none'
-        ? {
-            animated: false
-          }
-        : {
-            animated: false
-          })
+      type: 'smoothedge'
     };
   });
   console.log('nodes', nodes, 'edges', edges);
@@ -232,8 +225,6 @@ const Flowchart = () => {
     // filterTypes,
     // filterAncestors,
     // filterDescendants
-    // console.log('nonLayoutedElements', nonLayoutedElements);
-    // console.log('strictSearchResults', strictSearchResults);
     // make sure no link is made to non existent
     console.log('nonLayoutedElements', nonLayoutedElements);
     console.log('strictSearchResults', strictSearchResults);
@@ -242,7 +233,7 @@ const Flowchart = () => {
       if (displayNonMatches) {
         filteredElements = nonLayoutedElements.map(el => ({
           ...el,
-          className: strictSearchResults.includes(el.name)
+          className: strictSearchResults.some(el=>el.resId===el.name)
             ? el.className + ' match'
             : el.className + ' non-match',
           links: el.links.filter(link =>
@@ -251,11 +242,11 @@ const Flowchart = () => {
         }));
       } else {
         filteredElements = nonLayoutedElements
-          .filter(el => strictSearchResults.includes(el.name))
+          .filter(el => strictSearchResults.some(el=>el.resId===el.name))
           .map(el => ({
             ...el,
             links: el.links.filter(link =>
-              strictSearchResults.includes(link.name)
+              strictSearchResults.some(el=>el.resId===link.name)
             )
           }));
       }

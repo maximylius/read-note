@@ -20,6 +20,25 @@ const placeholderOptions = [
 const searchPlaceholder =
   placeholderOptions[Math.floor(Math.random() * placeholderOptions.length)];
 
+const returnSearchResults = (
+  filteredTextsById,
+  filteredSectionsById,
+  filteredNotesById
+) => [
+  ...Object.keys(filteredNotesById).map(id => ({
+    resId: id,
+    resType: 'note'
+  })),
+  ...Object.keys(filteredSectionsById).map(id => ({
+    resId: id,
+    resType: 'section'
+  })),
+  ...Object.keys(filteredTextsById).map(id => ({
+    resId: id,
+    resType: 'text'
+  }))
+];
+
 export const Search = () => {
   const dispatch = useDispatch();
   const searchWithinTextcontent = useSelector(
@@ -97,11 +116,11 @@ export const Search = () => {
       dispatch(
         strictFlowchartSearchresults(
           filterTypes.length < 5
-            ? [
-                ...Object.keys(filteredTextsById),
-                ...Object.keys(filteredSectionsById),
-                ...Object.keys(filteredNotesById)
-              ]
+            ? returnSearchResults(
+                filteredTextsById,
+                filteredSectionsById,
+                filteredNotesById
+              )
             : []
         )
       );
@@ -168,11 +187,13 @@ export const Search = () => {
       }
     });
     dispatch(
-      strictFlowchartSearchresults([
-        ...Object.keys(filteredTextsById),
-        ...Object.keys(filteredSectionsById),
-        ...Object.keys(filteredNotesById)
-      ])
+      strictFlowchartSearchresults(
+        returnSearchResults(
+          filteredTextsById,
+          filteredSectionsById,
+          filteredNotesById
+        )
+      )
     );
     return () => {};
   }, [committedChangeCounter]);

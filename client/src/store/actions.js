@@ -974,7 +974,7 @@ export const loadText = ({ textId, openText, setToActive, history }) => async (
   if (loaded && activeTextPanel === textId) {
     if (flowchartIsOpen)
       dispatch({
-        type: types.CLOSE_FLOWCHART
+        type: types.RETURN_TO_TEXT
       });
 
     return;
@@ -1098,8 +1098,7 @@ export const addSection = ({ categoryId, begin, end }) => (
     importance: [],
 
     fullWords: text.textcontent.slice(begin, end + 1),
-    html: '',
-    delta: null,
+    delta: null, //2do
 
     textId: activeTextPanel,
     projectIds: user.projectIds[0] ? [user.projectIds[0]] : [],
@@ -1486,25 +1485,26 @@ export const strictFlowchartSearchresults = strictSearchResults => dispatch => {
 export const inspectTextInFlowchart = id => dispatch => {
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { id, type: 'text' }
+    payload: { resId: id, resType: 'text' }
   });
 };
 export const inspectSectionInFlowchart = id => dispatch => {
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { id, type: 'section' }
-  });
-};
-export const setInspectFlowSection = setTo => dispatch => {
-  dispatch({
-    type: types.SET_INSPECT_FLOW_SECTION,
-    payload: { setTo }
+    payload: { resId: id, resType: 'section' }
   });
 };
 export const inspectNoteInFlowchart = id => dispatch => {
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { id, type: 'note' }
+    payload: { resId: id, resType: 'note' }
+  });
+};
+
+export const setInspectFlowSection = setTo => dispatch => {
+  dispatch({
+    type: types.SET_INSPECT_FLOW_SECTION,
+    payload: { setTo }
   });
 };
 

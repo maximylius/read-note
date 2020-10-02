@@ -99,7 +99,8 @@ const Tooltip = ({ quillTextRef, selection }) => {
           onClick={addSectionClickHandler}
           data-string-tooltip='mark selection'
         >
-          <BsPlus /> <BsChatSquareQuote />
+          <BsPlus />
+          <BsChatSquareQuote />
         </button>
         {/* <button
           className='btn btn-secondary draggable'

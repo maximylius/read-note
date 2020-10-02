@@ -20,21 +20,21 @@ export default (state = initialState, action) => {
       return {
         ...state,
         inspectElements: state.inspectElements.filter(
-          el => el.id !== payload.note._id
+          el => el.resId !== payload.note._id
         )
       };
     case types.DELETE_SECTION:
       return {
         ...state,
         inspectElements: state.inspectElements.filter(
-          el => el.id !== payload.sectionId
+          el => el.resId !== payload.sectionId
         )
       };
     case types.DELETE_TEXT:
       return {
         ...state,
         inspectElements: state.inspectElements.filter(
-          el => el.id !== payload.textId
+          el => el.resId !== payload.textId
         )
       };
     case types.SET_INSPECT_FLOW_SECTION:
@@ -55,7 +55,8 @@ export default (state = initialState, action) => {
     case types.SET_FLOWCHART_SEARCHRESULTS:
       return {
         ...state,
-        strictSearchResults: payload.strictSearchResults
+        strictSearchResults: payload.strictSearchResults,
+        inspectElements: payload.strictSearchResults
       };
     case types.TOGGLE_DISPLAY_FLOWCHART_NONMATCHTES:
       return {
@@ -89,9 +90,9 @@ export default (state = initialState, action) => {
       return {
         ...state,
         inspectElements: [
-          { id: payload.id, type: payload.type },
+          { resId: payload.resId, resType: payload.resType },
           ...state.inspectElements
-            .filter(el => el.id !== payload.id)
+            .filter(el => el.resId !== payload.resId)
             .slice(0, 3) //max 4 open resources
         ]
       };
@@ -99,7 +100,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         inspectElements: state.inspectElements.filter(
-          el => el.id !== payload.id
+          el => el.resId !== payload.id
         )
       };
     default:
