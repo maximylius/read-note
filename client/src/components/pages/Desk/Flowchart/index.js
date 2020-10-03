@@ -200,7 +200,14 @@ const Flowchart = () => {
             className: 'flowchartNote',
             label: note.title,
             links: [
-              ...note.directConnections.map(c => ({ name: c.resId })),
+              ...note.directConnections.map(c => ({
+                name:
+                  c.resType === 'section' &&
+                  !connectedSections.some(el => el.name === c.resId) &&
+                  sections[c.resId]
+                    ? sections[c.resId].textId
+                    : c.resId
+              })),
               ...note.replies.map(id => ({ name: id }))
             ],
             nConnections:
@@ -223,7 +230,6 @@ const Flowchart = () => {
   useEffect(() => {
     // displayNonMatches,
     // searchWithinTextcontent,
-    // filterTypes,
     // filterAncestors,
     // filterDescendants
     // make sure no link is made to non existent
