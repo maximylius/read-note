@@ -9,25 +9,10 @@ const NavTab = ({
   openAction,
   closeAction
 }) => {
-  const [mouseOver, setMouseOver] = useState(null);
   const [editState, setEditState] = useState(false);
   const [title, setTitle] = useState(currentTitle);
   const titleRef = React.useRef();
 
-  const onMouseEnterHandler = e => {
-    if (
-      [
-        e.target.className +
-          e.target.parentElement.className +
-          e.target.parentElement.parentElement.className
-      ].includes(closeClassName)
-    ) {
-      setMouseOver('close');
-    } else {
-      setMouseOver('tab');
-    }
-  };
-  const onMouseLeaveHandler = () => setMouseOver(null);
   const openClickHandler = e => {
     if (
       [
@@ -83,12 +68,7 @@ const NavTab = ({
   }, [currentTitle]);
 
   return (
-    <li
-      className='nav-item'
-      onMouseEnter={onMouseEnterHandler}
-      onMouseLeave={onMouseLeaveHandler}
-      onClick={openClickHandler}
-    >
+    <li className='nav-item' onClick={openClickHandler}>
       <span
         className={`nav-link noSelect
       ${isActive ? 'active' : ''} `}
@@ -112,7 +92,7 @@ const NavTab = ({
           <span
             className={closeClassName}
             style={{
-              visibility: mouseOver || isActive ? 'visible' : 'hidden'
+              visibility: isActive ? 'visible' : 'auto'
             }}
             data-string-tooltip='close'
           >

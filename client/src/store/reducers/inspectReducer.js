@@ -9,7 +9,7 @@ const initialState = {
   strictSearchResults: [],
   displayNonMatches: true,
   searchWithinTextcontent: true,
-  filterTypes: ['texts', 'sections', 'annotations', 'replies', 'notes'],
+  filterTypes: ['texts', 'annotations', 'replies', 'notes'],
   filterAncestors: 'all', // direct-nr | none
   filterDescendants: 'all'
 };

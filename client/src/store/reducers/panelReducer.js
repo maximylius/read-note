@@ -132,7 +132,7 @@ const initialState = {
   mdInspectPanel: 4,
   flowSectionView: false,
   flowchartIsOpen: false,
-  inspectIsOpen: true,
+  inspectIsOpen: false,
   keepFinderOpen: false
 };
 
@@ -371,8 +371,7 @@ export default (state = initialState, action) => {
         mdTextsPanelLast: state.mdTextsPanel,
         mdAnnotationsPanelLast: state.mdAnnotationsPanel,
         mdNotesPanelLast: state.mdNotesPanel,
-        flowchartIsOpen: true,
-        inspectIsOpen: true
+        flowchartIsOpen: true
       };
     case types.OPEN_FLOWCHART_ELEMENT_FULLSCREEN:
     case types.ADD_AND_OPEN_TEXT:
@@ -386,8 +385,7 @@ export default (state = initialState, action) => {
           state.mdNotesPanelLast,
           state.flowSectionView
         ),
-        flowchartIsOpen: false,
-        inspectIsOpen: true
+        flowchartIsOpen: false
       };
     case types.RETURN_TO_TEXT:
     case types.OPEN_TEXT:
@@ -400,8 +398,7 @@ export default (state = initialState, action) => {
           state.mdNotesPanel > 0 || state.mdNotesPanelLast,
           state.flowSectionView
         ),
-        flowchartIsOpen: false,
-        inspectIsOpen: true
+        flowchartIsOpen: false
       };
     case types.GET_NOTES:
       return {
@@ -413,8 +410,7 @@ export default (state = initialState, action) => {
           payload.open || state.mdNotesPanelLast,
           state.flowSectionView
         ),
-        flowchartIsOpen: false,
-        inspectIsOpen: true
+        flowchartIsOpen: false
       };
     case types.OPEN_FLOWCHART_SIDEPANEL:
       return {

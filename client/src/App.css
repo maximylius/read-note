@@ -288,6 +288,12 @@ button.close-alert-element {
 .nav-add {
   cursor: pointer;
 }
+.nav-item .close {
+  visibility: hidden;
+}
+.nav-item:hover .close {
+  visibility: visible;
+}
 /* .nav-main:hover {
   padding-top: 0.6em;
   padding-bottom: 0.4em;
@@ -308,11 +314,19 @@ span.footer-version {
   margin-left: 20%;
   white-space: nowrap;
 }
-/* @media (max-height: 600px) {
-  .box .row.footer {
+@media (max-height: 600px) {
+  .box .row.footer > * {
     display: none;
   }
-} */
+  .box .row.footer {
+    height: 0.25rem;
+  }
+}
+@media (max-width: 750px) {
+  .navbar .navbar-brand {
+    display: none;
+  }
+}
 
 .draggable {
   cursor: move !important;

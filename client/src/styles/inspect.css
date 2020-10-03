@@ -114,11 +114,15 @@ p.flowchartInspectElToolbar {
 }
 .flowchart-fullscreen-toolbar {
   position: absolute;
-  width: max(30%, 25rem);
+  width: max(30%, calc(20% + 12rem));
   top: 1rem;
-  right: 1rem;
+  right: 1vw;
   text-align: right;
   z-index: 20;
+  pointer-events: none;
+}
+.flowchart-fullscreen-toolbar > * {
+  pointer-events: auto;
 }
 .flowchart-fullscreen-toolbar .flowchart-search-container {
   background-color: #fff;
