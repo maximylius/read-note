@@ -18,9 +18,11 @@ const ConnectingArrow = ({
           startY / 2 + endY / 2
         }, ${endX},${endY}`}
         {...(twoWay && {
-          markerStart: `url(#arrowhead${active ? '-active' : ''})`
+          markerStart: `url(#arrowhead-up${active ? '-active' : ''})`
         })}
-        markerEnd={`url(#arrowhead${active ? '-active' : ''})`}
+        markerEnd={`url(#arrowhead-${startY > endY ? 'up' : 'down'}${
+          active ? '-active' : ''
+        })`}
         fill='transparent'
       ></path>
     </>

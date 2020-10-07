@@ -85,7 +85,7 @@ export const Search = () => {
 
   useEffect(() => {
     if (!searchQuillRef.current) return;
-    if (committedChangeCounter === 0) return;
+    if (committedChangeCounter < 2) return;
     const editor = searchQuillRef.current.editor;
     const delta = editor.getContents();
     dispatch(setSearchDelta(delta));

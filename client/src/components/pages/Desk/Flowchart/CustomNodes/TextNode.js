@@ -1,36 +1,7 @@
 import React, { memo } from 'react';
-import { useDispatch } from 'react-redux';
-
-import { Handle } from 'react-flow-renderer';
 import { inspectTextInFlowchart } from '../../../../../store/actions';
+import StandardNode from './StandardNode';
 
 export default memo(props => {
-  const dispatch = useDispatch();
-  const {
-    id,
-    data: { width, height, label }
-  } = props;
-  const onClickHandler = () => {
-    // 2do distinguish drag and click
-    dispatch(inspectTextInFlowchart(id));
-  };
-  return (
-    <div style={{ width, minHeight: height }} onClick={onClickHandler}>
-      <Handle
-        type='source'
-        position='top'
-        id='a'
-        style={{ background: 'transparent' }}
-      />
-      <span>
-        <strong>{label}</strong>
-      </span>
-      <Handle
-        type='target'
-        position='bottom'
-        id='b'
-        style={{ background: 'transparent' }}
-      />
-    </div>
-  );
+  return <StandardNode {...props} inspectAction={inspectTextInFlowchart} />;
 });

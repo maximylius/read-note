@@ -56,6 +56,7 @@
 } */
 .notepanel-background {
   margin: 0;
+  /* padding-right: 2rem; */
   border-top: none;
   border-radius: 0.25rem;
   background-color: var(--light);
@@ -460,9 +461,9 @@ span.mention[data-id^='note'] span.ql-mention-denotation-char {
   position: absolute;
   z-index: 19;
   right: 40px;
-  width: calc(100% - 40px);
-  padding: 3rem 1rem 0.5rem 1rem;
-  border-radius: 0.9rem 0rem 0rem 0.9rem;
+  width: min(calc(100% - 50px), 80vw, 750px);
+  padding: 3rem max(1rem, 3%) 1rem max(1rem, 3%);
+  border-radius: 0.9rem 0rem 0.9rem 0.9rem;
   color: #fff;
   background-color: rgba(23, 36, 23, 0.95);
 }

@@ -95,7 +95,7 @@ const SearchOptions = () => {
           </button>
         </div>
       </div>
-      <div>
+      {/* <div>
         Ancestors:{' '}
         <div className='btn-group'>
           <button
@@ -152,7 +152,7 @@ const SearchOptions = () => {
             none
           </button>
         </div>
-      </div>
+      </div> */}
     </details>
   );
 };

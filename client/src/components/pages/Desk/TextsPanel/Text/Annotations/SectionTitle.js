@@ -40,15 +40,17 @@ const SectionTitle = ({ sectionId, triggerRemeasure }) => {
         type='text'
         value={titleState}
         onChange={titleChange}
-        className='section-title-input'
+        className={`section-title-input ${
+          sectionTitle !== titleState ? 'changed' : ''
+        }`}
       ></input>
 
       {sectionTitle !== titleState && (
         <>
-          <button onClick={saveChange}>
+          <button className='btn btn-sm btn-secondary' onClick={saveChange}>
             <BsCheck />
           </button>
-          <button onClick={discardChange}>
+          <button className='btn btn-sm btn-secondary' onClick={discardChange}>
             <BsX />
           </button>
         </>

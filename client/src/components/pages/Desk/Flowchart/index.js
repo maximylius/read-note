@@ -15,10 +15,34 @@ import {
 } from '../../../../store/actions';
 import FullFlowchartToolbar from './FullFlowchartToolbar';
 // 2do: dimensions depending on type and content
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 60;
 
-const generateFlow = (elements, strictSearchResults) => {
+const calcNodeDimensions = (resType, nConnections, isInspected) => {
+  // if (isInspected) {
+  //   const INSPECT_WIDTH = 700;
+  //   const MIN_INSPECT_HEIGHT = 300;
+  //   const INSPECT_HEIGHT = Math.max(
+  //     document.documentElement.clientHeight || 0,
+  //     window.innerHeight || 0,
+  //     MIN_INSPECT_HEIGHT
+  //   );
+  //   return {
+  //     width: INSPECT_WIDTH,
+  //     height: INSPECT_HEIGHT
+  //   };
+  // }
+  const NODE_WIDTH = 180;
+  const NODE_HEIGHT = 60;
+
+  const rMult = resType === 'section' ? 0.75 : resType === 'text' ? 1.5 : 1;
+  const cMult = Math.max(1, nConnections);
+
+  return {
+    width: NODE_WIDTH * Math.pow(cMult * rMult, 1 / 4),
+    height: NODE_HEIGHT * Math.pow(cMult * rMult, 1 / 2)
+  };
+};
+
+const generateFlow = (elements, strictSearchResults, inspectElements) => {
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: 'TB',
@@ -31,13 +55,13 @@ const generateFlow = (elements, strictSearchResults) => {
   });
   console.log('elements', elements);
   elements.forEach(e => {
-    const mult = Math.max(1, e.nConnections);
+    const isInspected = inspectElements.some(el => el.resId === e.name);
     g.setNode(e.name, {
       label: e.label,
       notype: e.type,
       className: e.className,
-      width: NODE_WIDTH * Math.pow(mult, 1 / 4),
-      height: NODE_HEIGHT * Math.pow(mult, 1 / 2)
+      width: calcNodeDimensions(e.type, e.nConnections, isInspected).width,
+      height: calcNodeDimensions(e.type, e.nConnections, isInspected).height
     });
     e.links.forEach(i => {
       g.setEdge(e.name, i.name);
@@ -55,8 +79,7 @@ const generateFlow = (elements, strictSearchResults) => {
       data: {
         label: n.label,
         width: n.width,
-        height: n.height,
-        somevar: 'sd'
+        height: n.height
       },
       className: n.className,
       width: n.width,
@@ -138,6 +161,7 @@ const Flowchart = () => {
   const elements = useSelector(s => s.inspect.elements);
   const nonLayoutedElements = useSelector(s => s.inspect.nonLayoutedElements);
   const strictSearchResults = useSelector(s => s.inspect.strictSearchResults);
+  const inspectElements = useSelector(s => s.inspect.inspectElements);
   const displayNonMatches = useSelector(s => s.inspect.displayNonMatches);
   const filterTypes = useSelector(s => s.inspect.filterTypes);
   const filterAncestors = useSelector(s => s.inspect.filterAncestors);
@@ -270,7 +294,8 @@ const Flowchart = () => {
       setFlowchartElements(
         generateFlow(
           filteredElements,
-          strictSearchResults.length > 0 ? strictSearchResults : null
+          strictSearchResults.length > 0 ? strictSearchResults : null,
+          inspectElements
         )
       )
     );
@@ -278,6 +303,7 @@ const Flowchart = () => {
   }, [
     nonLayoutedElements,
     strictSearchResults,
+    inspectElements,
     displayNonMatches,
     filterTypes,
     filterAncestors,

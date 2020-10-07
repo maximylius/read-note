@@ -77,6 +77,9 @@
 .section-categories-preview {
   background-color: rgba(0, 0, 0, 0.4);
 }
+.section-attribute.section-connections {
+  cursor: pointer;
+}
 .two-way-connection {
   background-color: rgb(41, 155, 41);
 }
@@ -85,6 +88,9 @@
 }
 .incoming-connection {
   background-color: rgb(219, 114, 167);
+}
+.two-way-connection-btn :first-child {
+  margin-right: -0.5rem;
 }
 .section-attribute-preview-shadow {
   position: absolute;
@@ -199,6 +205,9 @@
 .section-title-input {
   width: 100%;
 }
+.section-title-input.changed {
+  width: calc(100% - 70px);
+}
 .side-notes-container {
   margin-bottom: 8px;
 }
@@ -291,5 +300,5 @@ path.section-arc-path.active-arc {
 .paragraph-connector {
   stroke-width: 1.5px;
   cursor: pointer;
-  transition: fill 0.2s 0s linear, stroke 0.2s 0s linear;
+  transition: fill 0.3s 0s linear, stroke 0.3s 0s linear;
 }

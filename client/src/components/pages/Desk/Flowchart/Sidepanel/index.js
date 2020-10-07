@@ -2,10 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IconContext } from 'react-icons';
 import { BsBoxArrowInRight } from 'react-icons/bs';
-import {
-  toggleFlowchart,
-  closeFlowchartSidepanel
-} from '../../../../../store/actions';
+import { closeFlowchartSidepanel } from '../../../../../store/actions';
 import InspectText from './InspectText';
 import InspectSection from './InspectSection';
 import InspectNote from './InspectNote';
@@ -19,7 +16,7 @@ const FlowchartSidepanel = ({}) => {
   const closeSidepanel = () => {
     dispatch(closeFlowchartSidepanel());
   };
-  console.log(inspectElements);
+
   return (
     <div className='col-4 flowchart-sidepanel'>
       <button className='btn btn-lg btn-light mt-1' onClick={closeSidepanel}>

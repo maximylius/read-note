@@ -4,6 +4,8 @@ import { colorGenerator } from '../../../../../../functions/main';
 import ConnectingArrow from './ConnectingArrow';
 import ParagraphConnector from './ParagraphConnector';
 import FlowSectionBox from './FlowSectionBox';
+import ArrowHeadDown from './ArrowHeadDown';
+import ArrowHeadUp from './ArrowHeadUp';
 
 /**
  * point A (xA, yA)
@@ -61,34 +63,10 @@ const SectionsSvgContainer = ({ arcsToDisplay, finalPositions, textBox }) => {
       // viewBox='0 0 300 1000'
     >
       <defs>
-        <marker
-          id={'arrowhead'}
-          viewBox='0 0 30 30'
-          orient='110'
-          strokeWidth='1'
-          markerWidth='15'
-          markerHeight='15'
-          refX='20'
-          refY='13'
-        >
-          <path d={`M 5 8 L 25 15 L 5 22 z`} fill='black' stroke='black' />
-        </marker>
-        <marker
-          id={'arrowhead-active'}
-          viewBox='0 0 30 30'
-          orient='110'
-          strokeWidth='1'
-          markerWidth='10'
-          markerHeight='10'
-          refX='20'
-          refY='13'
-        >
-          <path
-            d={`M 5 8 L 25 15 L 5 22 z`}
-            fill='rgb(5, 225, 5)'
-            stroke='rgb(5, 225, 5)'
-          />
-        </marker>
+        <ArrowHeadDown active={false} color='black' />
+        <ArrowHeadDown active={true} color='rgb(5, 225, 5)' />
+        <ArrowHeadUp active={false} color='black' />
+        <ArrowHeadUp active={true} color='rgb(5, 225, 5)' />
       </defs>
       {textBox && (
         <FlowSectionBox textBox={textBox} containerLeft={containerLeft} />
@@ -121,9 +99,9 @@ const SectionsSvgContainer = ({ arcsToDisplay, finalPositions, textBox }) => {
           endX={finalPositions[arc.to].right_section + 4 - containerLeft}
           endY={finalPositions[arc.to].top_section + 20}
           active={
-            committedSectionIds.includes(arc.from) ||
+            // committedSectionIds.includes(arc.from) ||
             tentativeSectionIds.includes(arc.from) ||
-            committedSectionIds.includes(arc.to) ||
+            // committedSectionIds.includes(arc.to) ||
             tentativeSectionIds.includes(arc.to)
           }
         />
