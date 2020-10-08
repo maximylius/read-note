@@ -136,3 +136,18 @@ p.flowchartInspectElToolbar {
 .inspect-toolbar button {
   margin-right: 0.5rem;
 }
+.search-options-fullscreen {
+  padding: 0.5rem 2%;
+  margin-top: 0.25rem;
+  margin-left: 52%;
+  width: 48%;
+  border-radius: 0.5rem;
+}
+.search-options-fullscreen[open] {
+  background-color: rgba(77, 77, 77, 0.1);
+  margin-left: 0;
+  width: auto;
+}
+.search-options-fullscreen > summary:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.25);
+}

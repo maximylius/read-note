@@ -1489,22 +1489,11 @@ export const setSearchDelta = searchDelta => dispatch => {
   });
 };
 
-export const inspectTextInFlowchart = id => dispatch => {
+export const inspectElementInFlowchart = (resId, resType) => dispatch => {
+  if (resType === 'annotation' || resType === 'reply') resType = 'note';
   dispatch({
     type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { resId: id, resType: 'text' }
-  });
-};
-export const inspectSectionInFlowchart = id => dispatch => {
-  dispatch({
-    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { resId: id, resType: 'section' }
-  });
-};
-export const inspectNoteInFlowchart = id => dispatch => {
-  dispatch({
-    type: types.INSPECT_ELEMENT_IN_FLOWCHART,
-    payload: { resId: id, resType: 'note' }
+    payload: { resId, resType }
   });
 };
 

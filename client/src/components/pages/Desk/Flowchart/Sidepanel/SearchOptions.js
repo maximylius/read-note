@@ -9,7 +9,7 @@ import {
 } from '../../../../../store/actions';
 import { BsFilter, BsSearch } from 'react-icons/bs';
 
-const SearchOptions = () => {
+const SearchOptions = ({ container }) => {
   const dispatch = useDispatch();
   const searchWithinTextcontent = useSelector(
     s => s.inspect.searchWithinTextcontent
@@ -18,8 +18,12 @@ const SearchOptions = () => {
   const filterTypes = useSelector(s => s.inspect.filterTypes);
   const filterAncestors = useSelector(s => s.inspect.filterAncestors);
   const filterDescendants = useSelector(s => s.inspect.filterDescendants);
+  const btnColor = container !== 'fullscreen' ? 'btn-secondary' : 'btn-light';
   return (
-    <details open={true}>
+    <details
+      open={container !== 'fullscreen'}
+      className={`search-options-${container}`}
+    >
       <summary>
         <strong>
           Search Options <BsFilter />
@@ -29,7 +33,7 @@ const SearchOptions = () => {
       <div>
         Search within text content:{' '}
         <button
-          className={`btn btn-sm btn-secondary ${
+          className={`btn btn-sm ${btnColor} ${
             searchWithinTextcontent ? 'active' : ''
           }`}
           onClick={() => dispatch(toggleSearchWithinTextcontentFlowchart())}
@@ -41,7 +45,7 @@ const SearchOptions = () => {
       <div>
         Hide non-matches{' '}
         <button
-          className={`btn btn-sm btn-secondary ${
+          className={`btn btn-sm ${btnColor} ${
             displayNonMatches ? 'active' : ''
           }`}
           onClick={() => dispatch(toggleDisplayFlowChartNonMatches())}
@@ -54,7 +58,7 @@ const SearchOptions = () => {
         Show{' '}
         <div className='btn-group'>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterTypes.includes('texts') ? 'active' : ''
             }`}
             onClick={() => dispatch(toggleTypesFilterFlowchart('texts'))}
@@ -62,7 +66,7 @@ const SearchOptions = () => {
             texts
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterTypes.includes('sections') ? 'active' : ''
             }`}
             onClick={() => dispatch(toggleTypesFilterFlowchart('sections'))}
@@ -70,7 +74,7 @@ const SearchOptions = () => {
             sections
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterTypes.includes('annotations') ? 'active' : ''
             }`}
             onClick={() => dispatch(toggleTypesFilterFlowchart('annotations'))}
@@ -78,7 +82,7 @@ const SearchOptions = () => {
             annotations
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterTypes.includes('replies') ? 'active' : ''
             }`}
             onClick={() => dispatch(toggleTypesFilterFlowchart('replies'))}
@@ -86,7 +90,7 @@ const SearchOptions = () => {
             replies
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterTypes.includes('notes') ? 'active' : ''
             }`}
             onClick={() => dispatch(toggleTypesFilterFlowchart('notes'))}
@@ -99,7 +103,7 @@ const SearchOptions = () => {
         Ancestors:{' '}
         <div className='btn-group'>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterAncestors === 'all' ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterAncestorsFlowchart('all'))}
@@ -107,7 +111,7 @@ const SearchOptions = () => {
             all
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterAncestors.startsWith('direct') ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterAncestorsFlowchart('direct'))}
@@ -115,7 +119,7 @@ const SearchOptions = () => {
             only direct
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterAncestors === 'none' ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterAncestorsFlowchart('none'))}
@@ -128,7 +132,7 @@ const SearchOptions = () => {
         Descendants:{' '}
         <div className='btn-group'>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterDescendants === 'all' ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterDescendantsFlowchart('all'))}
@@ -136,7 +140,7 @@ const SearchOptions = () => {
             all
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterDescendants.startsWith('direct') ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterDescendantsFlowchart('direct'))}
@@ -144,7 +148,7 @@ const SearchOptions = () => {
             only direct
           </button>
           <button
-            className={`btn btn-sm btn-secondary ${
+            className={`btn btn-sm ${btnColor} ${
               filterDescendants === 'none' ? 'active' : ''
             }`}
             onClick={() => dispatch(setFilterDescendantsFlowchart('none'))}

@@ -57,8 +57,7 @@
   border-style: solid;
   border-color: rgb(0, 0, 0, 0.2);
   cursor: pointer !important;
-  transition: border 0.3s 0.1s linear, height 0.5s 0.5s linear,
-    width 0.5s 0.5s linear;
+  transition: border 0.3s 0.1s linear, opacity 0.3s 0.1s linear;
 }
 .react-flow__node div.react-flow-node-inner-container {
   display: table;
@@ -100,10 +99,12 @@
   color: #fff !important;
 }
 .react-flow__node.match {
-  border-color: rgb(255, 46, 143, 0.7);
+  /* border-color: rgb(255, 46, 143, 0.7); */
+  border-color: rgb(0, 0, 0, 0.7);
 }
 .react-flow__node.match:hover {
-  border-color: rgb(255, 46, 143);
+  /* border-color: rgb(255, 46, 143); */
+  border-color: rgb(0, 0, 0);
 }
 
 .react-flow__node.non-match {
@@ -116,10 +117,14 @@ path.react-flow__edge-path {
 .react-flow__edge.selection-none path.react-flow__edge-path {
   stroke: rgba(0, 0, 0, 0.15);
 }
-.selection-two-way path.react-flow__edge-path,
+.selection-two-way path.react-flow__edge-path {
+  stroke: #000;
+  stroke-width: 4;
+}
 .selection-incoming path.react-flow__edge-path,
 .selection-outgoing path.react-flow__edge-path {
-  stroke: rgb(255, 46, 143);
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 4;
 }
 .react-flow__controls {
   bottom: 20% !important;

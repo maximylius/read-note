@@ -25,7 +25,7 @@ const FlowchartSidepanel = ({}) => {
         </IconContext.Provider>
       </button>
       <Search />
-      <SearchOptions />
+      <SearchOptions container='sidepanel' />
       {inspectElements.map(el => (
         <div
           key={el.resId}

@@ -2,21 +2,22 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactFlow, { MiniMap, Controls, Background } from 'react-flow-renderer';
 import dagre from 'dagre';
-import TextNode from './CustomNodes/TextNode';
-import SectionNode from './CustomNodes/SectionNode';
-import AnnotationNode from './CustomNodes/AnnotationNode';
-import ReplyNode from './CustomNodes/ReplyNode';
-import NoteNode from './CustomNodes/NoteNode';
+import StandardNode from './CustomNodes/StandardNode';
 import FlowchartSidepanel from './Sidepanel/';
 import {
-  toggleFlowchart,
   setFlowchartElements,
-  setNonLayoutedFlowchartElements
+  setNonLayoutedFlowchartElements,
+  inspectElementInFlowchart
 } from '../../../../store/actions';
 import FullFlowchartToolbar from './FullFlowchartToolbar';
-// 2do: dimensions depending on type and content
+const TextNode = StandardNode;
+const SectionNode = StandardNode;
+const AnnotationNode = StandardNode;
+const ReplyNode = StandardNode;
+const NoteNode = StandardNode;
 
 const calcNodeDimensions = (resType, nConnections, isInspected) => {
+  // 2do: dimensions depending on type and content
   // if (isInspected) {
   //   const INSPECT_WIDTH = 700;
   //   const MIN_INSPECT_HEIGHT = 300;
@@ -34,7 +35,7 @@ const calcNodeDimensions = (resType, nConnections, isInspected) => {
   const NODE_HEIGHT = 60;
 
   const rMult = resType === 'section' ? 0.75 : resType === 'text' ? 1.5 : 1;
-  const cMult = Math.max(1, nConnections);
+  const cMult = Math.max(0.8, nConnections);
 
   return {
     width: NODE_WIDTH * Math.pow(cMult * rMult, 1 / 4),
@@ -166,11 +167,13 @@ const Flowchart = () => {
   const filterTypes = useSelector(s => s.inspect.filterTypes);
   const filterAncestors = useSelector(s => s.inspect.filterAncestors);
   const filterDescendants = useSelector(s => s.inspect.filterDescendants);
+  const elementClickHandler = (event, elem) => {
+    dispatch(inspectElementInFlowchart(elem.id, elem.type));
+  };
 
   useEffect(
     () => {
       // 2do: only trigger update when necessary
-      // if (!flowchartIsOpen) return;
       const connectedTexts = !filterTypes.includes('texts')
         ? []
         : Object.keys(texts).map(id => ({
@@ -186,7 +189,8 @@ const Flowchart = () => {
             ],
             nConnections:
               texts[id].directConnections.length +
-              texts[id].indirectConnections.length
+              texts[id].indirectConnections.length +
+              texts[id].sectionIds.length / 2
           }));
       const connectedSections = !filterTypes.includes('sections')
         ? []
@@ -235,7 +239,9 @@ const Flowchart = () => {
               ...note.replies.map(id => ({ name: id }))
             ],
             nConnections:
-              note.directConnections.length + note.indirectConnections.length
+              note.directConnections.length +
+              note.indirectConnections.length +
+              note.replies.length
           };
         });
       dispatch(
@@ -252,13 +258,6 @@ const Flowchart = () => {
   );
 
   useEffect(() => {
-    // displayNonMatches,
-    // searchWithinTextcontent,
-    // filterAncestors,
-    // filterDescendants
-    // make sure no link is made to non existent
-    console.log('nonLayoutedElements', nonLayoutedElements);
-    console.log('strictSearchResults', strictSearchResults);
     let filteredElements;
     if (strictSearchResults.length > 0) {
       if (displayNonMatches) {
@@ -324,7 +323,7 @@ const Flowchart = () => {
             reply: ReplyNode,
             note: NoteNode
           }}
-          // onElementClick={e => console.log(e)}
+          onElementClick={elementClickHandler}
           onSelectionChange={e => console.log(e)}
           minZoom={0.15}
         >

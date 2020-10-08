@@ -18,6 +18,9 @@ import ResultsInfo from './ResultsInfo';
 
 const placeholderOptions = [
   'Search...',
+  'Search...',
+  'Search...',
+  'Enter seach terms...',
   "Hint: use '@' to target a specific resource..."
 ];
 const searchPlaceholder =
@@ -213,6 +216,13 @@ export const Search = () => {
     );
     return () => {};
   }, [committedChangeCounter]);
+
+  useEffect(() => {
+    const ref = searchQuillRef.current;
+    if (ref) ref.editor.setSelection(ref.editor.getLength());
+    return () => {};
+  }, []);
+
   const searchEntered =
     searchQuillRef.current &&
     !!searchQuillRef.current.editor
