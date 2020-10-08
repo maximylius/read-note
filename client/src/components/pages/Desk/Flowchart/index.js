@@ -48,8 +48,10 @@ const generateFlow = (elements, strictSearchResults, inspectElements) => {
   g.setGraph({
     rankdir: 'TB',
     ranksep: 200,
-    align: 'DR',
-    ranker: 'tight-tree'
+    // align: 'DR',
+    ranker: 'network-simplex' || 'tight-tree' || 'longest-path',
+    minlen: 3,
+    acyclicer: 'greedy'
   });
   g.setDefaultEdgeLabel(function () {
     return {};
